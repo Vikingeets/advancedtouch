@@ -1,0 +1,936 @@
+#include <cassert>
+#include <iostream>
+#include <vector>
+#include <deque>
+#include <unordered_set>
+#include <set>
+#include <chrono>
+#include "common.h"
+#include "solver.h"
+#include "craft.h"
+#include "random.h"
+#include "levels.h"
+
+// for thread priorities
+#if defined _WIN32
+#include <Windows.h>
+#undef min
+#undef max
+#endif
+
+using namespace std;
+
+void workerMain(solver* solve);
+
+int getCrafterLevel(const crafterLevels& levels, classes crafterClass)
+{
+	assert(crafterClass != classes::Any && crafterClass != classes::Specialist);
+	return levels[static_cast<size_t>(crafterClass)];
+}
+
+const vector<actions> allActions = {
+	actions::basicSynth,
+	actions::standardSynthesis,
+	actions::flawlessSynthesis,
+	actions::carefulSynthesis,
+	actions::carefulSynthesis2,
+	actions::carefulSynthesis3,
+	actions::pieceByPiece,
+	actions::rapidSynthesis,
+	actions::rapidSynthesis2,
+	actions::rapidSynthesis3,
+	actions::focusedSynthesis,
+	actions::delicateSynthesis,
+	actions::intensiveSynthesis,
+	actions::muscleMemory,
+	actions::brandOfTheElements,
+
+	actions::basicTouch,
+	actions::standardTouch,
+	actions::advancedTouch,
+	actions::hastyTouch,
+	actions::hastyTouch2,
+	actions::byregotsBlessing,
+	actions::preciseTouch,
+	actions::focusedTouch,
+	actions::patientTouch,
+	actions::prudentTouch,
+	actions::preparatoryTouch,
+	actions::trainedEye,
+	actions::trainedInstinct,
+
+	actions::comfortZone,
+	actions::rumination,
+	actions::tricksOfTheTrade,
+
+	actions::mastersMend,
+	actions::mastersMend2,
+	actions::wasteNot,
+	actions::wasteNot2,
+	actions::manipulation,
+	actions::manipulation2,
+
+	actions::innerQuiet,
+	actions::steadyHand,
+	actions::steadyHand2,
+	actions::ingenuity,
+	actions::ingenuity2,
+	actions::greatStrides,
+	actions::innovation,
+	actions::makersMark,
+	actions::initialPreparations,
+	actions::nameOfTheElements,
+
+	actions::whistle,
+	actions::satisfaction,
+	actions::innovativeTouch,
+	actions::nymeiasWheel,
+	actions::byregotsMiracle,
+	actions::trainedHand,
+	actions::heartOfTheSpecialist,
+	actions::specialtyReinforce,
+	actions::specialtyRefurbish,
+	actions::specialtyReflect,
+
+	actions::observe,
+//	actions::reclaim,
+	actions::reuse
+};
+
+int actionTime(actions act)
+{
+	// I'm only going to explicitly list the buffs since there's less of them
+	switch (act)
+	{
+	case actions::comfortZone:
+	case actions::greatStrides:
+	case actions::ingenuity:
+	case actions::ingenuity2:
+	case actions::innerQuiet:
+	case actions::innovation:
+	case actions::manipulation:
+	case actions::manipulation2:
+	case actions::nameOfTheElements:
+	case actions::reclaim:
+	case actions::steadyHand:
+	case actions::steadyHand2:
+	case actions::wasteNot:
+	case actions::wasteNot2:
+	case actions::whistle:
+	case actions::reuse:
+		return 2;
+	case actions::initialPreparations:
+	case actions::makersMark:
+	default:
+		return 3;
+	}
+}
+
+int sequenceTime(const craft::sequenceType& sequence)
+{
+	const int macroLength = 15;
+	const int betweenMacroTime = 10;
+
+	int output = 0;
+
+	for (actions a : sequence)
+	{
+		output += actionTime(a);
+	}
+
+	output += static_cast<int>((sequence.size() / (macroLength + 1)) * betweenMacroTime);
+
+	return output;
+}
+
+struct mutationGroups
+{
+	// the one-two ratio and lack of three+ derived from stats gathering
+	int preserve;		// top 5%		both children 0 mutations
+	int oneMutation;	// next 40%		" 1 mutation
+	int twoMutations;	// next 5%		" 2 mutations
+	int eliminate;		// bottom 50%
+};
+
+mutationGroups divideSequence(int amount)
+{
+	assert(amount >= 2 && amount % 2 == 0);
+	mutationGroups output;
+
+	output.eliminate = amount / 2;	// a lot breaks if this changes
+
+	// preserve gets first dibs, two gets last, the remaining go into one
+	output.preserve = (amount + 19) / 20;
+	output.twoMutations = amount / 20;
+	output.oneMutation = output.eliminate - (output.preserve + output.twoMutations);
+
+	assert(output.preserve + output.oneMutation + output.twoMutations + output.eliminate == amount);
+	return output;
+}
+
+int solver::countCrossClass(const craft::sequenceType& sequence)
+{
+	unordered_set<actions> crossClasses;
+	for (actions a : sequence)
+	{
+		classes aClass = actionClass(a);
+		if (aClass == classes::Any || aClass == classes::Specialist)
+			continue;
+		if (countSelfCrossClass || aClass != crafter.classKind)
+			crossClasses.insert(a);
+	}
+	return static_cast<int>(crossClasses.size());
+}
+
+bool isFirstAction(actions action)
+{
+	switch (action)
+	{
+	case actions::muscleMemory:
+	case actions::makersMark:
+	case actions::initialPreparations:
+	case actions::trainedEye:
+	case actions::trainedInstinct:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool isWhistleAction(actions action)
+{
+	switch (action)
+	{
+	case actions::whistle:
+	case actions::satisfaction:
+	case actions::nymeiasWheel:
+	case actions::trainedHand:
+		return true;
+	default:
+		return false;
+	}
+}
+
+// Would return a set, but needs random access iterators for the mutator
+vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useWhistle, bool useTricks, bool useSpecial, bool useHeart, bool includeFirst)
+{
+	vector<actions> output;
+	for(actions action : allActions)
+	{
+		// Reject by level
+		if (actionClass(action) == classes::Any || actionClass(action) == classes::Specialist)
+		{
+			if (actionLevel(action) > getCrafterLevel(crafter.allLevels, crafter.classKind)) continue;
+		}
+		else
+		{
+			if (actionLevel(action) > getCrafterLevel(crafter.allLevels, actionClass(action))) continue;
+		}
+
+		if (!crafter.specialist) useSpecial = false;
+		if (!useSpecial) useWhistle = false;
+
+		if (!useWhistle && isWhistleAction(action))
+			continue;
+		if (!useTricks && action == actions::tricksOfTheTrade) continue;
+		if (!useSpecial && actionClass(action) == classes::Specialist) continue;
+		if (!useHeart && action == actions::heartOfTheSpecialist) continue;
+
+		if (!includeFirst && isFirstAction(action))
+			continue;
+
+		if (
+			(action == actions::trainedEye || action == actions::trainedInstinct) &&
+			crafter.level < rlvlToMain(recipe.rLevel) + 10
+			)
+			continue;
+
+		output.push_back(action);
+	}
+	return output;
+}
+
+int solver::actionLevel(actions action)
+{
+	switch (action)
+	{
+	case actions::basicSynth: return 1;
+	case actions::basicTouch: return 5;
+	case actions::mastersMend: return 7;
+	case actions::steadyHand: return 9;
+	case actions::innerQuiet: return 11;
+	case actions::observe: return 13;
+	case actions::carefulSynthesis:
+	case actions::rapidSynthesis:
+	case actions::hastyTouch:
+	case actions::rumination:
+	case actions::tricksOfTheTrade:
+	case actions::wasteNot:
+	case actions::manipulation:
+	case actions::ingenuity:
+		return 15;
+	case actions::standardTouch: return 18;
+	case actions::greatStrides: return 21;
+	case actions::mastersMend2: return 25;
+	case actions::standardSynthesis: return 31;
+	case actions::flawlessSynthesis:
+	case actions::brandOfTheElements:
+	case actions::steadyHand2:
+		return 37;
+	case actions::advancedTouch: return 43;
+	case actions::carefulSynthesis2:
+	case actions::pieceByPiece:
+	case actions::byregotsBlessing:
+	case actions::comfortZone:
+	case actions::wasteNot2:
+	case actions::ingenuity2:
+	case actions::innovation:
+	case actions::reclaim:
+		return 50;
+	case actions::preciseTouch: return 53;
+	case actions::muscleMemory:
+	case actions::makersMark:
+	case actions::nameOfTheElements:
+	case actions::nymeiasWheel:
+		return 54;
+	case actions::whistle:
+	case actions::satisfaction:
+		return 55;
+	case actions::innovativeTouch: return 56;
+	case actions::byregotsMiracle:
+	case actions::trainedHand:
+		return 58;
+	case actions::heartOfTheSpecialist: return 60;
+	case actions::hastyTouch2: return 61;
+	case actions::carefulSynthesis3: return 62;
+	case actions::rapidSynthesis2: return 63;
+	case actions::patientTouch: return 64;
+	case actions::manipulation2: return 65;
+	case actions::prudentTouch: return 66;
+	case actions::focusedSynthesis: return 67;
+	case actions::focusedTouch: return 68;
+	case actions::initialPreparations:
+	case actions::specialtyReinforce:
+	case actions::specialtyRefurbish:
+	case actions::specialtyReflect:
+		return 69;
+	case actions::preparatoryTouch:
+		return 71;
+	case actions::rapidSynthesis3:
+		return 72;
+	case actions::reuse:
+		return 74;
+	case actions::delicateSynthesis:
+		return 76;
+	case actions::intensiveSynthesis:
+		return 78;
+	case actions::trainedEye:
+	case actions::trainedInstinct:
+		return 80;
+	default:
+		assert(false);
+		return (numeric_limits<int>::max)();
+	}
+}
+
+classes solver::actionClass(actions action)
+{
+	switch (action)
+	{
+	case actions::rumination:
+		return classes::CRP;
+	case actions::ingenuity:
+	case actions::ingenuity2:
+		return classes::BSM;
+	case actions::rapidSynthesis:
+	case actions::pieceByPiece:
+		return classes::ARM;
+	case actions::manipulation:
+	case actions::flawlessSynthesis:
+	case actions::innovation:
+	case actions::makersMark:
+		return classes::GSM;
+	case actions::wasteNot:
+	case actions::wasteNot2:
+		return classes::LTW;
+	case actions::carefulSynthesis:
+	case actions::carefulSynthesis2:
+		return classes::WVR;
+	case actions::tricksOfTheTrade:
+	case actions::comfortZone:
+		return classes::ALC;
+	case actions::hastyTouch:
+	case actions::reclaim:
+	case actions::muscleMemory:
+		return classes::CUL;
+	case actions::whistle:
+	case actions::satisfaction:
+	case actions::innovativeTouch:
+	case actions::byregotsMiracle:
+	case actions::trainedHand:
+	case actions::heartOfTheSpecialist:
+	case actions::specialtyReinforce:
+	case actions::specialtyRefurbish:
+	case actions::specialtyReflect:
+		return classes::Specialist;
+	default:
+		return classes::Any;
+	}
+}
+
+// Constructor for multisynth mode
+solver::solver(const crafterStats & c, const recipeStats & r, const craft::sequenceType & seed,
+	goalType g, int pWiggle, int iQ, int tCnt, bool nLock) :
+	crafter(c),
+	recipe(r),
+	goal(g),
+	wiggleFactor(pWiggle),
+	initialQuality(iQ),
+	numberOfThreads(tCnt),
+	normalLock(nLock),
+	strat(strategy::standard),	// here through gatherStatistics not used for multisynth,
+	countSelfCrossClass(true),	// but it makes the compiler happy
+	gatherStatistics(false),
+	trials(1),
+	simResults(1),
+	sequenceCounters(1),
+	threadsDone(0)
+{
+	order.command = threadCommand::terminate;	// "terminate" doubles as start
+
+	trials[0].sequence = seed;
+	trials[0].outcome = netResult();
+
+	sequenceCounters[0].store(0, memory_order_relaxed);
+}
+
+// Constructor for solve mode
+solver::solver(const crafterStats& c,
+	const recipeStats& r,
+	const craft::sequenceType& seed,
+	goalType g, int pWiggle, int iQ,
+	int tCnt, bool nLock, strategy s,
+	int population,
+	bool cSCC, bool uS, bool uT, bool uW, bool uH, bool gS) :
+	crafter(c),
+	recipe(r),
+	goal(g),
+	wiggleFactor(pWiggle),
+	initialQuality(iQ),
+	numberOfThreads(tCnt),
+	normalLock(nLock),
+	strat(s),
+	countSelfCrossClass(cSCC),
+	gatherStatistics(gS),
+	trials(population),
+	simResults(population),
+	sequenceCounters(population),
+	availableActions(getAvailable(c, r, uW, uT, uS, uH, true)),
+	availableWithoutFirst(getAvailable(c, r, uW, uT, uS, uH, false)),
+	threadsDone(0)
+{
+	assert(numberOfThreads > 0);
+
+	order.command = threadCommand::terminate;
+
+	for_each(trials.begin(), trials.end(),
+		[&seed](trial& t) {t.sequence = seed; });
+}
+
+solver::netResult solver::executeMultisim(int simulationsPerTrial)
+{
+	vector<thread> threads;
+	
+	for (int i = 0; i < numberOfThreads; i++)
+		threads.emplace_back(workerMain, this);
+
+	threadOrder orders = {};
+	orders.command = threadCommand::simulate;
+	orders.trials = &trials;
+	orders.counters = &sequenceCounters;
+	orders.crafter = &crafter;
+	orders.recipe = &recipe;
+	orders.numberOfSimulations = simulationsPerTrial;
+	orders.wiggle = wiggleFactor;
+	orders.initialQuality = initialQuality;
+	orders.normalLock = normalLock;
+	orders.goal = goal;
+
+	setOrder(orders);
+	waitOnSimsDone();
+	orders.command = threadCommand::terminate;
+	setOrder(orders);
+
+	for (auto& t : threads)
+		t.join();
+
+	return trials[0].outcome;
+}
+
+// returns true if a is better than b, so sorting ends up best to worst
+bool solver::compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial)
+{
+	// first reject anything that goes over the 10 crossclass limit
+	{
+		const int maxCrossClass = 10;
+		int ccca = countCrossClass(a.sequence);
+		int cccb = countCrossClass(b.sequence);
+		if (max(ccca, cccb) > maxCrossClass) return ccca < cccb;
+	}
+	// then start rejecting sequences with invalid actions
+	// but if one sequence is considerably better than the others, let the invalids stand
+	// its children/siblings with the same result and less invalids will end up getting preferred
+	{
+		const int superiorThreshhold = 105;	// percent plus 100
+		int lesserQuality = min({ a.outcome.quality, b.outcome.quality, goal != goalType::maxQuality ? recipe.nominalQuality * simulationsPerTrial : (numeric_limits<int>::max() / 2) });
+		int greaterQuality = min(max(a.outcome.quality, b.outcome.quality), goal != goalType::maxQuality ? recipe.nominalQuality * simulationsPerTrial : (numeric_limits<int>::max() / 2));
+
+		bool pruneInvalid = strat == strategy::nqOnly || lesserQuality * superiorThreshhold > greaterQuality * 100;
+
+		if (pruneInvalid &&
+			a.outcome.invalidActions != b.outcome.invalidActions)
+			return a.outcome.invalidActions < b.outcome.invalidActions;
+	}
+	switch (strat)
+	{
+	case strategy::standard:
+		// if either didn't make 100% success, rank based on whoever got more
+		if (a.outcome.successes != b.outcome.successes)
+			return a.outcome.successes > b.outcome.successes;
+//		[[fallthrough]]		// both have equal successes (typically 100% or 0%) so rank on HQ
+	case strategy::hqOrBust:
+		if (a.outcome.successes == 0 && b.outcome.successes == 0)
+			return a.outcome.progress > b.outcome.progress;
+		switch (goal)
+		{
+		case goalType::quality:
+			if (a.outcome.hqPercent == 100 * simulationsPerTrial && b.outcome.hqPercent == 100 * simulationsPerTrial) break;	// i.e. jump to nqOnly for length comparison
+			else return a.outcome.hqPercent > b.outcome.hqPercent;
+		case goalType::maxQuality:
+			return a.outcome.quality > b.outcome.quality;
+		case goalType::collectability:
+			if (a.outcome.collectableGoalsHit != b.outcome.collectableGoalsHit)
+				return a.outcome.collectableGoalsHit > b.outcome.collectableGoalsHit;
+			else if (a.outcome.collectableGoalsHit == 0 && b.outcome.collectableGoalsHit == 0 &&	// if neither had any hits,
+				a.outcome.quality != b.outcome.quality &&									// rank on quality
+				!(a.outcome.successes == 0 ||  b.outcome.successes == 0))					// unless one didn't succeed at all. the nqOnly section will handle that
+				return a.outcome.quality > b.outcome.quality;
+			else break;																		// and on a tie, head on down to rank on length
+		}
+//		[[fallthrough]]		// quality is tied
+	case strategy::nqOnly:
+		// we might have switched to here instead of falling through, so re-compare successes
+		if (a.outcome.successes == 0 && b.outcome.successes == 0)
+			return a.outcome.progress > b.outcome.progress;
+		else if (a.outcome.successes != b.outcome.successes)
+			return a.outcome.successes > b.outcome.successes;
+		else break;
+	}
+
+	// Everything asked for is equal, so check if just one had a successful reuse.
+	if((a.outcome.reuses > 0) != (b.outcome.reuses > 0))
+			return a.outcome.reuses > 0;	// Doing a.outcome.reuses > b.outcome.reuses effectively prevents comparing on length
+	// All else fails, compare on macro length
+	return sequenceTime(a.sequence) < sequenceTime(b.sequence);
+}
+
+solver::trial solver::executeSolver(int simulationsPerTrial, int generations, solver::solverCallback callback)
+{
+	vector<thread> threads;
+	for (int i = 0; i < numberOfThreads; i++)
+		threads.emplace_back(workerMain, this);
+
+	threadOrder orders = {};
+	orders.command = threadCommand::terminate;
+	orders.trials = &trials;
+	orders.counters = &sequenceCounters;
+	orders.crafter = &crafter;
+	orders.recipe = &recipe;
+	orders.numberOfSimulations = simulationsPerTrial;
+	orders.wiggle = wiggleFactor;
+	orders.initialQuality = initialQuality;
+	orders.normalLock = normalLock;
+	orders.goal = goal;
+	for (int gen = 0; gen < generations; gen++)
+	{
+		mutated.clear();
+		mutated.reserve(trials.size());
+		orders.command = threadCommand::mutate;
+		setOrder(orders);
+		waitOnMutationsDone();
+
+		orders.command = threadCommand::simulate;
+		setOrder(orders);
+		waitOnSimsDone();
+
+		// We don't need to sort the whole population, just enough so each group ends up in the right section
+		mutationGroups mG = divideSequence(static_cast<int>(trials.size()));
+		auto comp = [this, simulationsPerTrial](const trial& a, const trial& b)
+			{return compareResult(a, b, simulationsPerTrial);};
+
+		auto beginPos = trials.begin();
+		auto preserveStart = beginPos;
+		auto oneStart = preserveStart + mG.preserve;
+		auto twoStart = oneStart + mG.oneMutation;
+		auto eliminateStart = twoStart + mG.twoMutations;
+		auto eliminateEnd = eliminateStart + mG.eliminate;
+		assert(eliminateEnd == trials.end());
+
+		nth_element(beginPos, eliminateStart, eliminateEnd, comp);
+		nth_element(beginPos, twoStart, eliminateStart, comp);
+		nth_element(beginPos, oneStart, twoStart, comp);
+		nth_element(beginPos, preserveStart, oneStart, comp);
+
+		int uniquePopulation = 0;
+		if (gatherStatistics)
+		{
+			set<craft::sequenceType> uniques;
+			for (auto& trial : trials)
+			{
+				uniques.insert(trial.sequence);
+			}
+			uniquePopulation = static_cast<int>(uniques.size());
+		}
+
+		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, trials.front().outcome, uniquePopulation))
+			break;
+	}
+
+	orders.command = threadCommand::terminate;
+	setOrder(orders);
+	for (auto& t : threads)
+		t.join();
+	
+	return trials.front();
+}
+
+
+// Called by main thread
+void solver::setOrder(threadOrder odr)
+{
+	unique_lock<std::mutex> lock(orderSetLock);
+	for_each(sequenceCounters.begin(), sequenceCounters.end(),
+		[](atomic<int>& a) {a.store(0, memory_order_relaxed);});
+	threadsDone = 0;
+	order = odr;
+
+	lock.unlock();
+	orderSet.notify_all();
+	
+	return;
+}
+
+void solver::waitOnSimsDone()
+{
+	unique_lock<mutex> lock(threadCompleteLock);
+
+	int* tDone = &threadsDone;
+	int* totalThreads = &numberOfThreads;
+	threadComplete.wait(lock, [&tDone, &totalThreads]() { return *tDone >= *totalThreads;});
+	assert(trials.size() == simResults.size());
+	for (int i = 0; i < trials.size(); ++i)
+	{
+		trials[i].outcome = simResults[i];
+		memset(&(simResults[i]), 0, sizeof(simResults[i]));
+	}
+
+	return;
+}
+
+void solver::waitOnMutationsDone()
+{
+	unique_lock<mutex> lock(threadCompleteLock);
+	int* tDone = &threadsDone;
+	int* totalThreads = &numberOfThreads;
+	threadComplete.wait(lock, [&tDone, &totalThreads]() {return *tDone >= *totalThreads;});
+	assert(trials.size() == mutated.size());
+	for (int i = 0; i < mutated.size(); ++i)
+	{
+		trials[i] = move(mutated[i]);
+		trials[i].outcome = {};
+	}
+	return;
+}
+
+// Called by worker threads
+solver::threadOrder solver::waitOnCommandChange(threadCommand previous)
+{
+	unique_lock<mutex> lock(orderSetLock);
+
+	threadOrder* odr = &order;
+	orderSet.wait(lock, [odr, &previous]() { return odr->command != previous; });
+
+	return order;
+}
+
+void solver::reportThreadSimResults(const vector<netResult>& threadResults)
+{
+	unique_lock<mutex> lock(threadCompleteLock);
+	assert(simResults.size() == threadResults.size());
+
+	for (int i = 0; i < trials.size(); ++i)
+	{
+		simResults[i].successes += threadResults[i].successes;
+		simResults[i].progress += threadResults[i].progress;
+		simResults[i].quality += threadResults[i].quality;
+		switch (goal)
+		{
+		case goalType::quality:
+			simResults[i].hqPercent += threadResults[i].hqPercent;
+			break;
+		case goalType::maxQuality:
+			break;
+		case goalType::collectability:
+			simResults[i].collectableGoalsHit += threadResults[i].collectableGoalsHit;
+			break;
+		}
+		simResults[i].invalidActions += threadResults[i].invalidActions;
+		simResults[i].steps += threadResults[i].steps;
+		simResults[i].reuses += threadResults[i].reuses;
+	}
+	threadsDone++;
+	lock.unlock();
+
+	threadComplete.notify_all();	// kick the main thread if it's waiting on threadsDone
+
+	return;
+}
+
+void solver::reportThreadMutationResults(const std::vector<trial>& children)
+{
+	unique_lock<mutex> lock(threadCompleteLock);
+	assert(children.size() <= trials.size());
+
+	mutated.insert(mutated.end(), children.begin(), children.end());
+
+	threadsDone++;
+
+	lock.unlock();
+	threadComplete.notify_all();
+
+	return;
+}
+
+enum class mutationType
+{
+	add,
+	// needs at least 1, but useless without 2
+	replace,
+	// needs at least 2
+	remove,
+	shift,
+	swap
+};
+
+mutationType getRandomMutation(size_t elements, random& rng)
+{
+	if (elements == 0) return mutationType::add;
+	if (elements == 1) return rng.generateInt(0, 2) == 0 ? mutationType::replace : mutationType::add;	// add/replace ratio
+
+	// approximate ratio of mutations appearing in best outcomes
+	const int addChance = 2;
+	const int replaceChance = addChance + 1;
+	const int removeChance = replaceChance + 1;
+	const int shiftChance = removeChance + 2;
+	const int swapChance = shiftChance + 2;
+	const int totalChance = swapChance;
+	int selected = rng.generateInt(totalChance - 1);
+
+	if (selected < addChance) return mutationType::add;
+	else if (selected < replaceChance) return mutationType::replace;
+	else if (selected < removeChance) return mutationType::remove;
+	else if (selected < shiftChance) return mutationType::shift;
+	else return mutationType::swap;
+}
+
+solver::trial solver::mutateSequence(trial input, int numberOfMutations, random& rng)
+{
+	for (int i = 0; i < numberOfMutations; i++)
+	{
+		mutationType mutation = getRandomMutation(input.sequence.size(), rng);
+
+		switch (mutation)
+		{
+		case mutationType::add:
+		{
+			auto where = input.sequence.begin();
+			advance(where, rng.generateInt(input.sequence.size()));	// not "- 1"; it can advance to the end iterator
+			actions which = (where == input.sequence.begin()) ?
+				availableActions[rng.generateInt(availableActions.size() - 1)] :
+				availableWithoutFirst[rng.generateInt(availableWithoutFirst.size() - 1)];
+			input.sequence.insert(where, which);
+			if (gatherStatistics) input.stats.additions++;
+			break;
+		}
+		case mutationType::replace:
+		{
+			assert(!input.sequence.empty());
+			auto where = input.sequence.begin();
+			advance(where, rng.generateInt(input.sequence.size() - 1));
+			actions which = (where == input.sequence.begin()) ?
+				availableActions[rng.generateInt(availableActions.size() - 1)] :
+				availableWithoutFirst[rng.generateInt(availableWithoutFirst.size() - 1)];
+			*where = which;
+			if (gatherStatistics) input.stats.replacements++;
+			break;
+		}
+		case mutationType::remove:
+		{
+			assert(!input.sequence.empty());
+			auto where = input.sequence.begin();
+			advance(where, rng.generateInt(input.sequence.size() - 1));
+			input.sequence.erase(where);
+			if (gatherStatistics) input.stats.removals++;
+			break;
+		}
+		case mutationType::shift:
+		{
+			assert(input.sequence.size() > 1);
+			auto low = input.sequence.begin();
+			auto high = input.sequence.begin();
+			advance(low, rng.generateInt(isFirstAction(*low) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+			advance(high, rng.generateInt(isFirstAction(*high) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+			if (high < low) swap(low, high);
+
+			// To grab the first and put it on the end, move first+1 to first
+			// To grab the last and put it at the beginning, move last to first
+			decltype(low) grabbed = rng.generateInt(1) == 0 ? low + 1 : high;
+			rotate(low, grabbed, high + 1);
+			if (gatherStatistics) input.stats.shifts++;
+			break;
+		}
+		case mutationType::swap:
+		{
+			assert(input.sequence.size() > 1);
+			auto first = input.sequence.begin();
+			auto second = input.sequence.begin();
+			advance(first, rng.generateInt(isFirstAction(*first) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+			advance(second, rng.generateInt(isFirstAction(*second) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+			iter_swap(first, second);
+			if (gatherStatistics) input.stats.swaps++;
+			break;
+		}
+		}
+	}
+
+	if (gatherStatistics)
+		input.stats.mutations[numberOfMutations]++;
+
+	return input;
+}
+
+
+/*
+THREAD FUNCTIONS
+*/
+
+void workerPerformSimulations(solver* solve, solver::threadOrder order, random& rng)
+{
+	int trialNumber = 0;
+
+	vector<solver::netResult> localResults;
+
+	localResults.resize(order.trials->size(), solver::netResult{});
+
+	while (trialNumber < order.trials->size())
+	{
+		if ((*order.counters)[trialNumber].fetch_add(1, memory_order_relaxed) >= order.numberOfSimulations)
+		{
+			// We (and the other threads) have done all the sims for this one, move on to the next
+			trialNumber++;
+			continue;
+		}
+		craft synth(order.initialQuality, *order.crafter, *order.recipe, order.normalLock, rng);
+
+		craft::endResult result = synth.performAll((*order.trials)[trialNumber].sequence, order.goal, order.wiggle, false);
+		localResults[trialNumber].progress += result.progress;
+		if (result.progress >= order.recipe->difficulty)	// a failed synth is always worth 0 quality, even in hqorbust mode
+		{
+			localResults[trialNumber].successes++;
+			localResults[trialNumber].quality += result.quality;
+			switch (order.goal)
+			{
+			case goalType::quality:
+				localResults[trialNumber].hqPercent += result.hqPercent;
+				break;
+			case goalType::maxQuality:
+				break;
+			case goalType::collectability:
+				if (result.collectableHit) localResults[trialNumber].collectableGoalsHit++;
+				break;
+			default:
+				break;
+			}
+		}
+		localResults[trialNumber].steps += result.steps;
+		localResults[trialNumber].invalidActions += result.invalidActions;
+		if (result.reuseUsed) localResults[trialNumber].reuses++;
+	}
+
+	// Everything's done (or has been claimed by another thread), so time to report in and wait for the next order
+	solve->reportThreadSimResults(localResults);
+
+	return;
+}
+
+void workerPerformMutations(solver* solve, solver::threadOrder order, random& rng)
+{
+	vector<solver::trial> localMutated;
+	mutationGroups groups = divideSequence(static_cast<int>(order.trials->size()));
+	// a for loop instead of while here since we'll never use the same trial twice
+	// ending at size / 2 since the second half are rejects
+	for (int trialNumber = 0; trialNumber < groups.eliminate; trialNumber++)
+	{
+		if ((*order.counters)[trialNumber].fetch_add(1, memory_order_relaxed) > 0)
+		{
+			// This one's been claimed by another thread
+			continue;
+		}
+		const solver::trial& parentTrial = (*order.trials)[trialNumber];
+		if (trialNumber < groups.preserve)
+		{
+			localMutated.push_back(solve->mutateSequence(parentTrial, 0, rng));
+			localMutated.push_back(solve->mutateSequence(parentTrial, 0, rng));
+		}
+		else if (trialNumber < groups.preserve + groups.oneMutation)
+		{
+			localMutated.push_back(solve->mutateSequence(parentTrial, 1, rng));
+			localMutated.push_back(solve->mutateSequence(parentTrial, 1, rng));
+		}
+		else
+		{
+			localMutated.push_back(solve->mutateSequence(parentTrial, 2, rng));
+			localMutated.push_back(solve->mutateSequence(parentTrial, 2, rng));
+		}
+	}
+
+	solve->reportThreadMutationResults(localMutated);
+
+	return;
+}
+
+void workerMain(solver* solve)
+{
+#if defined _WIN32
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_LOWEST);
+#endif // defined _WIN32
+
+	random rng;
+	solver::threadOrder order;
+	order.command = solver::threadCommand::terminate;
+	while (true)
+	{
+		order = solve->waitOnCommandChange(order.command);
+		switch (order.command)
+		{
+		case solver::threadCommand::simulate:
+			workerPerformSimulations(solve, order, rng);
+			continue;
+		case solver::threadCommand::mutate:
+			workerPerformMutations(solve, order, rng);
+			continue;
+		case solver::threadCommand::terminate:
+			return;
+		}
+	}
+}

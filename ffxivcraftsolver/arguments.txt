@@ -1,0 +1,33 @@
+Required in all modes:
+-j class
+	crafter class
+-r recipe (default: "sequence.json")
+	file containing recipe stats to use
+-f statsfile (default: "levels.json")
+	file to read containing food and crafter statistics
+
+Quality:
+-i initial (default 0)
+	initial quality
+-q (default)
+	maximize the HQ% chance using the quality in the recipe file
+-m
+	no recipe quality. in solve mode, maximize the mean quality produced
+-c collectability
+	set recipe quality to this x10. in solve mode, maximize the number of synths that reach it
+
+Seed options:
+-s sequencefile (default "sequence.json" in single and multi modes)
+	in single or multisim mode, the sequence to simulate
+	in solve mode, the sequence to start solving from
+-e (default in solve mode)
+	in single or multisim mode, simulates an empty sequence
+	in solve mode, starts solving from an empty sequence
+
+Solver options:
+-t strategy (default standard)
+	standard: try to guarantee successful craft, then per quality option
+	hqorbust: consider an nq result to be equivalent to a failed synth
+	nqonly: ignore quality in result
+-n
+	ignore the "food" section of the options file, i.e. do not use food

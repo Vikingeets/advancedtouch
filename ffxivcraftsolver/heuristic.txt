@@ -1,0 +1,71 @@
+sequence
+subseq1
+subseq2
+subseq3
+aa = allactions
+
+cp
+dur(ability)
+progress = 0
+
+tryaction (action, cpavail, duravail)
+	hasaction && cp >= cost && dur - cost >= 0
+useaction (action)	// create a craft for this (normallock)
+
+pushaction(back)
+unshiftaction(pushfront)
+
+if(crafterlvl < rlvl)
+	pushaction(subseq1, ingenuity2) // tryaction, not use
+	else ingenuity1
+	// don't adjust rlevel for it?
+
+action: first available of:
+	hasaction carefulsynth2
+	hasaction carefulsynth1
+	basicsynth (pushaction(subseq1(steadyhand1)))
+
+spawn craft, execute action(s)
+progressgain = result.progress
+
+progsteps = ceil(difficulty/progressgain)	// test for div/0
+											// (diff + (progressgain - 1))/progressgain
+steps = 0
+
+if(tryaction preferred)
+	pushaction(subseq3, preferred)
+	progress+=progressgain
+	steps++
+
+subseq2.clear()	// first use
+while (progress < difficulty && steps < progsteps)
+	if(tryaction preferred) && dur >= 10
+		pushfront(subseq2, preferred)
+		steps++
+	elif(dur > 40 && tryaction(mastersmend2))
+		pushfront(subseq2, mastersmend2)
+		dur += 60
+	elseif(tryaction manipulation)
+		pushfront(subseq2, manipulation)
+		dur += 30
+	elseif(tryaction mastersmend)
+		pushfront(subseq2, mastersmend)
+		dur += 30
+	else break
+
+sequence = subseq1 + subseq2 + subseq3
+
+if(dur <= 20)
+	if(recipedur > 40 && tryaction(mastersmend2))
+		pushfront(sequence mastersmend2)
+		dur += 60
+	elif(tryaction manipulation)
+		pushfront(sequence manipulation)
+		dur += 30
+	elif(tryaction mastersmend)
+		pushfront(mastersmend)
+		dur += 30
+
+subseq1/2/3.clear()
+
+preferred = basictouch

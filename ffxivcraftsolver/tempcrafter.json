@@ -1,0 +1,54 @@
+{
+  "crp": {
+    "level": 70,
+    "craftsmanship": 1706,
+    "control": 1623,
+    "cp": 493,
+    "specialist": true
+  },
+  "bsm": {
+    "level": 70,
+    "craftsmanship": 1706,
+    "control": 1623,
+    "cp": 493,
+    "specialist": true
+  },
+  "arm": {
+    "level": 70,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "gsm": {
+    "level": 70,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "ltw": {
+    "level": 70,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "wvr": {
+    "level": 70,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "alc": {
+    "level": 70,
+    "craftsmanship": 1706,
+    "control": 1623,
+    "cp": 493,
+    "specialist": true
+  },
+  "cul": {
+    "level": 70,
+    "craftsmanship": 1698,
+    "control": 1839,
+    "cp": 493,
+    "specialist":  true
+  }
+}

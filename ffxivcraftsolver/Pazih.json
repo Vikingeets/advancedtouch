@@ -1,0 +1,85 @@
+{
+  "food-temp": {
+    "_comment": "Tempura Platter HQ",
+    "craftsmanship percent": 5,
+    "craftsmanship max": 53,
+    "control percent": 0,
+    "control max": 0,
+    "cp percent": 15,
+    "cp max": 54
+  },
+  "food-match": {
+    "_comment": "Matcha HQ",
+    "craftsmanship percent": 0,
+    "craftsmanship max": 0,
+    "control percent": 5,
+    "control max": 61,
+    "cp percent": 15,
+    "cp max": 56
+  },
+  "food": {
+    "_comment": "Blood Bouillabaisse HQ",
+    "craftsmanship percent": 0,
+    "craftsmanship max": 0,
+    "control percent": 5,
+    "control max": 64,
+    "cp percent": 26,
+    "cp max": 66
+  },
+  "medicine": {
+    "_comment": "Cunning Craftsman's Tea HQ",
+    "cp percent": 5,
+    "cp max": 13
+  },
+  "crp": {
+    "level": 79,
+    "craftsmanship": 1706,
+    "control": 1623,
+    "cp": 493,
+    "specialist": true
+  },
+  "bsm": {
+    "level": 80,
+    "craftsmanship": 1706,
+    "control": 1623,
+    "cp": 493,
+    "specialist": true
+  },
+  "arm": {
+    "level": 79,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "gsm": {
+    "level": 80,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "ltw": {
+    "level": 80,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "wvr": {
+    "level": 80,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  },
+  "alc": {
+    "level": 80,
+    "craftsmanship": 1706,
+    "control": 1623,
+    "cp": 493,
+    "specialist": true
+  },
+  "cul": {
+    "level": 79,
+    "craftsmanship": 1686,
+    "control": 1603,
+    "cp": 493
+  }
+}
