@@ -1,0 +1,3 @@
+[submodule "ffxivcraftsolver/rapidjson"]
+	path = ffxivcraftsolver/rapidjson
+	url = https://github.com/Tencent/rapidjson
