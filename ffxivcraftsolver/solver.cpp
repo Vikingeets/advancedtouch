@@ -24,7 +24,7 @@ void workerMain(solver* solve);
 
 int getCrafterLevel(const crafterLevels& levels, classes crafterClass)
 {
-	assert(crafterClass != classes::invalid);
+	assert(crafterClass >= classes::CRP && crafterClass <= classes::CUL);
 	return levels[static_cast<size_t>(crafterClass)];
 }
 

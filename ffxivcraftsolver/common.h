@@ -11,8 +11,7 @@ enum class classes
 	LTW = 4,
 	WVR = 5,
 	ALC = 6,
-	CUL = 7,
-	invalid
+	CUL = 7
 };
 
 using crafterLevels = std::array<int, 8>;

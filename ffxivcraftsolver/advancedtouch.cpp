@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
 	commands command;
 
 	crafterStats crafter;
-	crafter.classKind = classes::invalid;
+	bool classSet = false;
 
 	recipeStats recipe;
 	int initialQuality = 0;
@@ -662,6 +662,7 @@ int main(int argc, char* argv[])
 				cerr << "unknown class '" << givenClassOrig << "'\n";
 				usage();
 			}
+			classSet = true;
 		}
 		else if (currentArgv == "-m")
 		{
@@ -751,7 +752,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (crafter.classKind == classes::invalid)
+	if (!classSet)
 	{
 		cerr << "-j argument required\n";
 		usage();
