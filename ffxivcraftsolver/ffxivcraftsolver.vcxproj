@@ -329,7 +329,6 @@
     <ClInclude Include="common.h" />
     <ClInclude Include="levels.h" />
     <ClInclude Include="random.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="solver.h" />
   </ItemGroup>
   <ItemGroup>

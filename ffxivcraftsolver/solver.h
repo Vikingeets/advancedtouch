@@ -90,7 +90,6 @@ private:
 	bool normalLock; 
 	
 	strategy strat;
-	bool countSelfCrossClass;
 
 	bool gatherStatistics;
 	
@@ -112,15 +111,12 @@ private:
 	
 	int threadsDone;	// not atomic: protected with threadCompleteLock. reset in setOrder
 
-	int countCrossClass(const craft::sequenceType& sequence);
-
 	bool compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial);
 
 public:
-	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useWhistle, bool useTricks, bool useSpecial, bool useHeart, bool includeFirst);
+	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool includeFirst);
 
 	static int actionLevel(actions action);
-	static classes actionClass(actions action);
 
 	solver() = delete;
 
@@ -139,11 +135,7 @@ public:
 		bool nLock,		// whether all conditions should be normal
 		strategy s,		// the strategy
 		int population,	// the population. must be here to properly allocate counter vector
-		bool cSCC,		// count own class's abilities towards the cross-class limit?
-		bool uS,		// use specialist actions?
 		bool uT,		// use tricks of the trade?
-		bool uW,		// use whistle while you work?
-		bool uH,		// use heart of the specialist?
 		bool gS			// gather statistics?
 	);
 

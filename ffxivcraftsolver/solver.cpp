@@ -24,21 +24,14 @@ void workerMain(solver* solve);
 
 int getCrafterLevel(const crafterLevels& levels, classes crafterClass)
 {
-	assert(crafterClass != classes::Any && crafterClass != classes::Specialist);
+	assert(crafterClass != classes::invalid);
 	return levels[static_cast<size_t>(crafterClass)];
 }
 
 const vector<actions> allActions = {
 	actions::basicSynth,
-	actions::standardSynthesis,
-	actions::flawlessSynthesis,
 	actions::carefulSynthesis,
-	actions::carefulSynthesis2,
-	actions::carefulSynthesis3,
-	actions::pieceByPiece,
 	actions::rapidSynthesis,
-	actions::rapidSynthesis2,
-	actions::rapidSynthesis3,
 	actions::focusedSynthesis,
 	actions::delicateSynthesis,
 	actions::intensiveSynthesis,
@@ -47,9 +40,7 @@ const vector<actions> allActions = {
 
 	actions::basicTouch,
 	actions::standardTouch,
-	actions::advancedTouch,
 	actions::hastyTouch,
-	actions::hastyTouch2,
 	actions::byregotsBlessing,
 	actions::preciseTouch,
 	actions::focusedTouch,
@@ -57,43 +48,22 @@ const vector<actions> allActions = {
 	actions::prudentTouch,
 	actions::preparatoryTouch,
 	actions::trainedEye,
-	actions::trainedInstinct,
 
-	actions::comfortZone,
-	actions::rumination,
 	actions::tricksOfTheTrade,
 
 	actions::mastersMend,
-	actions::mastersMend2,
 	actions::wasteNot,
-	actions::wasteNot2,
 	actions::manipulation,
-	actions::manipulation2,
 
 	actions::innerQuiet,
-	actions::steadyHand,
-	actions::steadyHand2,
 	actions::ingenuity,
-	actions::ingenuity2,
 	actions::greatStrides,
 	actions::innovation,
-	actions::makersMark,
-	actions::initialPreparations,
 	actions::nameOfTheElements,
+	actions::finalAppraisal,
 
-	actions::whistle,
-	actions::satisfaction,
-	actions::innovativeTouch,
-	actions::nymeiasWheel,
-	actions::byregotsMiracle,
-	actions::trainedHand,
-	actions::heartOfTheSpecialist,
-	actions::specialtyReinforce,
-	actions::specialtyRefurbish,
-	actions::specialtyReflect,
-
+	actions::reflect,
 	actions::observe,
-//	actions::reclaim,
 	actions::reuse
 };
 
@@ -102,25 +72,16 @@ int actionTime(actions act)
 	// I'm only going to explicitly list the buffs since there's less of them
 	switch (act)
 	{
-	case actions::comfortZone:
 	case actions::greatStrides:
 	case actions::ingenuity:
-	case actions::ingenuity2:
 	case actions::innerQuiet:
 	case actions::innovation:
 	case actions::manipulation:
-	case actions::manipulation2:
 	case actions::nameOfTheElements:
 	case actions::reclaim:
-	case actions::steadyHand:
-	case actions::steadyHand2:
 	case actions::wasteNot:
-	case actions::wasteNot2:
-	case actions::whistle:
 	case actions::reuse:
 		return 2;
-	case actions::initialPreparations:
-	case actions::makersMark:
 	default:
 		return 3;
 	}
@@ -168,43 +129,13 @@ mutationGroups divideSequence(int amount)
 	return output;
 }
 
-int solver::countCrossClass(const craft::sequenceType& sequence)
-{
-	unordered_set<actions> crossClasses;
-	for (actions a : sequence)
-	{
-		classes aClass = actionClass(a);
-		if (aClass == classes::Any || aClass == classes::Specialist)
-			continue;
-		if (countSelfCrossClass || aClass != crafter.classKind)
-			crossClasses.insert(a);
-	}
-	return static_cast<int>(crossClasses.size());
-}
-
 bool isFirstAction(actions action)
 {
 	switch (action)
 	{
 	case actions::muscleMemory:
-	case actions::makersMark:
-	case actions::initialPreparations:
+	case actions::reflect:	// 5.1: Is reflect really first action?
 	case actions::trainedEye:
-	case actions::trainedInstinct:
-		return true;
-	default:
-		return false;
-	}
-}
-
-bool isWhistleAction(actions action)
-{
-	switch (action)
-	{
-	case actions::whistle:
-	case actions::satisfaction:
-	case actions::nymeiasWheel:
-	case actions::trainedHand:
 		return true;
 	default:
 		return false;
@@ -212,35 +143,21 @@ bool isWhistleAction(actions action)
 }
 
 // Would return a set, but needs random access iterators for the mutator
-vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useWhistle, bool useTricks, bool useSpecial, bool useHeart, bool includeFirst)
+vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool includeFirst)
 {
 	vector<actions> output;
 	for(actions action : allActions)
 	{
 		// Reject by level
-		if (actionClass(action) == classes::Any || actionClass(action) == classes::Specialist)
-		{
-			if (actionLevel(action) > getCrafterLevel(crafter.allLevels, crafter.classKind)) continue;
-		}
-		else
-		{
-			if (actionLevel(action) > getCrafterLevel(crafter.allLevels, actionClass(action))) continue;
-		}
+		if (actionLevel(action) > crafter.level) continue;
 
-		if (!crafter.specialist) useSpecial = false;
-		if (!useSpecial) useWhistle = false;
-
-		if (!useWhistle && isWhistleAction(action))
-			continue;
 		if (!useTricks && action == actions::tricksOfTheTrade) continue;
-		if (!useSpecial && actionClass(action) == classes::Specialist) continue;
-		if (!useHeart && action == actions::heartOfTheSpecialist) continue;
 
 		if (!includeFirst && isFirstAction(action))
 			continue;
 
 		if (
-			(action == actions::trainedEye || action == actions::trainedInstinct) &&
+			(action == actions::trainedEye) &&
 			crafter.level < rlvlToMain(recipe.rLevel) + 10
 			)
 			continue;
@@ -257,124 +174,45 @@ int solver::actionLevel(actions action)
 	case actions::basicSynth: return 1;
 	case actions::basicTouch: return 5;
 	case actions::mastersMend: return 7;
-	case actions::steadyHand: return 9;
-	case actions::innerQuiet: return 11;
-	case actions::observe: return 13;
-	case actions::carefulSynthesis:
 	case actions::rapidSynthesis:
 	case actions::hastyTouch:
-	case actions::rumination:
+		return 9;
+	case actions::innerQuiet: return 11;
 	case actions::tricksOfTheTrade:
+	case actions::observe:
+		return 13;
+	case actions::carefulSynthesis:	// 5.1: Double check
 	case actions::wasteNot:
-	case actions::manipulation:
+	case actions::manipulation:	// 5.1: Double check
 	case actions::ingenuity:
 		return 15;
 	case actions::standardTouch: return 18;
 	case actions::greatStrides: return 21;
-	case actions::mastersMend2: return 25;
-	case actions::standardSynthesis: return 31;
-	case actions::flawlessSynthesis:
+	case actions::innovation: return 26;
 	case actions::brandOfTheElements:
-	case actions::steadyHand2:
 		return 37;
-	case actions::advancedTouch: return 43;
-	case actions::carefulSynthesis2:
-	case actions::pieceByPiece:
+	case actions::finalAppraisal: return 42;
 	case actions::byregotsBlessing:
-	case actions::comfortZone:
-	case actions::wasteNot2:
-	case actions::ingenuity2:
-	case actions::innovation:
 	case actions::reclaim:
 		return 50;
-	case actions::preciseTouch: return 53;
+	case actions::preciseTouch:
+		return 53;
 	case actions::muscleMemory:
-	case actions::makersMark:
 	case actions::nameOfTheElements:
-	case actions::nymeiasWheel:
-		return 54;
-	case actions::whistle:
-	case actions::satisfaction:
-		return 55;
-	case actions::innovativeTouch: return 56;
-	case actions::byregotsMiracle:
-	case actions::trainedHand:
-		return 58;
-	case actions::heartOfTheSpecialist: return 60;
-	case actions::hastyTouch2: return 61;
-	case actions::carefulSynthesis3: return 62;
-	case actions::rapidSynthesis2: return 63;
 	case actions::patientTouch: return 64;
-	case actions::manipulation2: return 65;
 	case actions::prudentTouch: return 66;
 	case actions::focusedSynthesis: return 67;
 	case actions::focusedTouch: return 68;
-	case actions::initialPreparations:
-	case actions::specialtyReinforce:
-	case actions::specialtyRefurbish:
-	case actions::specialtyReflect:
-		return 69;
-	case actions::preparatoryTouch:
-		return 71;
-	case actions::rapidSynthesis3:
-		return 72;
-	case actions::reuse:
-		return 74;
-	case actions::delicateSynthesis:
-		return 76;
-	case actions::intensiveSynthesis:
-		return 78;
+	case actions::reflect: return 69;
+	case actions::preparatoryTouch: return 71;
+	case actions::reuse: return 74;
+	case actions::delicateSynthesis: return 76;
+	case actions::intensiveSynthesis: return 78;
 	case actions::trainedEye:
-	case actions::trainedInstinct:
 		return 80;
 	default:
 		assert(false);
 		return (numeric_limits<int>::max)();
-	}
-}
-
-classes solver::actionClass(actions action)
-{
-	switch (action)
-	{
-	case actions::rumination:
-		return classes::CRP;
-	case actions::ingenuity:
-	case actions::ingenuity2:
-		return classes::BSM;
-	case actions::rapidSynthesis:
-	case actions::pieceByPiece:
-		return classes::ARM;
-	case actions::manipulation:
-	case actions::flawlessSynthesis:
-	case actions::innovation:
-	case actions::makersMark:
-		return classes::GSM;
-	case actions::wasteNot:
-	case actions::wasteNot2:
-		return classes::LTW;
-	case actions::carefulSynthesis:
-	case actions::carefulSynthesis2:
-		return classes::WVR;
-	case actions::tricksOfTheTrade:
-	case actions::comfortZone:
-		return classes::ALC;
-	case actions::hastyTouch:
-	case actions::reclaim:
-	case actions::muscleMemory:
-		return classes::CUL;
-	case actions::whistle:
-	case actions::satisfaction:
-	case actions::innovativeTouch:
-	case actions::byregotsMiracle:
-	case actions::trainedHand:
-	case actions::heartOfTheSpecialist:
-	case actions::specialtyReinforce:
-	case actions::specialtyRefurbish:
-	case actions::specialtyReflect:
-		return classes::Specialist;
-	default:
-		return classes::Any;
 	}
 }
 
@@ -388,9 +226,8 @@ solver::solver(const crafterStats & c, const recipeStats & r, const craft::seque
 	initialQuality(iQ),
 	numberOfThreads(tCnt),
 	normalLock(nLock),
-	strat(strategy::standard),	// here through gatherStatistics not used for multisynth,
-	countSelfCrossClass(true),	// but it makes the compiler happy
-	gatherStatistics(false),
+	strat(strategy::standard),	// here and gatherStatistics not used for multisynth,
+	gatherStatistics(false),	// but it makes the compiler happy
 	trials(1),
 	simResults(1),
 	sequenceCounters(1),
@@ -411,7 +248,7 @@ solver::solver(const crafterStats& c,
 	goalType g, int pWiggle, int iQ,
 	int tCnt, bool nLock, strategy s,
 	int population,
-	bool cSCC, bool uS, bool uT, bool uW, bool uH, bool gS) :
+	bool uT, bool gS) :
 	crafter(c),
 	recipe(r),
 	goal(g),
@@ -420,13 +257,12 @@ solver::solver(const crafterStats& c,
 	numberOfThreads(tCnt),
 	normalLock(nLock),
 	strat(s),
-	countSelfCrossClass(cSCC),
 	gatherStatistics(gS),
 	trials(population),
 	simResults(population),
 	sequenceCounters(population),
-	availableActions(getAvailable(c, r, uW, uT, uS, uH, true)),
-	availableWithoutFirst(getAvailable(c, r, uW, uT, uS, uH, false)),
+	availableActions(getAvailable(c, r, uT, true)),
+	availableWithoutFirst(getAvailable(c, r, uT, false)),
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);
@@ -470,14 +306,7 @@ solver::netResult solver::executeMultisim(int simulationsPerTrial)
 // returns true if a is better than b, so sorting ends up best to worst
 bool solver::compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial)
 {
-	// first reject anything that goes over the 10 crossclass limit
-	{
-		const int maxCrossClass = 10;
-		int ccca = countCrossClass(a.sequence);
-		int cccb = countCrossClass(b.sequence);
-		if (max(ccca, cccb) > maxCrossClass) return ccca < cccb;
-	}
-	// then start rejecting sequences with invalid actions
+	// first reject sequences with invalid actions
 	// but if one sequence is considerably better than the others, let the invalids stand
 	// its children/siblings with the same result and less invalids will end up getting preferred
 	{

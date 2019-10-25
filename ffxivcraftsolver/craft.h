@@ -8,15 +8,8 @@ enum class actions
 {
 	// Synthesis
 	basicSynth,
-	standardSynthesis,
-	flawlessSynthesis,
 	carefulSynthesis,
-	carefulSynthesis2,
-	carefulSynthesis3,
-	pieceByPiece,
 	rapidSynthesis,
-	rapidSynthesis2,
-	rapidSynthesis3,
 	focusedSynthesis,
 	delicateSynthesis,
 	intensiveSynthesis,
@@ -26,9 +19,7 @@ enum class actions
 	// Touch
 	basicTouch,
 	standardTouch,
-	advancedTouch,
 	hastyTouch,
-	hastyTouch2,
 	byregotsBlessing,
 	preciseTouch,
 	focusedTouch,
@@ -36,44 +27,23 @@ enum class actions
 	prudentTouch,
 	preparatoryTouch,
 	trainedEye,
-	trainedInstinct,
 
 	// CP
-	comfortZone,
-	rumination,
 	tricksOfTheTrade,
 
 	// Durability
 	mastersMend,
-	mastersMend2,
 	wasteNot,
-	wasteNot2,
 	manipulation,
-	manipulation2,
 
 	// Buffs
 	innerQuiet,
-	steadyHand,
-	steadyHand2,
+	reflect,
 	ingenuity,
-	ingenuity2,
 	greatStrides,
 	innovation,
-	makersMark,
-	initialPreparations,
 	nameOfTheElements,
-
-	// Specialist
-	whistle,
-	satisfaction,
-	innovativeTouch,
-	nymeiasWheel,
-	byregotsMiracle,
-	trainedHand,
-	heartOfTheSpecialist,
-	specialtyReinforce,
-	specialtyRefurbish,
-	specialtyReflect,
+	finalAppraisal,
 
 	observe,
 	reclaim,
@@ -82,15 +52,8 @@ enum class actions
 
 const std::map<actions, std::string> simpleText = {
 	{actions::basicSynth, "basicSynth"},
-	{actions::standardSynthesis, "standardSynthesis"},
-	{actions::flawlessSynthesis, "flawlessSynthesis"},
 	{actions::carefulSynthesis, "carefulSynthesis"},
-	{actions::carefulSynthesis2, "carefulSynthesis2"},
-	{actions::carefulSynthesis3, "carefulSynthesis3"},
-	{actions::pieceByPiece, "pieceByPiece"},
 	{actions::rapidSynthesis, "rapidSynthesis"},
-	{actions::rapidSynthesis2, "rapidSynthesis2"},
-	{actions::rapidSynthesis3, "rapidSynthesis3"},
 	{actions::focusedSynthesis, "focusedSynthesis"},
 	{actions::delicateSynthesis, "delicateSynthesis"},
 	{actions::intensiveSynthesis, "intensiveSynthesis"},
@@ -99,9 +62,7 @@ const std::map<actions, std::string> simpleText = {
 
 	{actions::basicTouch, "basicTouch"},
 	{actions::standardTouch, "standardTouch"},
-	{actions::advancedTouch, "advancedTouch"},
 	{actions::hastyTouch, "hastyTouch"},
-	{actions::hastyTouch2, "hastyTouch2"},
 	{actions::byregotsBlessing, "byregotsBlessing"},
 	{actions::preciseTouch, "preciseTouch"},
 	{actions::focusedTouch, "focusedTouch"},
@@ -109,43 +70,22 @@ const std::map<actions, std::string> simpleText = {
 	{actions::prudentTouch, "prudentTouch"},
 	{actions::preparatoryTouch, "preparatoryTouch"},
 	{actions::trainedEye, "trainedEye"},
-	{actions::trainedInstinct, "trainedInstinct"},
 
-	{actions::comfortZone, "comfortZone"},
-	{actions::rumination, "rumination"},
 	{actions::tricksOfTheTrade, "tricksOfTheTrade"},
 
 	{actions::mastersMend, "mastersMend"},
-	{actions::mastersMend2, "mastersMend2"},
 	{actions::wasteNot, "wasteNot"},
-	{actions::wasteNot2, "wasteNot2"},
 	{actions::manipulation, "manipulation"},
-	{actions::manipulation2, "manipulation2"},
 
 	{actions::innerQuiet, "innerQuiet"},
-	{actions::steadyHand, "steadyHand"},
-	{actions::steadyHand2, "steadyHand2"},
+	{actions::reflect, "reflect"},
 	{actions::ingenuity, "ingenuity"},
-	{actions::ingenuity2, "ingenuity2"},
 	{actions::greatStrides, "greatStrides"},
 	{actions::innovation, "innovation"},
-	{actions::makersMark, "makersMark"},
-	{actions::initialPreparations, "initialPreparations"},
 	{actions::nameOfTheElements, "nameOfTheElements"},
-
-	{actions::whistle, "whistle"},
-	{actions::satisfaction, "satisfaction"},
-	{actions::innovativeTouch, "innovativeTouch"},
-	{actions::nymeiasWheel, "nymeiasWheel"},
-	{actions::byregotsMiracle, "byregotsMiracle"},
-	{actions::trainedHand, "trainedHand"},
-	{actions::heartOfTheSpecialist, "heartOfTheCrafter"},
-	{actions::specialtyReinforce, "specialtyReinforce"},
-	{actions::specialtyRefurbish, "specialtyRefurbish"},
-	{actions::specialtyReflect, "specialtyReflect"},
+	{actions::finalAppraisal, "finalAppraisal"},
 
 	{actions::observe, "observe"},
-	{actions::reclaim, "reclaim"},
 	{actions::reuse, "reuse"}
 };
 
@@ -203,35 +143,25 @@ private:
 	int qualityFactor;
 
 	// Buffs
-	int comfortZoneTime = 0;
-	int wasteNotTime = 0;	// Covers wasteNot 1 and 2
+	int muscleMemoryTime = 0;
+	int wasteNotTime = 0;
 	int manipulationTime = 0;
-	int manipulation2Time = 0;
 	int innerQuietStacks = 0;
-	int steadyHandTime = 0;
-	int steadyHand2Time = 0;
 	int ingenuityTime = 0;
-	int ingenuity2Time = 0;
 	int greatStridesTime = 0;
 	int innovationTime = 0;
-	int makersMarkTime = 0;
 	int nameOfTheElementsTime = 0;
 	bool nameOfTheElementsUsed = false;
-	int whistleStacks = 0;
+	int finalAppraisalTime = 0;
 	bool observeCombo = false;	// For Focused combo
-	int heartTime = 0;
-	int heartUses = 0;
 
 	const bool normalLock;
-	bool initialPreparationsActive = false;
-	bool reclaimActive = false;
 	bool reuseActive = false;
-	bool strokeOfGeniusActive = false;
 
 	random& rng;
 
 	// chance == 70 means 70% success and so on
-	inline bool rollPercent(int chance, bool canUseSteadyHand = true) const;
+	inline bool rollPercent(int chance) const;
 
 	void calculateFactors();
 
@@ -256,7 +186,6 @@ private:
 	void endStep();
 
 	void nameOfTheElementsPost();
-	void finishingTouches();
 
 	// both percentages from 0-100
 	static int hqPercentFromQuality(int qualityPercent);
@@ -286,28 +215,20 @@ private:
 	actionResult commonTouch(int cpChange, int efficiency, int successChance, bool doubeDurability = false);
 
 	// Synthesis
-	actionResult basicSynth() { return commonSynth(0, 100, 90); }
-	actionResult standardSynthesis() { return commonSynth(-15, 150, 90); }
-	actionResult flawlessSynthesis();
-	actionResult carefulSynthesis() { return commonSynth(0, 90, 100); }
-	actionResult carefulSynthesis2() { return commonSynth(0, 120, 100); }
-	actionResult carefulSynthesis3() { return commonSynth(-7, 150, 100); }
-	actionResult pieceByPiece();
-	actionResult rapidSynthesis() { return commonSynth(0, 250, 50); }
-	actionResult rapidSynthesis2() { return commonSynth(-12, 300, 60); }
-	actionResult rapidSynthesis3() { return commonSynth(-24, durability >= 20 ? 600 : 200, 60, true); }
+	actionResult basicSynth() { return commonSynth(0, crafter.level >= 31 ? 120: 100, 100); }
+	actionResult carefulSynthesis() { return commonSynth(-7, 150, 100); }
+	actionResult rapidSynthesis() { return commonSynth(0, crafter.level >= 63 ? 500 : 250, 50); }
 	actionResult focusedSynthesis() { return commonSynth(-5, 200, observeCombo ? 100 : 50); }
 	actionResult delicateSynthesis();
 	actionResult intensiveSynthesis();
 	actionResult muscleMemory();
+	void muscleMemoryPost();
 	actionResult brandOfTheElements();
 
 	// Touches
-	actionResult basicTouch() { return commonTouch(-18, 100, 70); }
-	actionResult standardTouch() { return commonTouch(-32, 125, 80); }
-	actionResult advancedTouch() { return commonTouch(-48, 150, 90); }
-	actionResult hastyTouch() { return commonTouch(0, 100, 50); }
-	actionResult hastyTouch2() { return commonTouch(-5, 100, 60); }
+	actionResult basicTouch() { return commonTouch(-18, 100, 100); }
+	actionResult standardTouch() { return commonTouch(-32, 125, 100); }
+	actionResult hastyTouch() { return commonTouch(0, 100, 60); }
 	actionResult byregotsBlessing();
 	actionResult preciseTouch();
 	actionResult focusedTouch() { return commonTouch(-18, 150, observeCombo ? 100 : 50); }
@@ -315,61 +236,33 @@ private:
 	actionResult prudentTouch();
 	actionResult preparatoryTouch();
 	actionResult trainedEye();
-	actionResult trainedInstinct();
 
-	// Buffs
-	actionResult comfortZone();
-	void comfortZonePost();
-	actionResult rumination();
+	// CP
 	actionResult tricksOfTheTrade();
 
 	// Durability
 	actionResult mastersMend();
-	actionResult mastersMend2();
 	actionResult wasteNot();
 	void wasteNotPost();
-	actionResult wasteNot2();
-	void wasteNot2Post();
 	actionResult manipulation();
 	void manipulationPost();
-	actionResult manipulation2();
-	void manipulation2Post();
 
 	// Buffs
 	actionResult innerQuiet();
-	actionResult steadyHand();
-	void steadyHandPost();
-	actionResult steadyHand2();
-	void steadyHand2Post();
+	actionResult reflect();
 	actionResult ingenuity();
 	void ingenuityPost();
-	actionResult ingenuity2();
-	void ingenuity2Post();
 	actionResult greatStrides();
 	void greatStridesPost();
 	actionResult innovation();
-	void innovationPost();		// also for innovativeTouch
-	actionResult makersMark();
-	void makersMarkPost();
-	actionResult initialPreparations();
+	void innovationPost();
 	actionResult nameOfTheElements();
+	actionResult finalAppraisal();
+	void finalAppraisalPost();
 
-	// Specialty Actions
-	actionResult whistle();
-	actionResult satisfaction();
-	actionResult innovativeTouch();
-	actionResult nymeiasWheel();
-	actionResult byregotsMiracle();
-	actionResult trainedHand();
-	actionResult heartOfTheSpecialist();
-	void heartOfTheSpecialistPost();
-	actionResult specialtyReinforce();
-	actionResult specialtyRefurbish();
-	actionResult specialtyReflect();
 
 	actionResult observe();
 	void observePost();
-	actionResult reclaim();
 	actionResult reuse();
 
 public:

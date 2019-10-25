@@ -185,15 +185,6 @@ void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFoo
 		medCraftsmanshipMax = getIntIfExists(d, "/medicine/craftsmanship max");
 	}
 
-	crafter->allLevels[0] = getIntIfExists(d, "/crp/level");
-	crafter->allLevels[1] = getIntIfExists(d, "/bsm/level");
-	crafter->allLevels[2] = getIntIfExists(d, "/arm/level");
-	crafter->allLevels[3] = getIntIfExists(d, "/gsm/level");
-	crafter->allLevels[4] = getIntIfExists(d, "/ltw/level");
-	crafter->allLevels[5] = getIntIfExists(d, "/wvr/level");
-	crafter->allLevels[6] = getIntIfExists(d, "/alc/level");
-	crafter->allLevels[7] = getIntIfExists(d, "/cul/level");
-
 	string prefix;
 	switch (crafter->classKind)
 	{
@@ -229,7 +220,6 @@ void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFoo
 	crafter->craftsmanship = getIntIfExists(d, (prefix + "craftsmanship").c_str());
 	crafter->control = getIntIfExists(d, (prefix + "control").c_str());
 	crafter->CP = getIntIfExists(d, (prefix + "cp").c_str(), -1);
-	crafter->specialist = getBoolIfExists(d, (prefix + "specialist").c_str());
 
 	bitset<4> missingStats;
 	missingStats[0] = crafter->level <= 0 || crafter->level > 80;
@@ -310,11 +300,7 @@ struct options
 	int wiggle;
 	int threads;
 
-	bool useSpecial;
 	bool useTricks;
-	bool useWhistle;
-	bool useHeart;
-	bool countSelfForCrossClass;
 };
 
 void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
@@ -332,11 +318,7 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
 	opts->normalLock = getBoolIfExists(d, "/normal lock");
 	opts->wiggle = getIntIfExists(d, "/wiggle");
 	opts->threads = getIntIfExists(d, "/threads");
-	opts->useSpecial = getBoolIfExists(d, "/use special");
 	opts->useTricks = getBoolIfExists(d, "/use tricks");
-	opts->useHeart = getBoolIfExists(d, "/use heart");
-	opts->useWhistle = getBoolIfExists(d, "/use whistle");
-	opts->countSelfForCrossClass = getBoolIfExists(d, "/count own for cross class");
 
 	bitset<3> missingStats;
 	missingStats[0] = opts->simsPerSequence <= 0;
@@ -490,21 +472,20 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 }
 
 int performSolve(const crafterStats& crafter, const recipeStats& recipe,
- const craft::sequenceType& sequence,
+	const craft::sequenceType& sequence,
 	goalType goal,
- int progressWiggle,
+	int progressWiggle,
 	int initialQuality,
- bool normalLock,
+	bool normalLock,
 	int threads,
- int simsPerSequence,
+	int simsPerSequence,
 	int generations,
- int population,
- 
+	int population,
 	strategy strat,
-	bool countSelfCrossClass, bool useSpecial, bool useTricks, bool useWhistle, bool useHeart, bool gatherStats)
+	bool useTricks, bool gatherStats)
 {
 	solver solve(crafter, recipe, sequence, goal, progressWiggle, initialQuality, threads, normalLock,
-		strat, population, countSelfCrossClass, useSpecial, useTricks, useWhistle, useHeart, gatherStats);
+		strat, population, useTricks, gatherStats);
 	
 	solver::trial result = solve.executeSolver(simsPerSequence, generations, solveUpdate);
 	solver::netResult outcome = result.outcome;
@@ -582,7 +563,7 @@ int main(int argc, char* argv[])
 	commands command;
 
 	crafterStats crafter;
-	crafter.classKind = classes::Any;
+	crafter.classKind = classes::invalid;
 
 	recipeStats recipe;
 	int initialQuality = 0;
@@ -770,7 +751,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	if (crafter.classKind == classes::Any)
+	if (crafter.classKind == classes::invalid)
 	{
 		cerr << "-j argument required\n";
 		usage();
@@ -820,7 +801,7 @@ int main(int argc, char* argv[])
 		if (command == commands::solve)
 		{	
 			craft::sequenceType seedSorted = seed;
-			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useWhistle, opts.useTricks, opts.useSpecial, opts.useHeart, true);
+			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useTricks, true);
 			sort(available.begin(), available.end());
 			sort(seedSorted.begin(), seedSorted.end());
 			// available is already unique
@@ -842,6 +823,6 @@ int main(int argc, char* argv[])
 	case commands::solve:
 		signal(SIGINT, handler);
 		return performSolve(crafter, recipe, seed, goal, opts.wiggle, initialQuality, opts.normalLock, opts.threads,
-			opts.simsPerSequence, opts.generations, opts.population, strat, opts.countSelfForCrossClass, opts.useSpecial, opts.useTricks, opts.useWhistle, opts.useHeart, gatherStatistics);
+			opts.simsPerSequence, opts.generations, opts.population, strat, opts.useTricks, gatherStatistics);
 	}
 }

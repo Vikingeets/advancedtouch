@@ -12,8 +12,7 @@ enum class classes
 	WVR = 5,
 	ALC = 6,
 	CUL = 7,
-	Any,		// Any and Specialist used for ability filtering
-	Specialist
+	invalid
 };
 
 using crafterLevels = std::array<int, 8>;
@@ -26,8 +25,6 @@ struct crafterStats
 	int control;
 	int CP;
 	classes classKind;	// The crafter's class
-	bool specialist;
-	crafterLevels allLevels;	// Used to determine cross-class abilities
 };
 
 struct recipeStats
