@@ -62,7 +62,7 @@ void craft::increaseProgress(int efficiency)
 	// ordering?
 	if (innovationTime > 0)
 	{
-		efficiency += 20;
+		efficiency += efficiency / 5;
 	}
 
 	float baseProgress = (crafter.craftsmanship * 21.f) / 100.f + 2.f;
@@ -94,7 +94,7 @@ void craft::increaseQuality(int efficiency)
 	// which order does this occur with other efficiency buffs?
 	if (innovationTime > 0)
 	{
-		efficiency += 20;
+		efficiency += efficiency / 5;
 	}
 
 	int control = crafter.control + min((max(0, innerQuietStacks - 1) * crafter.control) / 5, 3000);
@@ -427,7 +427,7 @@ actionResult craft::delicateSynthesis()
 actionResult craft::intensiveSynthesis()
 {
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
-	return commonSynth(-12, 300, 80);
+	return commonSynth(-12, 300, 100);
 }
 
 // 5.1: Unclear, double or +100%? DE suggests double
@@ -533,7 +533,7 @@ actionResult craft::wasteNot()
 
 void craft::wasteNotPost()
 {
-	wasteNotTime = 4;
+	wasteNotTime = 8;
 }
 
 actionResult craft::manipulation()
@@ -568,7 +568,7 @@ actionResult craft::reflect()
 {
 	if (step != 1) return actionResult::failHardUnavailable;
 
-	innerQuietStacks = min(innerQuietStacks + 3, 11);
+	innerQuietStacks = 3;
 
 	return actionResult::success;
 }
