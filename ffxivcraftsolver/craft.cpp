@@ -634,7 +634,6 @@ actionResult craft::reuse()
 	return actionResult::success;
 }
 
-
 actionResult craft::performOne(actions action)
 {
 	switch (action)

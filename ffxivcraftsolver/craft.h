@@ -46,7 +46,6 @@ enum class actions
 	finalAppraisal,
 
 	observe,
-	reclaim,
 	reuse
 };
 
@@ -88,6 +87,7 @@ const std::map<actions, std::string> simpleText = {
 	{actions::observe, "observe"},
 	{actions::reuse, "reuse"}
 };
+
 
 class craft
 {
@@ -138,7 +138,6 @@ private:
 
 	condition cond;
 
-//	int effectiveLevel;		// Adjusted with Ingenuity
 	int progressFactor;
 	int qualityFactor;
 

@@ -78,7 +78,6 @@ int actionTime(actions act)
 	case actions::innovation:
 	case actions::manipulation:
 	case actions::nameOfTheElements:
-	case actions::reclaim:
 	case actions::wasteNot:
 	case actions::reuse:
 		return 2;
@@ -193,7 +192,6 @@ int solver::actionLevel(actions action)
 		return 37;
 	case actions::finalAppraisal: return 42;
 	case actions::byregotsBlessing:
-	case actions::reclaim:
 		return 50;
 	case actions::preciseTouch:
 		return 53;
