@@ -53,6 +53,7 @@ const vector<actions> allActions = {
 
 	actions::mastersMend,
 	actions::wasteNot,
+	actions::wasteNot2,
 	actions::manipulation,
 
 	actions::innerQuiet,
@@ -191,6 +192,7 @@ int solver::actionLevel(actions action)
 	case actions::brandOfTheElements:
 		return 37;
 	case actions::finalAppraisal: return 42;
+	case actions::wasteNot2: return 47;
 	case actions::byregotsBlessing:
 		return 50;
 	case actions::preciseTouch:

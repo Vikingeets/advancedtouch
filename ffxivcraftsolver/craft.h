@@ -34,6 +34,7 @@ enum class actions
 	// Durability
 	mastersMend,
 	wasteNot,
+	wasteNot2,
 	manipulation,
 
 	// Buffs
@@ -74,6 +75,7 @@ const std::map<actions, std::string> simpleText = {
 
 	{actions::mastersMend, "mastersMend"},
 	{actions::wasteNot, "wasteNot"},
+	{actions::wasteNot2, "wasteNot2"},
 	{actions::manipulation, "manipulation"},
 
 	{actions::innerQuiet, "innerQuiet"},
@@ -243,6 +245,8 @@ private:
 	actionResult mastersMend();
 	actionResult wasteNot();
 	void wasteNotPost();
+	actionResult wasteNot2();
+	void wasteNot2Post();
 	actionResult manipulation();
 	void manipulationPost();
 

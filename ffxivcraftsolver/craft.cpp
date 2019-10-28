@@ -533,6 +533,18 @@ actionResult craft::wasteNot()
 
 void craft::wasteNotPost()
 {
+	wasteNotTime = 4;
+}
+
+actionResult craft::wasteNot2()
+{
+	if (!changeCP(-98)) return actionResult::failNoCP;
+
+	return actionResult::success;
+}
+
+void craft::wasteNot2Post()
+{
 	wasteNotTime = 8;
 }
 
@@ -662,6 +674,7 @@ actionResult craft::performOne(actions action)
 
 	case actions::mastersMend: return mastersMend();
 	case actions::wasteNot: return wasteNot();
+	case actions::wasteNot2: return wasteNot2();
 	case actions::manipulation: return manipulation();
 
 	case actions::innerQuiet: return innerQuiet();
@@ -686,6 +699,7 @@ void craft::performOnePost(actions action)
 	{
 	case actions::muscleMemory: return muscleMemoryPost();
 	case actions::wasteNot: return wasteNotPost();
+	case actions::wasteNot2: return wasteNot2Post();
 	case actions::manipulation: return manipulationPost();
 	case actions::ingenuity: return ingenuityPost();
 	case actions::greatStrides: return greatStridesPost();
