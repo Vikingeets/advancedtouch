@@ -53,16 +53,17 @@ void craft::calculateFactors()
 
 void craft::increaseProgress(int efficiency)
 {
+	int buffedEfficiency = efficiency;
+
 	if (muscleMemoryTime > 0)
 	{
-		efficiency *= 2;
+		buffedEfficiency += efficiency;
 		muscleMemoryTime = 0;
 	}
 
-	// ordering?
 	if (innovationTime > 0)
 	{
-		efficiency += efficiency / 5;
+		buffedEfficiency += efficiency / 5;
 	}
 
 	float baseProgress = (crafter.craftsmanship * 21.f) / 100.f + 2.f;
@@ -71,7 +72,7 @@ void craft::increaseProgress(int efficiency)
 
 	int progressIncrease = static_cast<int>(baseProgress * suggestionMod * differenceMod);
 
-	progress += (progressIncrease * efficiency) / 100;
+	progress += (progressIncrease * buffedEfficiency) / 100;
 
 	if (finalAppraisalTime > 0 && progress >= recipe.difficulty)
 	{
@@ -84,17 +85,17 @@ void craft::increaseProgress(int efficiency)
 
 void craft::increaseQuality(int efficiency)
 {
+	int buffedEfficiency = efficiency;
+
 	if (greatStridesTime > 0)
 	{
-		efficiency += 100;
+		buffedEfficiency += efficiency;
 		greatStridesTime = 0;
 	}
 
-	// 5.1: innovation +20 or *1.2?
-	// which order does this occur with other efficiency buffs?
 	if (innovationTime > 0)
 	{
-		efficiency += efficiency / 5;
+		buffedEfficiency += efficiency / 5;
 	}
 
 	int control = crafter.control + min((max(0, innerQuietStacks - 1) * crafter.control) / 5, 3000);
@@ -122,7 +123,7 @@ void craft::increaseQuality(int efficiency)
 
 	int qualityIncrease = static_cast<int>(baseQuality * suggestionMod * differenceMod * conditionMod);
 
-	quality += (qualityIncrease * efficiency) / 100;
+	quality += (qualityIncrease * buffedEfficiency) / 100;
 
 	if (innerQuietStacks > 0 && innerQuietStacks < 11) innerQuietStacks++;
 
@@ -253,7 +254,7 @@ actionResult craft::brandOfTheElements()
 actionResult craft::nameOfTheElements()
 {
 	if (nameOfTheElementsUsed) return actionResult::failHardUnavailable;
-	if (!changeCP(-15)) return actionResult::failNoCP;
+	if (!changeCP(-30)) return actionResult::failNoCP;
 
 	nameOfTheElementsUsed = true;
 	return actionResult::success;
@@ -264,10 +265,10 @@ void craft::nameOfTheElementsPost()
 	nameOfTheElementsTime = 3;
 }
 
-// 5.1: CP cost unknown; is refreshing allowed?
 actionResult craft::finalAppraisal()
 {
-	if (!changeCP(-50)) return actionResult::failNoCP;
+	if (!changeCP(-1)) return actionResult::failNoCP;
+	if (finalAppraisalTime > 0) return actionResult::failHardUnavailable;
 	return actionResult::success;
 }
 
@@ -430,7 +431,6 @@ actionResult craft::intensiveSynthesis()
 	return commonSynth(-12, 300, 100);
 }
 
-// 5.1: Unclear, double or +100%? DE suggests double
 actionResult craft::muscleMemory()
 {
 	if (step != 1) return actionResult::failHardUnavailable;
@@ -467,7 +467,7 @@ actionResult craft::patientTouch()
 {
 	actionResult output = commonTouch(-6, 100, 50);
 	if(output == actionResult::success && innerQuietStacks > 0 && innerQuietStacks < 11)
-		innerQuietStacks = max((innerQuietStacks - 1) * 2 + 1, 11);	// 5.1: Double displayed, or double increased?
+		innerQuietStacks = max(innerQuietStacks * 2, 11);	// 5.1: Double displayed, or double increased?
 	else if(output == actionResult::failRNG) innerQuietStacks -= innerQuietStacks / 2;
 
 	return output;
@@ -476,7 +476,7 @@ actionResult craft::patientTouch()
 actionResult craft::prudentTouch()
 {
 	if (wasteNotTime > 0) return actionResult::failHardUnavailable;
-	if (!changeCP(-21)) return actionResult::failNoCP;
+	if (!changeCP(-25)) return actionResult::failNoCP;
 
 	increaseQuality(100);
 	changeDurability(-5);
@@ -526,6 +526,7 @@ actionResult craft::mastersMend()
 
 actionResult craft::wasteNot()
 {
+	if (wasteNotTime > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-56)) return actionResult::failNoCP;
 
 	return actionResult::success;
@@ -538,6 +539,7 @@ void craft::wasteNotPost()
 
 actionResult craft::wasteNot2()
 {
+	if (wasteNotTime > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-98)) return actionResult::failNoCP;
 
 	return actionResult::success;
@@ -575,10 +577,10 @@ actionResult craft::innerQuiet()
 	return actionResult::success;
 }
 
-// 5.1: something is weird here. IP is gone. Is this first action?
 actionResult craft::reflect()
 {
 	if (step != 1) return actionResult::failHardUnavailable;
+	if (!changeCP(-24)) return actionResult::failNoCP;
 
 	innerQuietStacks = 3;
 
@@ -588,7 +590,8 @@ actionResult craft::reflect()
 // 5.1: Effects very much unknown again
 actionResult craft::ingenuity()
 {
-	if (!changeCP(-24)) return actionResult::failNoCP;
+	if (ingenuityTime > 0) return actionResult::failHardUnavailable;
+	if (!changeCP(-22)) return actionResult::failNoCP;
 	
 	ingenuityTime = 0;
 	return actionResult::success;
@@ -614,6 +617,7 @@ void craft::greatStridesPost()
 
 actionResult craft::innovation()
 {
+	if (innovationTime > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-18)) return actionResult::failNoCP;
 
 	return actionResult::success;
