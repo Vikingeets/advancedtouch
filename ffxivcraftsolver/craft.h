@@ -261,7 +261,6 @@ private:
 	void innovationPost();
 	actionResult nameOfTheElements();
 	actionResult finalAppraisal();
-	void finalAppraisalPost();
 
 
 	actionResult observe();

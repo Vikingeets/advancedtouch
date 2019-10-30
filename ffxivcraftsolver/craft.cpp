@@ -269,13 +269,9 @@ actionResult craft::finalAppraisal()
 {
 	if (!changeCP(-1)) return actionResult::failNoCP;
 	if (finalAppraisalTime > 0) return actionResult::failHardUnavailable;
+
+	finalAppraisalTime = 5;	// here and not in a post since FA doesn't endStep
 	return actionResult::success;
-}
-
-void craft::finalAppraisalPost()
-{
-	finalAppraisalTime = 5;
-
 }
 
 const map<int, int> qualityPercentToHQPercent = {
@@ -467,7 +463,7 @@ actionResult craft::patientTouch()
 {
 	actionResult output = commonTouch(-6, 100, 50);
 	if(output == actionResult::success && innerQuietStacks > 0 && innerQuietStacks < 11)
-		innerQuietStacks = max(innerQuietStacks * 2, 11);	// 5.1: Double displayed, or double increased?
+		innerQuietStacks = max(innerQuietStacks * 2, 11);
 	else if(output == actionResult::failRNG) innerQuietStacks -= innerQuietStacks / 2;
 
 	return output;
@@ -710,8 +706,6 @@ void craft::performOnePost(actions action)
 	case actions::innovation: return innovationPost();
 	case actions::nameOfTheElements:
 		return nameOfTheElementsPost();
-	case actions::finalAppraisal:
-		return finalAppraisalPost();
 	case actions::observe: return observePost();
 	default: return;
 	}
@@ -757,6 +751,8 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 			craftResult.invalidActions++;
 		if (result != actionResult::success && result != actionResult::failRNG)
 			continue;
+
+		if (*it == actions::finalAppraisal) continue;	// since it doesn't tick
 
 		if (durability <= 0)
 			break;
