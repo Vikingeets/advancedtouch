@@ -146,6 +146,7 @@ private:
 	// Buffs
 	int muscleMemoryTime = 0;
 	int wasteNotTime = 0;
+	int wasteNot2Time = 0;
 	int manipulationTime = 0;
 	int innerQuietStacks = 0;
 	int ingenuityTime = 0;
@@ -180,7 +181,7 @@ private:
 
 	void hitDurability(int amount = 10)
 	{
-		return changeDurability(wasteNotTime > 0 ? -amount / 2 : -amount);
+		return changeDurability((wasteNotTime > 0 || wasteNot2Time > 0) ? -amount / 2 : -amount);
 	}
 
 	condition getNextCondition(condition current);
@@ -208,7 +209,6 @@ public:
 		calculateFactors();
 	}
 
-	bool checkBuffsValid() const;
 	std::string getState() const;
 
 private:

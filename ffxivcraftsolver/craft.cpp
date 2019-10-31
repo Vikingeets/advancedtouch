@@ -220,6 +220,7 @@ void craft::endStep()
 {
 	muscleMemoryTime--;
 	wasteNotTime--;
+	wasteNot2Time--;
 	if(manipulationTime > 0)
 	{
 		changeDurability(5);
@@ -296,16 +297,6 @@ int craft::hqPercentFromQuality(int qualityPercent)
 	return it->second;
 }
 
-bool craft::checkBuffsValid() const
-{
-	return
-		wasteNotTime >= 0 &&
-		manipulationTime >= 0 &&
-		innerQuietStacks >= 0 &&
-		innerQuietStacks <= 11 &&
-		ingenuityTime >= 0;
-}
-
 string stateBuffList(const string& name, int variable, bool* anybuffs)
 {
 	if (variable <= 0) return string();
@@ -346,6 +337,7 @@ string craft::getState() const
 	bool anybuffs = false;
 	output += stateBuffList("Final Appraisal: ", finalAppraisalTime, &anybuffs);
 	output += stateBuffList("Waste Not: ", wasteNotTime, &anybuffs);
+	output += stateBuffList("Waste Not 2: ", wasteNot2Time, &anybuffs);
 	output += stateBuffList("Manipulation: ", manipulationTime, &anybuffs);
 	output += stateBuffList("Inner Quiet: ", innerQuietStacks, &anybuffs);
 	output += stateBuffList("Ingenuity: ", ingenuityTime, &anybuffs);
@@ -471,7 +463,7 @@ actionResult craft::patientTouch()
 
 actionResult craft::prudentTouch()
 {
-	if (wasteNotTime > 0) return actionResult::failHardUnavailable;
+	if (wasteNotTime > 0 || wasteNot2Time > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-25)) return actionResult::failNoCP;
 
 	increaseQuality(100);
@@ -531,11 +523,12 @@ actionResult craft::wasteNot()
 void craft::wasteNotPost()
 {
 	wasteNotTime = 4;
+	wasteNot2Time = 0;
 }
 
 actionResult craft::wasteNot2()
 {
-	if (wasteNotTime > 0) return actionResult::failHardUnavailable;
+	if (wasteNot2Time > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-98)) return actionResult::failNoCP;
 
 	return actionResult::success;
@@ -543,7 +536,8 @@ actionResult craft::wasteNot2()
 
 void craft::wasteNot2Post()
 {
-	wasteNotTime = 8;
+	wasteNotTime = 0;
+	wasteNot2Time = 8;
 }
 
 actionResult craft::manipulation()
