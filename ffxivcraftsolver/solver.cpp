@@ -330,18 +330,15 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 		switch (goal)
 		{
 		case goalType::quality:
-			if (a.outcome.hqPercent == 100 * simulationsPerTrial && b.outcome.hqPercent == 100 * simulationsPerTrial) break;	// i.e. jump to nqOnly for length comparison
-			else return a.outcome.hqPercent > b.outcome.hqPercent;
+			if (a.outcome.hqPercent == 100 * simulationsPerTrial && b.outcome.hqPercent == 100 * simulationsPerTrial)
+				break;	// i.e. go to nqOnly for length comparison
+			else return a.outcome.quality > b.outcome.quality;
+		case goalType::collectability:
+			if (a.outcome.collectableGoalsHit == simulationsPerTrial && b.outcome.collectableGoalsHit == simulationsPerTrial)
+				break;
+			else return a.outcome.quality > b.outcome.quality;
 		case goalType::maxQuality:
 			return a.outcome.quality > b.outcome.quality;
-		case goalType::collectability:
-			if (a.outcome.collectableGoalsHit != b.outcome.collectableGoalsHit)
-				return a.outcome.collectableGoalsHit > b.outcome.collectableGoalsHit;
-			else if (a.outcome.collectableGoalsHit == 0 && b.outcome.collectableGoalsHit == 0 &&	// if neither had any hits,
-				a.outcome.quality != b.outcome.quality &&									// rank on quality
-				!(a.outcome.successes == 0 ||  b.outcome.successes == 0))					// unless one didn't succeed at all. the nqOnly section will handle that
-				return a.outcome.quality > b.outcome.quality;
-			else break;																		// and on a tie, head on down to rank on length
 		}
 //		[[fallthrough]]		// quality is tied
 	case strategy::nqOnly:
