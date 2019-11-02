@@ -31,7 +31,7 @@ void craft::calculateFactors()
 		else
 		{
 			if (recipe.rLevel >= 390)
-				levelDifference = (2 * recipe.rLevel) / 43;
+				levelDifference += (2 * recipe.rLevel) / 43;
 			else
 			{
 				if (recipe.rLevel == 290)
