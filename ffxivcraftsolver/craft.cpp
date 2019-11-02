@@ -31,17 +31,17 @@ void craft::calculateFactors()
 		else
 		{
 			if (recipe.rLevel >= 390)
-				levelDifference += (2 * recipe.rLevel) / 43;
+				levelDifference += recipe.rLevel / 18;
 			else
 			{
 				if (recipe.rLevel == 290)
 					levelDifference += 10;
 				else if (recipe.rLevel == 300)
 					levelDifference += 9;
-				else if (recipe.rLevel >= 120)
-					levelDifference += 11;
+				else if (recipe.rLevel >= 110)
+					levelDifference += 40;
 				else
-					levelDifference += 5;
+					levelDifference += 8;
 			}
 			levelDifference = max(levelDifference, -1 * getStars(recipe.rLevel));
 		}

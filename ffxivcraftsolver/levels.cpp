@@ -165,7 +165,7 @@ int getStars(int rLvl)
 
 	if (rLvl < 1) rLvl = 1;
 	auto it = recipeDataTable.find(rLvl);
-	if (it == recipeDataTable.end()) return 5;
+	if (it == recipeDataTable.end()) return 4;
 
 	return it->second.stars;
 }
@@ -195,7 +195,7 @@ int getProgressFactor(int difference)
 {
 	assert(!differenceDataTable.empty());
 
-	if (difference < -20) difference = -20;
+	if (difference < -30) difference = -20;
 	else if (difference > 49) difference = 49;
 
 	auto it = differenceDataTable.find(difference);
@@ -208,7 +208,7 @@ int getQualityFactor(int difference)
 {
 	assert(!differenceDataTable.empty());
 
-	if (difference < -20) difference = -20;
+	if (difference < -30) difference = -20;
 	else if (difference > 49) difference = 49;
 
 	auto it = differenceDataTable.find(difference);
