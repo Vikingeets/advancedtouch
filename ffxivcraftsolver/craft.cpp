@@ -416,7 +416,7 @@ actionResult craft::delicateSynthesis()
 actionResult craft::intensiveSynthesis()
 {
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
-	return commonSynth(-12, 300, 100);
+	return commonSynth(-6, 300, 100);
 }
 
 actionResult craft::muscleMemory()
