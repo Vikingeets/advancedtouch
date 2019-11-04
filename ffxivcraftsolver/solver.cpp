@@ -258,8 +258,8 @@ solver::solver(const crafterStats& c,
 	trials(population),
 	simResults(population),
 	sequenceCounters(population),
-	availableActions(getAvailable(c, r, uT, true)),
-	availableWithoutFirst(getAvailable(c, r, uT, false)),
+	availableActions(getAvailable(c, r, uT && !nLock, true)),
+	availableWithoutFirst(getAvailable(c, r, uT && !nLock, false)),
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);
