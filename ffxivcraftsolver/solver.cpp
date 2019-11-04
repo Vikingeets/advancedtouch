@@ -336,7 +336,9 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 		case goalType::collectability:
 			if (a.outcome.collectableGoalsHit == simulationsPerTrial && b.outcome.collectableGoalsHit == simulationsPerTrial)
 				break;
-			else return a.outcome.quality > b.outcome.quality;
+			else if (a.outcome.collectableGoalsHit != b.outcome.collectableGoalsHit)
+				return a.outcome.collectableGoalsHit > b.outcome.collectableGoalsHit;
+			else break;
 		case goalType::maxQuality:
 			return a.outcome.quality > b.outcome.quality;
 		}
