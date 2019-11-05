@@ -577,7 +577,6 @@ actionResult craft::reflect()
 	return actionResult::success;
 }
 
-// 5.1: Effects very much unknown again
 actionResult craft::ingenuity()
 {
 	if (ingenuityTime > 0) return actionResult::failHardUnavailable;

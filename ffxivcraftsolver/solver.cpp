@@ -134,7 +134,7 @@ bool isFirstAction(actions action)
 	switch (action)
 	{
 	case actions::muscleMemory:
-	case actions::reflect:	// 5.1: Is reflect really first action?
+	case actions::reflect:
 	case actions::trainedEye:
 		return true;
 	default:
