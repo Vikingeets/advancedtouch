@@ -570,11 +570,11 @@ actionResult craft::innerQuiet()
 actionResult craft::reflect()
 {
 	if (step != 1) return actionResult::failHardUnavailable;
-	if (!changeCP(-24)) return actionResult::failNoCP;
+	actionResult output = commonTouch(-24, 100, 100);
 
-	innerQuietStacks = 3;
+	if(output == actionResult::success) innerQuietStacks = 3;
 
-	return actionResult::success;
+	return output;
 }
 
 actionResult craft::ingenuity()
