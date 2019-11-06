@@ -631,7 +631,7 @@ void craft::observePost()
 actionResult craft::reuse()
 {
 	if (reuseActive || quality < recipe.nominalQuality) return actionResult::failHardUnavailable;
-	if (rollPercent(75)) return actionResult::failSoftUnavailable;
+	if (rollPercent(67)) return actionResult::failSoftUnavailable;
 	if (!changeCP(-60)) return actionResult::failNoCP;
 
 	reuseActive = true;
