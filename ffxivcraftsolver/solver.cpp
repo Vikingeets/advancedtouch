@@ -332,6 +332,8 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 		case goalType::quality:
 			if (a.outcome.hqPercent == 100 * simulationsPerTrial && b.outcome.hqPercent == 100 * simulationsPerTrial)
 				break;	// i.e. go to nqOnly for length comparison
+			else if (a.outcome.hqPercent != b.outcome.hqPercent)
+				return a.outcome.hqPercent > b.outcome.hqPercent;
 			else return a.outcome.quality > b.outcome.quality;
 		case goalType::collectability:
 			if (a.outcome.collectableGoalsHit == simulationsPerTrial && b.outcome.collectableGoalsHit == simulationsPerTrial)
