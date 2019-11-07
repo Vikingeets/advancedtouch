@@ -455,7 +455,7 @@ actionResult craft::patientTouch()
 {
 	actionResult output = commonTouch(-6, 100, 50);
 	if(output == actionResult::success && innerQuietStacks > 0 && innerQuietStacks < 11)
-		innerQuietStacks = max(innerQuietStacks * 2, 11);
+		innerQuietStacks = max((innerQuietStacks - 1) * 2, 11);
 	else if(output == actionResult::failRNG) innerQuietStacks -= innerQuietStacks / 2;
 
 	return output;
