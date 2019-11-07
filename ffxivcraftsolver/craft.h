@@ -167,7 +167,7 @@ private:
 
 	void calculateFactors();
 
-	void increaseProgress(int efficiency);
+	void increaseProgress(int efficiency, bool isBrand = false);
 	void increaseQuality(int efficiency);
 
 	// Negative amount to deduct, positive to add. Returns false if not enough CP (will not deduct if so)

@@ -51,7 +51,7 @@ void craft::calculateFactors()
 	qualityFactor = getQualityFactor(levelDifference);
 }
 
-void craft::increaseProgress(int efficiency)
+void craft::increaseProgress(int efficiency, bool isBrand)
 {
 	int buffedEfficiency = efficiency;
 
@@ -64,6 +64,11 @@ void craft::increaseProgress(int efficiency)
 	if (innovationTime > 0)
 	{
 		buffedEfficiency += efficiency / 5;
+	}
+
+	if (isBrand && nameOfTheElementsTime > 0)
+	{
+		buffedEfficiency += min(2 * (100 - 100 * progress / recipe.difficulty), 200);
 	}
 
 	float baseProgress = (crafter.craftsmanship * 21.f) / 100.f + 2.f;
@@ -245,11 +250,11 @@ void craft::endStep()
 
 actionResult craft::brandOfTheElements()
 {
-	int efficiency = 100;
-	if (nameOfTheElementsTime > 0)
-		efficiency += min(2 * (100 - 100 * progress / recipe.difficulty), 200);
+	if (!changeCP(-6)) return actionResult::failNoCP;
+	
+	increaseProgress(100, true);
 
-	return commonSynth(-6, efficiency, 100);
+	return actionResult::success;
 }
 
 actionResult craft::nameOfTheElements()
