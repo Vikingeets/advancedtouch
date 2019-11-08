@@ -422,6 +422,7 @@ actionResult craft::delicateSynthesis()
 
 actionResult craft::intensiveSynthesis()
 {
+	if (step == 1) return actionResult::failHardUnavailable;
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
 	return commonSynth(-6, 300, 100);
 }
@@ -452,6 +453,7 @@ actionResult craft::byregotsBlessing()
 
 actionResult craft::preciseTouch()
 {
+	if (step == 1) return actionResult::failHardUnavailable;
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
 	actionResult output = commonTouch(-18, 150, 100);
 	if (output == actionResult::success && innerQuietStacks >= 1 && innerQuietStacks < 11) innerQuietStacks++;
@@ -499,6 +501,7 @@ CP
 
 actionResult craft::tricksOfTheTrade()
 {
+	if (step == 1) return actionResult::failHardUnavailable;
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
 
 	changeCP(20);
