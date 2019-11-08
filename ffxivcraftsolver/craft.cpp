@@ -254,6 +254,8 @@ actionResult craft::brandOfTheElements()
 	
 	increaseProgress(100, true);
 
+	hitDurability();
+
 	return actionResult::success;
 }
 
