@@ -782,7 +782,7 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 	switch (goal)
 	{
 	case goalType::quality:
-		craftResult.hqPercent = hqPercentFromQuality((quality * 100) / recipe.quality);
+		craftResult.hqPercent = hqPercentFromQuality((quality * 100) / recipe.nominalQuality);
 		break;
 	case goalType::maxQuality:
 		break;
