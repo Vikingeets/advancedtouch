@@ -143,7 +143,7 @@ bool isFirstAction(actions action)
 }
 
 // Would return a set, but needs random access iterators for the mutator
-vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool includeFirst)
+vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool useReuse, bool includeFirst)
 {
 	vector<actions> output;
 	for(actions action : allActions)
@@ -152,6 +152,7 @@ vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeSt
 		if (actionLevel(action) > crafter.level) continue;
 
 		if (!useTricks && action == actions::tricksOfTheTrade) continue;
+		if (!useReuse && action == actions::reuse) continue;
 
 		if (!includeFirst && isFirstAction(action))
 			continue;
@@ -258,8 +259,8 @@ solver::solver(const crafterStats& c,
 	trials(population),
 	simResults(population),
 	sequenceCounters(population),
-	availableActions(getAvailable(c, r, uT && !nLock, true)),
-	availableWithoutFirst(getAvailable(c, r, uT && !nLock, false)),
+	availableActions(getAvailable(c, r, uT && !nLock, goal != goalType::collectability || r.quality * 10 > r.nominalQuality * 9, true)),
+	availableWithoutFirst(getAvailable(c, r, uT && !nLock, goal != goalType::collectability || r.quality * 10 > r.nominalQuality * 9, false)),
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);

@@ -114,7 +114,7 @@ private:
 	bool compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial);
 
 public:
-	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool includeFirst);
+	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool useReuse, bool includeFirst);
 
 	static int actionLevel(actions action);
 
