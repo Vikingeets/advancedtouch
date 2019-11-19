@@ -407,6 +407,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, so
 		nth_element(beginPos, twoStart, eliminateStart, comp);
 		nth_element(beginPos, oneStart, twoStart, comp);
 		nth_element(beginPos, preserveStart, oneStart, comp);
+		nth_element(beginPos, beginPos, preserveStart, comp);
 
 		int uniquePopulation = 0;
 		if (gatherStatistics)
