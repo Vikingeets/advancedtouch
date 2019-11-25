@@ -592,7 +592,6 @@ actionResult craft::ingenuity()
 	if (ingenuityTime > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-22)) return actionResult::failNoCP;
 	
-	ingenuityTime = 0;
 	return actionResult::success;
 }
 
