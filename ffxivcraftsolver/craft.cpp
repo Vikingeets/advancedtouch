@@ -491,7 +491,7 @@ actionResult craft::trainedEye()
 {
 	if (step != 1 || crafter.level < rlvlToMain(recipe.rLevel) + 10) return actionResult::failHardUnavailable;
 	if (!changeCP(-250)) return actionResult::failNoCP;
-	quality = recipe.nominalQuality;
+	quality += recipe.nominalQuality;
 	return actionResult::success;
 }
 
