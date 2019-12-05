@@ -43,8 +43,8 @@ struct differenceData
 };
 
 // Accessed by multiple threads, but only written before they are started
-map<int32_t, recipeData> recipeDataTable;
-map<int16_t, differenceData> differenceDataTable;
+unordered_map<int32_t, recipeData> recipeDataTable;
+unordered_map<int16_t, differenceData> differenceDataTable;
 
 void populateRecipeTable()
 {
@@ -195,7 +195,7 @@ int getProgressFactor(int difference)
 {
 	assert(!differenceDataTable.empty());
 
-	if (difference < -30) difference = -20;
+	if (difference < -30) difference = -30;
 	else if (difference > 49) difference = 49;
 
 	auto it = differenceDataTable.find(difference);
@@ -208,7 +208,7 @@ int getQualityFactor(int difference)
 {
 	assert(!differenceDataTable.empty());
 
-	if (difference < -30) difference = -20;
+	if (difference < -30) difference = -30;
 	else if (difference > 49) difference = 49;
 
 	auto it = differenceDataTable.find(difference);
