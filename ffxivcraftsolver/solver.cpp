@@ -424,8 +424,8 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 	if(strat != strategy::nqOnly)
 	{
 		const int superiorThreshhold = 105;	// percent plus 100
-		int aQuality = min(a.outcome.quality, recipe.nominalQuality);
-		int bQuality = min(b.outcome.quality, recipe.nominalQuality);
+		int aQuality = min(a.outcome.quality, recipe.nominalQuality * simulationsPerTrial);
+		int bQuality = min(b.outcome.quality, recipe.nominalQuality * simulationsPerTrial);
 
 		int greaterQuality = max(aQuality, bQuality);
 		int lesserQuality = min(aQuality, bQuality);
