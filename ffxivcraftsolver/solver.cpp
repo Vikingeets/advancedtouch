@@ -84,6 +84,7 @@ public:
 void resultCache::addToCache(solver::trial entry)
 {
 	if (entry.sequence.empty()) return;
+	entry.sequence.shrink_to_fit();
 	cacheData.push_front(entry);
 	auto it = cacheData.begin();
 	cacheHash.insert({ entry.sequence, it });
