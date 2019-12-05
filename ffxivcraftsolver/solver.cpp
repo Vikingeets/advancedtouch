@@ -545,6 +545,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		nth_element(beginPos, beginPos, preserveStart, comp);
 
 		int uniquePopulation = 0;
+		int cacheHits = 0;
 		if (gatherStatistics)
 		{
 			set<craft::sequenceType> uniques;
@@ -553,9 +554,10 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 				uniques.insert(trial.sequence);
 			}
 			uniquePopulation = static_cast<int>(uniques.size());
+			cacheHits = count(cached.begin(), cached.end(), true);
 		}
 
-		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, trials.front().outcome, uniquePopulation))
+		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, trials.front(), uniquePopulation, cacheHits))
 			break;
 
 		if(maxCacheSize > 0) cache.populateCache(trials);

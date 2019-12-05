@@ -433,7 +433,7 @@ int performMulti(const crafterStats& crafter, const recipeStats& recipe, const c
 	return 0;
 }
 
-bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalType goal, strategy strat, solver::netResult status, int uniquePopulation)
+bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalType goal, strategy strat, solver::trial status, int uniquePopulation, int cacheHits)
 {
 	if (termFlag) return false;
 
@@ -442,29 +442,31 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 	if (chrono::steady_clock::now() < nextUpdate) return true;
 
 	cout << "Generation " << currentGeneration << "/" << generations << ", " <<
-		status.successes * 100 / simsPerTrial <<
+		status.outcome.successes * 100 / simsPerTrial <<
 		"% successes, ";
 	if (strat != strategy::nqOnly)
 	{
 		switch (goal)
 		{
 		case goalType::quality:
-			cout << status.hqPercent / simsPerTrial << "% HQ, ";
+			cout << status.outcome.hqPercent / simsPerTrial << "% HQ, ";
 			break;
 		case goalType::maxQuality:
-			cout << status.quality / simsPerTrial << " quality, ";
+			cout << status.outcome.quality / simsPerTrial << " quality, ";
 			break;
 		case goalType::collectability:
-			cout << status.collectableGoalsHit * 100 / simsPerTrial << "% hit goal, ";
+			cout << status.outcome.collectableGoalsHit * 100 / simsPerTrial << "% hit goal, ";
 			break;
 		default:
 			break;
 		}
 	}
 
-	cout << status.steps / simsPerTrial << " step" << (status.steps / simsPerTrial != 1 ? "s" : "");
+	cout << status.sequence.size() << " step" << (status.sequence.size() != 1 ? "s" : "");
 	if (uniquePopulation > 0)
 		cout << ", " << uniquePopulation << " unique";
+	if (cacheHits > 0)
+		cout << ", " << cacheHits << " cache hits";
 
 	cout << endl;
 

@@ -150,8 +150,9 @@ public:
 			int simsPerTrial,
 			goalType goal,
 			strategy strat,
-			netResult outcome,
-			int uniquePopulation	// 0 if gatherStatistics == false
+			trial outcome,
+			int uniquePopulation,	// 0 if gatherStatistics == false
+			int cacheHits			// 0 if gatherStatistics == false
 			)>;
 
 	trial executeSolver(
