@@ -421,12 +421,16 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 	// first reject sequences with invalid actions
 	// but if one sequence is considerably better than the others, let the invalids stand
 	// its children/siblings with the same result and less invalids will end up getting preferred
+	if(strat != strategy::nqOnly)
 	{
 		const int superiorThreshhold = 105;	// percent plus 100
-		int lesserQuality = min({ a.outcome.quality, b.outcome.quality, goal != goalType::maxQuality ? recipe.nominalQuality * simulationsPerTrial : (numeric_limits<int>::max() / 2) });
-		int greaterQuality = min(max(a.outcome.quality, b.outcome.quality), goal != goalType::maxQuality ? recipe.nominalQuality * simulationsPerTrial : (numeric_limits<int>::max() / 2));
+		int aQuality = min(a.outcome.quality, recipe.nominalQuality * simulationsPerTrial);
+		int bQuality = min(b.outcome.quality, recipe.nominalQuality * simulationsPerTrial);
 
-		bool pruneInvalid = strat == strategy::nqOnly || lesserQuality * superiorThreshhold > greaterQuality * 100;
+		int greaterQuality = max(aQuality, bQuality);
+		int lesserQuality = min(aQuality, bQuality);
+											
+		bool pruneInvalid = lesserQuality * superiorThreshhold > greaterQuality * 100;
 
 		if (pruneInvalid &&
 			a.outcome.invalidActions != b.outcome.invalidActions)
