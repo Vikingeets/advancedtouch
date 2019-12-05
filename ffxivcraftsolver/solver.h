@@ -68,6 +68,7 @@ public:
 		threadCommand command;
 		std::vector<trial> const * trials;
 		std::vector<std::atomic<int>>* counters;
+		std::vector<bool> const * cached;
 		// used in sim mode
 		crafterStats const * crafter;
 		recipeStats const * recipe;
@@ -95,6 +96,7 @@ private:
 	
 	std::vector<trial> trials;	// protected by threadCompleteLock, sorted from best to worst
 	std::vector<netResult> simResults;
+	std::vector<bool> cached;
 	// mutated is cleared at the start of each run, then appended to by the thread reporters under lock
 	std::vector<trial> mutated;
 	std::vector<std::atomic<int>> sequenceCounters;	// kept separate: trials must be movable for sort to work
@@ -155,6 +157,7 @@ public:
 	trial executeSolver(
 		int simulationsPerTrial,
 		int generations,
+		int maxCacheSize,
 		solverCallback callback
 	);
 																									// due to the whole vector<atomic> thing

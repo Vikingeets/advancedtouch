@@ -4,7 +4,7 @@
 #include "common.h"
 #include "random.h"
 
-enum class actions
+enum class actions : char
 {
 	// Synthesis
 	basicSynth,

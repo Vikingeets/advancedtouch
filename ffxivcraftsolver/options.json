@@ -1,14 +1,12 @@
 {
-    "sims": 100,
+    "sims": 200,
     "generations": 5000,
-    "population": 1000,
+    "population": 5000,
+    "max cache size": 100000,
 
     "normal lock": false,
-    "wiggle":  20,
+    "wiggle":  0,
     "threads": 0,
 
-    "use special": true,
-    "use tricks": false,
-    "use whistle":  false,
-    "count own for cross class": true
+    "use tricks": false
 }

@@ -295,6 +295,7 @@ struct options
 	int simsPerSequence;
 	int generations;
 	int population;
+	int maxCacheSize;
 
 	bool normalLock;
 	int wiggle;
@@ -314,6 +315,7 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
 	opts->simsPerSequence = getIntIfExists(d, "/sims");
 	opts->generations = getIntIfExists(d, "/generations");
 	opts->population = getIntIfExists(d, "/population");
+	opts->maxCacheSize = getIntIfExists(d, "/max cache size");
 	
 	opts->normalLock = getBoolIfExists(d, "/normal lock");
 	opts->wiggle = getIntIfExists(d, "/wiggle");
@@ -481,13 +483,14 @@ int performSolve(const crafterStats& crafter, const recipeStats& recipe,
 	int simsPerSequence,
 	int generations,
 	int population,
+	int maxCacheSize,
 	strategy strat,
 	bool useTricks, bool gatherStats)
 {
 	solver solve(crafter, recipe, sequence, goal, progressWiggle, initialQuality, threads, normalLock,
 		strat, population, useTricks, gatherStats);
 	
-	solver::trial result = solve.executeSolver(simsPerSequence, generations, solveUpdate);
+	solver::trial result = solve.executeSolver(simsPerSequence, generations, maxCacheSize, solveUpdate);
 	solver::netResult outcome = result.outcome;
 
 	cout << '\n' << outcome.successes << " completed (" << (outcome.successes * 100) / simsPerSequence << "%)\n";
@@ -824,6 +827,6 @@ int main(int argc, char* argv[])
 	case commands::solve:
 		signal(SIGINT, handler);
 		return performSolve(crafter, recipe, seed, goal, opts.wiggle, initialQuality, opts.normalLock, opts.threads,
-			opts.simsPerSequence, opts.generations, opts.population, strat, opts.useTricks, gatherStatistics);
+			opts.simsPerSequence, opts.generations, opts.population, opts.maxCacheSize, strat, opts.useTricks, gatherStatistics);
 	}
 }

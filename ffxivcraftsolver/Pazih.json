@@ -27,59 +27,56 @@
     "cp max": 66
   },
   "medicine": {
-    "_comment": "Cunning Craftsman's Tea HQ",
-    "cp percent": 5,
-    "cp max": 13
+    "_comment": "Cunning Craftsman's Syrup HQ",
+    "cp percent": 6,
+    "cp max": 16
   },
   "crp": {
-    "level": 79,
-    "craftsmanship": 1706,
-    "control": 1623,
-    "cp": 493,
-    "specialist": true
+    "level": 80,
+    "craftsmanship": 2364,
+    "control": 2234,
+    "cp": 556
   },
   "bsm": {
     "level": 80,
-    "craftsmanship": 1706,
-    "control": 1623,
-    "cp": 493,
-    "specialist": true
+    "craftsmanship": 2364,
+    "control": 2234,
+    "cp": 556
   },
   "arm": {
-    "level": 79,
-    "craftsmanship": 1686,
-    "control": 1603,
-    "cp": 493
+    "level": 80,
+    "craftsmanship": 2344,
+    "control": 2214,
+    "cp": 541
   },
   "gsm": {
     "level": 80,
-    "craftsmanship": 1686,
-    "control": 1603,
-    "cp": 493
+    "craftsmanship": 2344,
+    "control": 2214,
+    "cp": 541
   },
   "ltw": {
     "level": 80,
-    "craftsmanship": 1686,
-    "control": 1603,
-    "cp": 493
+    "craftsmanship": 2344,
+    "control": 2214,
+    "cp": 541
   },
   "wvr": {
     "level": 80,
-    "craftsmanship": 1686,
-    "control": 1603,
-    "cp": 493
+    "craftsmanship": 2344,
+    "control": 2214,
+    "cp": 541
   },
   "alc": {
     "level": 80,
-    "craftsmanship": 1706,
-    "control": 1623,
-    "cp": 493,
-    "specialist": true
+    "craftsmanship": 2364,
+    "control": 2234,
+    "cp": 556
   },
   "cul": {
-    "level": 79,
-    "craftsmanship": 1686,
-    "control": 1603,
-    "cp": 493
+    "level": 80,
+    "craftsmanship": 2344,
+    "control": 2214,
+    "cp": 541
   }
 }

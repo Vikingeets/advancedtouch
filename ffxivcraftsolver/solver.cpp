@@ -2,7 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <deque>
-#include <unordered_set>
+#include <unordered_map>
+#include <list>
 #include <set>
 #include <chrono>
 #include "common.h"
@@ -19,6 +20,118 @@
 #endif
 
 using namespace std;
+
+template <typename T>
+class vectorHash
+{
+public:
+	size_t operator()(const vector<T>& in) const
+	{
+		size_t output = in.size();
+		for (T val : in)
+		{
+			// From Boost's hash_combine
+			output ^= hash<T>()(val) + 0x9e3779b9 + (output << 6) + (output >> 2);
+		}
+		return output;
+	}
+};
+
+class resultCache
+{
+private:
+	int maxCacheSize;
+	list<solver::trial> cacheData;
+	unordered_map <craft::sequenceType, list<solver::trial>::iterator, vectorHash<actions>> cacheHash;
+
+	int hits;
+	int misses;
+
+	void addToCache(solver::trial entry);
+	void moveToFront(list<solver::trial>::iterator it)
+	{
+		if (it != cacheData.begin())
+			cacheData.splice(cacheData.begin(), cacheData, it);
+	}
+	void removeLastEntry();
+public:
+	resultCache(int maxSize) :
+		maxCacheSize(maxSize),
+		hits(0),
+		misses(0)
+	{
+		if(maxCacheSize > 0)
+			cacheHash.reserve(maxCacheSize);
+	}
+	resultCache() :
+		resultCache(0)
+	{}
+
+	// returns empty on a miss
+	solver::trial getCached(craft::sequenceType sequence, bool gatherStatistics);
+	void populateCache(const vector<solver::trial>& input);
+
+	int getHits() const
+	{
+		return hits;
+	}
+	int getMisses() const
+	{
+		return misses;
+	}
+};
+
+void resultCache::addToCache(solver::trial entry)
+{
+	if (entry.sequence.empty()) return;
+	cacheData.push_front(entry);
+	auto it = cacheData.begin();
+	cacheHash.insert({ entry.sequence, it });
+	assert(cacheData.size() == cacheHash.size());
+}
+
+void resultCache::removeLastEntry()
+{
+	assert(!cacheData.empty() && !cacheHash.empty());
+	auto dataIt = std::prev(cacheData.end());
+	auto hashIt = cacheHash.find(dataIt->sequence);
+	assert(hashIt != cacheHash.end());
+	cacheHash.erase(hashIt);
+	cacheData.erase(dataIt);
+}
+
+solver::trial resultCache::getCached(craft::sequenceType sequence, bool gatherStatistics)
+{
+	auto it = cacheHash.find(sequence);
+	if (it != cacheHash.end())
+	{
+		if (gatherStatistics) hits++;
+		moveToFront(it->second);
+		return *(it->second);
+	}
+	else
+	{
+		if (gatherStatistics) misses++;
+		return solver::trial{};
+	}
+}
+
+void resultCache::populateCache(const vector<solver::trial>& input)
+{
+	if (maxCacheSize <= 0) return;
+	for (const auto& t : input)
+	{
+
+		// Make sure it's not already in the cache
+		// Actual empty sequences won't get cached, but that's for the best anyways.
+		// Has the side effect of moving these to the top.
+		if (!getCached(t.sequence, false).sequence.empty())
+			continue;
+		while (cacheHash.size() >= maxCacheSize)
+			removeLastEntry();
+		addToCache(t);
+	}
+}
 
 void workerMain(solver* solve);
 
@@ -258,6 +371,7 @@ solver::solver(const crafterStats& c,
 	gatherStatistics(gS),
 	trials(population),
 	simResults(population),
+	cached(population, false),
 	sequenceCounters(population),
 	availableActions(getAvailable(c, r, uT && !nLock, goal != goalType::collectability || r.quality * 10 > r.nominalQuality * 9, true)),
 	availableWithoutFirst(getAvailable(c, r, uT && !nLock, goal != goalType::collectability || r.quality * 10 > r.nominalQuality * 9, false)),
@@ -362,16 +476,19 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 	return sequenceTime(a.sequence) < sequenceTime(b.sequence);
 }
 
-solver::trial solver::executeSolver(int simulationsPerTrial, int generations, solver::solverCallback callback)
+solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int maxCacheSize, solver::solverCallback callback)
 {
 	vector<thread> threads;
 	for (int i = 0; i < numberOfThreads; i++)
 		threads.emplace_back(workerMain, this);
 
+	resultCache cache(maxCacheSize);
+
 	threadOrder orders = {};
 	orders.command = threadCommand::terminate;
 	orders.trials = &trials;
 	orders.counters = &sequenceCounters;
+	orders.cached = &cached;
 	orders.crafter = &crafter;
 	orders.recipe = &recipe;
 	orders.numberOfSimulations = simulationsPerTrial;
@@ -386,6 +503,19 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, so
 		orders.command = threadCommand::mutate;
 		setOrder(orders);
 		waitOnMutationsDone();
+
+		// See if any of our prospective sequences already have their results already in the cache
+		if (maxCacheSize > 0)
+		{
+			for (int i = 0; i < trials.size(); ++i)
+			{
+				trial current = cache.getCached(trials[i].sequence, gatherStatistics);
+				bool currentCached = !current.sequence.empty();	// An empty sequence is never cached, so this test is okay
+				cached[i] = currentCached;
+				if (currentCached)
+					trials[i] = current;
+			}
+		}
 
 		orders.command = threadCommand::simulate;
 		setOrder(orders);
@@ -423,6 +553,8 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, so
 
 		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, trials.front().outcome, uniquePopulation))
 			break;
+
+		if(maxCacheSize > 0) cache.populateCache(trials);
 	}
 
 	orders.command = threadCommand::terminate;
@@ -459,6 +591,7 @@ void solver::waitOnSimsDone()
 	assert(trials.size() == simResults.size());
 	for (int i = 0; i < trials.size(); ++i)
 	{
+		if (cached[i]) continue;
 		trials[i].outcome = simResults[i];
 		memset(&(simResults[i]), 0, sizeof(simResults[i]));
 	}
@@ -663,9 +796,15 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 
 	while (trialNumber < order.trials->size())
 	{
-		if ((*order.counters)[trialNumber].fetch_add(1, memory_order_relaxed) >= order.numberOfSimulations)
+		if (
+			// Is this result in the cache?
+			(*order.cached)[trialNumber]
+			||
+			// Have we (and the other threads) done all the sims for this one?
+			(*order.counters)[trialNumber].fetch_add(1, memory_order_relaxed) >= order.numberOfSimulations
+			)
 		{
-			// We (and the other threads) have done all the sims for this one, move on to the next
+			
 			trialNumber++;
 			continue;
 		}
