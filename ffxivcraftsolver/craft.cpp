@@ -748,7 +748,6 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 			}
 			cout << '\n';
 		}
-		//		assert(checkBuffsValid()); This profiles somewhat high, so disable it unless something comes up
 		if (result == actionResult::failNoCP || result == actionResult::failHardUnavailable)
 			craftResult.invalidActions++;
 		if (result != actionResult::success && result != actionResult::failRNG)
