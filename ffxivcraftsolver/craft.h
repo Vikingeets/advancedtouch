@@ -105,7 +105,6 @@ public:
 			int hqPercent;			// normal and hqOrBust mode
 			bool collectableHit;	// collectable mode
 		};
-		int durability;
 		int steps;
 		int invalidActions;
 		bool reuseUsed;

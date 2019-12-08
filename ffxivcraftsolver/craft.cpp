@@ -788,7 +788,6 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 		craftResult.collectableHit = quality >= recipe.quality;
 		break;
 	}
-	craftResult.durability = durability;
 	craftResult.steps = step;
 	if (it != sequence.cend()) ++it;	// the iterator needs to sit on the one after the last craft in order for the next calculation to work
 	craftResult.invalidActions += static_cast<int>(distance(it, sequence.cend()));	// Count everything that didn't happen post-macro
