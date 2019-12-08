@@ -417,7 +417,7 @@ solver::netResult solver::executeMultisim(int simulationsPerTrial)
 }
 
 // returns true if a is better than b, so sorting ends up best to worst
-bool solver::compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial, bool alwaysRejectInvalids)
+bool solver::compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial, bool alwaysRejectInvalids) const
 {
 	// first reject sequences with invalid actions
 	// but if one sequence is considerably better than the others, let the invalids stand
