@@ -417,12 +417,14 @@ solver::netResult solver::executeMultisim(int simulationsPerTrial)
 }
 
 // returns true if a is better than b, so sorting ends up best to worst
-bool solver::compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial)
+bool solver::compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial, bool alwaysRejectInvalids)
 {
 	// first reject sequences with invalid actions
 	// but if one sequence is considerably better than the others, let the invalids stand
 	// its children/siblings with the same result and less invalids will end up getting preferred
-	if(strat != strategy::nqOnly)
+	if (alwaysRejectInvalids && a.outcome.invalidActions != b.outcome.invalidActions)
+		return a.outcome.invalidActions < b.outcome.invalidActions;
+	else if(strat != strategy::nqOnly)
 	{
 		const int superiorThreshhold = 105;	// percent plus 100
 		int aQuality = min(a.outcome.quality, recipe.nominalQuality * simulationsPerTrial);
@@ -529,7 +531,9 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		// We don't need to sort the whole population, just enough so each group ends up in the right section
 		mutationGroups mG = divideSequence(static_cast<int>(trials.size()));
 		auto comp = [this, simulationsPerTrial](const trial& a, const trial& b)
-			{return compareResult(a, b, simulationsPerTrial);};
+			{return compareResult(a, b, simulationsPerTrial, false);};
+		auto compNoInvalids = [this, simulationsPerTrial](const trial& a, const trial& b)
+		{return compareResult(a, b, simulationsPerTrial, true); };
 
 		auto beginPos = trials.begin();
 		auto preserveStart = beginPos;
@@ -542,8 +546,8 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		nth_element(beginPos, eliminateStart, eliminateEnd, comp);
 		nth_element(beginPos, twoStart, eliminateStart, comp);
 		nth_element(beginPos, oneStart, twoStart, comp);
-		nth_element(beginPos, preserveStart, oneStart, comp);
-		nth_element(beginPos, beginPos, preserveStart, comp);
+		nth_element(beginPos, preserveStart, oneStart, compNoInvalids);
+		nth_element(beginPos, beginPos, preserveStart, compNoInvalids);
 
 		int uniquePopulation = 0;
 		int cacheHits = 0;

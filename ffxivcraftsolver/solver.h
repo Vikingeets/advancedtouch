@@ -113,7 +113,7 @@ private:
 	
 	int threadsDone;	// not atomic: protected with threadCompleteLock. reset in setOrder
 
-	bool compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial);
+	bool compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial, bool alwaysRejectInvalids);
 
 public:
 	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool useReuse, bool includeFirst);
