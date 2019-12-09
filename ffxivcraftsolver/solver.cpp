@@ -66,6 +66,8 @@ public:
 	resultCache() :
 		resultCache(0)
 	{}
+	resultCache(const resultCache&) = delete;
+	bool operator=(const resultCache&) = delete;
 
 	// returns empty on a miss
 	solver::trial getCached(craft::sequenceType sequence, bool gatherStatistics);
