@@ -30,7 +30,7 @@ public:
 		};
 		short steps;		// actions until the synth ends, not neccesarily the size of the sequence
 		short invalidActions;		// i.e. those that don't occur due to preconditions not met, insufficient CP, or occuring after the end of the synth
-		short reuses;
+		int reuses;
 	};
 
 	struct trial
