@@ -28,9 +28,9 @@ public:
 			int hqPercent;
 			int collectableGoalsHit;	// an individual run would only add 0 or 1 to this
 		};
-		int steps;		// actions until the synth ends, not neccesarily the size of the sequence
-		int invalidActions;		// i.e. those that don't occur due to preconditions not met, insufficient CP, or occuring after the end of the synth
-		int reuses;
+		short steps;		// actions until the synth ends, not neccesarily the size of the sequence
+		short invalidActions;		// i.e. those that don't occur due to preconditions not met, insufficient CP, or occuring after the end of the synth
+		short reuses;
 	};
 
 	struct trial
@@ -44,13 +44,13 @@ public:
 
 		struct statistics
 		{
-			int additions;
-			int replacements;
-			int removals;
-			int shifts;
-			int swaps;
+			short additions;
+			short replacements;
+			short removals;
+			short shifts;
+			short swaps;
 
-			std::map<int,int> mutations;
+			std::map<short,short> mutations;
 
 			statistics() :
 				additions(0),
