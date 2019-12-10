@@ -276,7 +276,6 @@ void craft::nameOfTheElementsPost()
 actionResult craft::finalAppraisal()
 {
 	if (!changeCP(-1)) return actionResult::failNoCP;
-	if (finalAppraisalTime > 0) return actionResult::failHardUnavailable;
 
 	finalAppraisalTime = 5;	// here and not in a post since FA doesn't endStep
 	return actionResult::success;
@@ -524,7 +523,6 @@ actionResult craft::mastersMend()
 
 actionResult craft::wasteNot()
 {
-	if (wasteNotTime > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-56)) return actionResult::failNoCP;
 
 	return actionResult::success;
@@ -538,7 +536,6 @@ void craft::wasteNotPost()
 
 actionResult craft::wasteNot2()
 {
-	if (wasteNot2Time > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-98)) return actionResult::failNoCP;
 
 	return actionResult::success;
@@ -589,7 +586,6 @@ actionResult craft::reflect()
 
 actionResult craft::ingenuity()
 {
-	if (ingenuityTime > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-22)) return actionResult::failNoCP;
 	
 	return actionResult::success;
@@ -615,7 +611,6 @@ void craft::greatStridesPost()
 
 actionResult craft::innovation()
 {
-	if (innovationTime > 0) return actionResult::failHardUnavailable;
 	if (!changeCP(-18)) return actionResult::failNoCP;
 
 	return actionResult::success;
