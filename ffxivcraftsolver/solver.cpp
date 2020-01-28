@@ -14,9 +14,8 @@
 
 // for thread priorities
 #if defined _WIN32
-#include <Windows.h>
-#undef min
-#undef max
+#define NOMINMAX
+#include <windows.h>
 #endif
 
 using namespace std;
