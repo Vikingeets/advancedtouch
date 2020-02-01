@@ -123,7 +123,6 @@ void resultCache::populateCache(const vector<solver::trial>& input)
 	if (maxCacheSize <= 0) return;
 	for (const auto& t : input)
 	{
-
 		// Make sure it's not already in the cache
 		// Actual empty sequences won't get cached, but that's for the best anyways.
 		// Has the side effect of moving these to the top.
