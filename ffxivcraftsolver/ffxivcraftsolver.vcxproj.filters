@@ -56,9 +56,6 @@
     <None Include="options.json">
       <Filter>Notes</Filter>
     </None>
-    <None Include="ashlumber.json">
-      <Filter>Notes</Filter>
-    </None>
     <None Include="generated.json">
       <Filter>Notes</Filter>
     </None>

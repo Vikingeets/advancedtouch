@@ -260,3 +260,15 @@ paket-files/
 __pycache__/
 *.pyc
 /ffxivcraftsolver/.tmp.drivedownload
+/ffxivcraftsolver/recipes
+/ffxivcraftsolver/80-theory.json
+/ffxivcraftsolver/arguments.txt
+/ffxivcraftsolver/bin103.bin
+/ffxivcraftsolver/tempcrafter.json
+/ffxivcraftsolver/sequence.json
+/ffxivcraftsolver/Pazih.json
+/ffxivcraftsolver/options.json
+/ffxivcraftsolver/multithread.txt
+/ffxivcraftsolver/matchatest.json
+/ffxivcraftsolver/heuristic.txt
+/ffxivcraftsolver/generated.json

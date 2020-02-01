@@ -1,23 +1,23 @@
 {
-	"food": {
-		"craftsmanship percent": 0,
-		"craftsmanship max": 0,
-		"control percent": 0,
-		"control max": 0,
-	    "cp percent": 0,
-		"cp max": 0
-		},
-    "crp": {
-        "level": 9,
-        "craftsmanship": 83,
-        "control": 73,
-        "cp": 195
-    },
-    "cul": {
-        "level": 50,
-        "craftsmanship": 257,
-        "control": 231,
-        "cp": 193,
-        "specialist": true
-    }
+  "food": {
+    "_name": "Tempura Platter",
+    "craftsmanship percent": 4,
+    "craftsmanship max": 42,
+    "control percent": 0,
+    "control max": 0,
+    "cp percent": 12,
+    "cp max": 43
+  },
+  "crp": {
+    "level": 9,
+    "craftsmanship": 95,
+    "control": 80,
+    "cp": 213
+  },
+  "cul": {
+    "level": 50,
+    "craftsmanship": 257,
+    "control": 231,
+    "cp": 193
+  }
 }

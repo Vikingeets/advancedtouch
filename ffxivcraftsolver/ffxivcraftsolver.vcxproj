@@ -335,7 +335,6 @@
     <Text Include="arguments.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ashlumber.json" />
     <None Include="CraftLevelDifference.csv">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </None>

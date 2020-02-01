@@ -65,7 +65,7 @@ The "food" and "medicine" objects set the craftsmanship, control and cp percenta
 
 The other objects describe the crafter's classes, including their level, craftsmanship, control and cp. Only the craftmanship, control, and cp of the crafter selected with -j is used.
 
-The file "examples/5crp50cul.json" describes a level 5 CRP/50 CUL character using a nq tempura platter.
+The file "examples/9crp50cul.json" describes a level 9 CRP/50 CUL character using a NQ Tempura Platter.
 
 # Rotation file
 The rotation file is a JSON array, containing case-sensitive names for each action in order, compatible with Teamcraft's export to optimizer feature.
