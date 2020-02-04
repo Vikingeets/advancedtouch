@@ -816,7 +816,6 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 			(*order.counters)[trialNumber].fetch_add(1, memory_order_relaxed) >= order.numberOfSimulations
 			)
 		{
-			
 			trialNumber++;
 			continue;
 		}

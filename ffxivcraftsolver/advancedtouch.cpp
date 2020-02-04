@@ -556,7 +556,7 @@ int performSolve(const crafterStats& crafter, const recipeStats& recipe,
 
 int main(int argc, char* argv[])
 {
-	programName = argc > 0 ? argv[0] : "ffxivcraftsolver";
+	programName = argc > 0 ? argv[0] : "advancedtouch";
 
 	if (argc < 2)
 	{
@@ -638,7 +638,6 @@ int main(int argc, char* argv[])
 			}
 			crafterStatsProvided = true;
 			// Don't process it yet, we need to know what class the crafter is first
-
 		}
 		else if (currentArgv == "-i")
 		{
@@ -723,7 +722,7 @@ int main(int argc, char* argv[])
 				exit(1);
 			}
 			sequenceProvided = true;
-			// Don't process yet, in case -e or -h gets provided later
+			// Don't process yet, in case -e gets provided later
 		}
 		else if (currentArgv == "-t")
 		{
@@ -814,7 +813,7 @@ int main(int argc, char* argv[])
 			seedSorted.erase(unique(seedSorted.begin(), seedSorted.end()), seedSorted.end());
 			if (!includes(available.begin(), available.end(), seedSorted.begin(), seedSorted.end()))
 			{
-				cerr << "warning: the provided seed contains actions not available at the crafter's levels or options\n";
+				cerr << "warning: the provided seed contains actions not available at the crafter's level or options\n";
 				cerr << "the generated solution may not be valid" << endl;
 			}
 		}
