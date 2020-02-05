@@ -465,7 +465,9 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 				return a.outcome.collectableGoalsHit > b.outcome.collectableGoalsHit;
 			else return a.outcome.quality > b.outcome.quality;
 		case goalType::maxQuality:
-			return a.outcome.quality > b.outcome.quality;
+			if (a.outcome.quality != b.outcome.quality)
+				return a.outcome.quality > b.outcome.quality;
+			else break;
 		}
 //		[[fallthrough]]		// quality is tied
 	case strategy::nqOnly:

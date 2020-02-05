@@ -215,7 +215,7 @@ private:
 	actionResult commonTouch(int cpChange, int efficiency, int successChance, bool doubeDurability = false);
 
 	// Synthesis
-	actionResult basicSynth() { return commonSynth(0, crafter.level >= 31 ? 120: 100, 100); }
+	actionResult basicSynth() { return commonSynth(0, crafter.level >= 31 ? 120 : 100, 100); }
 	actionResult carefulSynthesis() { return commonSynth(-7, 150, 100); }
 	actionResult rapidSynthesis() { return commonSynth(0, crafter.level >= 63 ? 500 : 250, 50); }
 	actionResult focusedSynthesis() { return commonSynth(-5, 200, observeCombo ? 100 : 50); }
