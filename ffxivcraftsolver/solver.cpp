@@ -730,7 +730,8 @@ solver::trial solver::mutateSequence(trial input, int numberOfMutations, random&
 		case mutationType::add:
 		{
 			auto where = input.sequence.begin();
-			advance(where, rng.generateInt(input.sequence.size()));	// not "- 1"; it can advance to the end iterator
+			bool sequenceHasFirst = !input.sequence.empty() && isFirstAction(input.sequence.front());
+			advance(where, rng.generateInt(sequenceHasFirst ? 1 : 0, static_cast<int>(input.sequence.size())));	// not "- 1"; it can advance to the end iterator
 			actions which = (where == input.sequence.begin()) ?
 				availableActions[rng.generateInt(availableActions.size() - 1)] :
 				availableWithoutFirst[rng.generateInt(availableWithoutFirst.size() - 1)];
