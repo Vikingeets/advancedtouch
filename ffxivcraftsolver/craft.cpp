@@ -1,4 +1,3 @@
-
 #include <cassert>
 #include <algorithm>
 #include <iostream>
