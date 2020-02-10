@@ -247,39 +247,6 @@ void craft::endStep()
 	return;
 }
 
-actionResult craft::brandOfTheElements()
-{
-	if (!changeCP(-6)) return actionResult::failNoCP;
-	
-	increaseProgress(100, true);
-
-	hitDurability();
-
-	return actionResult::success;
-}
-
-actionResult craft::nameOfTheElements()
-{
-	if (nameOfTheElementsUsed) return actionResult::failHardUnavailable;
-	if (!changeCP(-30)) return actionResult::failNoCP;
-
-	nameOfTheElementsUsed = true;
-	return actionResult::success;
-}
-
-void craft::nameOfTheElementsPost()
-{
-	nameOfTheElementsTime = 3;
-}
-
-actionResult craft::finalAppraisal()
-{
-	if (!changeCP(-1)) return actionResult::failNoCP;
-
-	finalAppraisalTime = 5;	// here and not in a post since FA doesn't endStep
-	return actionResult::success;
-}
-
 const map<int, int> qualityPercentToHQPercent = {
 	{0, 1}, {5, 2}, {9, 3}, {13, 4}, {17, 5}, {21, 6}, {25, 7}, {29, 8},
 	{32, 9}, {35, 10}, {38, 11}, {41, 12}, {44, 13}, {47, 14}, {50, 15}, {53, 16},
@@ -435,6 +402,17 @@ actionResult craft::muscleMemory()
 void craft::muscleMemoryPost()
 {
 	muscleMemoryTime = 5;
+}
+
+actionResult craft::brandOfTheElements()
+{
+	if (!changeCP(-6)) return actionResult::failNoCP;
+
+	increaseProgress(100, true);
+
+	hitDurability();
+
+	return actionResult::success;
 }
 
 /***
@@ -618,6 +596,28 @@ actionResult craft::innovation()
 void craft::innovationPost()
 {
 	innovationTime = 4;
+}
+
+actionResult craft::nameOfTheElements()
+{
+	if (nameOfTheElementsUsed) return actionResult::failHardUnavailable;
+	if (!changeCP(-30)) return actionResult::failNoCP;
+
+	nameOfTheElementsUsed = true;
+	return actionResult::success;
+}
+
+void craft::nameOfTheElementsPost()
+{
+	nameOfTheElementsTime = 3;
+}
+
+actionResult craft::finalAppraisal()
+{
+	if (!changeCP(-1)) return actionResult::failNoCP;
+
+	finalAppraisalTime = 5;	// here and not in a post since FA doesn't endStep
+	return actionResult::success;
 }
 
 actionResult craft::observe()

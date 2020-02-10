@@ -186,8 +186,6 @@ private:
 	condition getNextCondition(condition current);
 	void endStep();
 
-	void nameOfTheElementsPost();
-
 	// both percentages from 0-100
 	static int hqPercentFromQuality(int qualityPercent);
 
@@ -259,6 +257,7 @@ private:
 	actionResult innovation();
 	void innovationPost();
 	actionResult nameOfTheElements();
+	void nameOfTheElementsPost();
 	actionResult finalAppraisal();
 
 
