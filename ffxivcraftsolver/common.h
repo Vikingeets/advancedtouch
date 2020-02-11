@@ -14,8 +14,6 @@ enum class classes
 	CUL = 7
 };
 
-using crafterLevels = std::array<int, 8>;
-
 struct crafterStats
 {
 	int level;		// The level shown ingame. Used for ability availability

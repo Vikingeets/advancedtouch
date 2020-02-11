@@ -135,12 +135,6 @@ void resultCache::populateCache(const vector<solver::trial>& input)
 
 void workerMain(solver* solve);
 
-int getCrafterLevel(const crafterLevels& levels, classes crafterClass)
-{
-	assert(crafterClass >= classes::CRP && crafterClass <= classes::CUL);
-	return levels[static_cast<size_t>(crafterClass)];
-}
-
 const vector<actions> allActions = {
 	actions::basicSynth,
 	actions::carefulSynthesis,
