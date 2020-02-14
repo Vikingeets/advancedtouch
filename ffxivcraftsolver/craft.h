@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include "common.h"
+#include "levels.h"
 #include "random.h"
 
 enum class actions : char
@@ -11,6 +12,7 @@ enum class actions : char
 	carefulSynthesis,
 	rapidSynthesis,
 	focusedSynthesis,
+	groundwork,
 	delicateSynthesis,
 	intensiveSynthesis,
 	muscleMemory,
@@ -40,14 +42,13 @@ enum class actions : char
 	// Buffs
 	innerQuiet,
 	reflect,
-	ingenuity,
 	greatStrides,
+	veneration,
 	innovation,
 	nameOfTheElements,
 	finalAppraisal,
 
-	observe,
-	reuse
+	observe
 };
 
 const std::map<actions, std::string> simpleText = {
@@ -56,6 +57,7 @@ const std::map<actions, std::string> simpleText = {
 	{actions::rapidSynthesis, "rapidSynthesis"},
 	{actions::focusedSynthesis, "focusedSynthesis"},
 	{actions::delicateSynthesis, "delicateSynthesis"},
+	{actions::groundwork, "groundwork"},
 	{actions::intensiveSynthesis, "intensiveSynthesis"},
 	{actions::muscleMemory, "muscleMemory"},
 	{actions::brandOfTheElements, "brandOfTheElements"},
@@ -80,14 +82,13 @@ const std::map<actions, std::string> simpleText = {
 
 	{actions::innerQuiet, "innerQuiet"},
 	{actions::reflect, "reflect"},
-	{actions::ingenuity, "ingenuity"},
 	{actions::greatStrides, "greatStrides"},
+	{actions::veneration, "veneration"},
 	{actions::innovation, "innovation"},
 	{actions::nameOfTheElements, "nameOfTheElements"},
 	{actions::finalAppraisal, "finalAppraisal"},
 
 	{actions::observe, "observe"},
-	{actions::reuse, "reuse"}
 };
 
 
@@ -107,7 +108,6 @@ public:
 		};
 		int steps;
 		int invalidActions;
-		bool reuseUsed;
 	};
 
 	enum class condition
@@ -147,8 +147,8 @@ private:
 	int wasteNotTime = 0;
 	int wasteNot2Time = 0;
 	int manipulationTime = 0;
+	int venerationTime = 0;
 	int innerQuietStacks = 0;
-	int ingenuityTime = 0;
 	int greatStridesTime = 0;
 	int innovationTime = 0;
 	int nameOfTheElementsTime = 0;
@@ -157,14 +157,11 @@ private:
 	bool observeCombo = false;	// For Focused combo
 
 	const bool normalLock;
-	bool reuseActive = false;
 
 	random& rng;
 
 	// chance == 70 means 70% success and so on
 	inline bool rollPercent(int chance) const;
-
-	void calculateFactors();
 
 	void increaseProgress(int efficiency, bool isBrand = false);
 	void increaseQuality(int efficiency);
@@ -200,11 +197,11 @@ public:
 		quality(initialQuality),
 		progress(0),
 		cond(condition::normal),
+		progressFactor(getProgressFactor(crafter.rLevel - recipe.rLevel)),
+		qualityFactor(getQualityFactor(crafter.rLevel - recipe.rLevel)),
 		normalLock(nLock),
 		rng(r)
-	{
-		calculateFactors();
-	}
+	{}
 
 	std::string getState() const;
 
@@ -218,6 +215,7 @@ private:
 	actionResult rapidSynthesis() { return commonSynth(0, crafter.level >= 63 ? 500 : 250, 50); }
 	actionResult focusedSynthesis() { return commonSynth(-5, 200, observeCombo ? 100 : 50); }
 	actionResult delicateSynthesis();
+	actionResult groundwork();
 	actionResult intensiveSynthesis();
 	actionResult muscleMemory();
 	void muscleMemoryPost();
@@ -250,10 +248,10 @@ private:
 	// Buffs
 	actionResult innerQuiet();
 	actionResult reflect();
-	actionResult ingenuity();
-	void ingenuityPost();
 	actionResult greatStrides();
 	void greatStridesPost();
+	actionResult veneration();
+	void venerationPost();
 	actionResult innovation();
 	void innovationPost();
 	actionResult nameOfTheElements();
@@ -263,7 +261,6 @@ private:
 
 	actionResult observe();
 	void observePost();
-	actionResult reuse();
 
 public:
 	actionResult performOne(actions action);

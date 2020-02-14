@@ -806,7 +806,7 @@ int main(int argc, char* argv[])
 		if (command == commands::solve)
 		{	
 			craft::sequenceType seedSorted = seed;
-			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useTricks, true, true);
+			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useTricks, true);
 			sort(available.begin(), available.end());
 			sort(seedSorted.begin(), seedSorted.end());
 			// available is already unique

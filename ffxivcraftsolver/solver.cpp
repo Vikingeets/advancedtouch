@@ -141,6 +141,7 @@ const vector<actions> allActions = {
 	actions::rapidSynthesis,
 	actions::focusedSynthesis,
 	actions::delicateSynthesis,
+	actions::groundwork,
 	actions::intensiveSynthesis,
 	actions::muscleMemory,
 	actions::brandOfTheElements,
@@ -164,15 +165,14 @@ const vector<actions> allActions = {
 	actions::manipulation,
 
 	actions::innerQuiet,
-	actions::ingenuity,
 	actions::greatStrides,
+	actions::veneration,
 	actions::innovation,
 	actions::nameOfTheElements,
 	actions::finalAppraisal,
 
 	actions::reflect,
 	actions::observe,
-	actions::reuse
 };
 
 int actionTime(actions act)
@@ -181,13 +181,12 @@ int actionTime(actions act)
 	switch (act)
 	{
 	case actions::greatStrides:
-	case actions::ingenuity:
 	case actions::innerQuiet:
+	case actions::veneration:
 	case actions::innovation:
 	case actions::manipulation:
 	case actions::nameOfTheElements:
 	case actions::wasteNot:
-	case actions::reuse:
 		return 2;
 	default:
 		return 3;
@@ -250,7 +249,7 @@ bool isFirstAction(actions action)
 }
 
 // Would return a set, but needs random access iterators for the mutator
-vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool useReuse, bool includeFirst)
+vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool includeFirst)
 {
 	vector<actions> output;
 	for(actions action : allActions)
@@ -259,7 +258,6 @@ vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeSt
 		if (actionLevel(action) > crafter.level) continue;
 
 		if (!useTricks && action == actions::tricksOfTheTrade) continue;
-		if (!useReuse && action == actions::reuse) continue;
 
 		if (!includeFirst && isFirstAction(action))
 			continue;
@@ -289,9 +287,8 @@ int solver::actionLevel(actions action)
 	case actions::tricksOfTheTrade:
 	case actions::observe:
 		return 13;
-	case actions::wasteNot:
-	case actions::ingenuity:
-		return 15;
+	case actions::veneration: return 15;
+	case actions::wasteNot: return 15;
 	case actions::standardTouch: return 18;
 	case actions::greatStrides: return 21;
 	case actions::innovation: return 26;
@@ -311,7 +308,7 @@ int solver::actionLevel(actions action)
 	case actions::focusedTouch: return 68;
 	case actions::reflect: return 69;
 	case actions::preparatoryTouch: return 71;
-	case actions::reuse: return 74;
+	case actions::groundwork: return 72;
 	case actions::delicateSynthesis: return 76;
 	case actions::intensiveSynthesis: return 78;
 	case actions::trainedEye: return 80;
@@ -367,8 +364,8 @@ solver::solver(const crafterStats& c,
 	simResults(population),
 	cached(population, false),
 	sequenceCounters(population),
-	availableActions(getAvailable(c, r, uT && !nLock, goal != goalType::collectability || r.quality * 10 > r.nominalQuality * 9, true)),
-	availableWithoutFirst(getAvailable(c, r, uT && !nLock, goal != goalType::collectability || r.quality * 10 > r.nominalQuality * 9, false)),
+	availableActions(getAvailable(c, r, uT && !nLock, true)),
+	availableWithoutFirst(getAvailable(c, r, uT && !nLock, false)),
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);
@@ -472,10 +469,7 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 		else break;
 	}
 
-	// Everything asked for is equal, so check if just one had a successful reuse.
-	if((a.outcome.reuses > 0) != (b.outcome.reuses > 0))
-			return a.outcome.reuses > 0;	// Doing a.outcome.reuses > b.outcome.reuses effectively prevents comparing on length
-	// All else fails, compare on macro length
+	// Everything asked for is equal, so compare on macro length
 	return sequenceTime(a.sequence) < sequenceTime(b.sequence);
 }
 
@@ -655,7 +649,6 @@ void solver::reportThreadSimResults(const vector<netResult>& threadResults)
 		}
 		simResults[i].invalidActions += threadResults[i].invalidActions;
 		simResults[i].steps += threadResults[i].steps;
-		simResults[i].reuses += threadResults[i].reuses;
 	}
 	threadsDone++;
 	lock.unlock();
@@ -839,7 +832,6 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 		}
 		localResults[trialNumber].steps += result.steps;
 		localResults[trialNumber].invalidActions += result.invalidActions;
-		if (result.reuseUsed) localResults[trialNumber].reuses++;
 	}
 
 	// Everything's done (or has been claimed by another thread), so time to report in and wait for the next order

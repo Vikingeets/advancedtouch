@@ -15,41 +15,6 @@ inline bool craft::rollPercent(int chance) const
 	else return rng.generateInt(99) < chance;
 }
 
-void craft::calculateFactors()
-{
-	int unmodifiedLevelDifference = crafter.rLevel - recipe.rLevel;
-	int levelDifference = unmodifiedLevelDifference;
-
-	if (ingenuityTime > 0)
-	{
-		if (levelDifference < 0 && recipe.rLevel >= 390)
-		{
-			int levelCap = abs(unmodifiedLevelDifference) <= 100 ? -5 : -20;
-			levelDifference = max(levelDifference + recipe.rLevel / 8, levelCap);
-		}
-		else
-		{
-			if (recipe.rLevel >= 390)
-				levelDifference += recipe.rLevel / 18;
-			else
-			{
-				if (recipe.rLevel == 290)
-					levelDifference += 10;
-				else if (recipe.rLevel == 300)
-					levelDifference += 9;
-				else if (recipe.rLevel >= 110)
-					levelDifference += 40;
-				else
-					levelDifference += 8;
-			}
-			levelDifference = max(levelDifference, -1 * getStars(recipe.rLevel));
-		}
-	}
-
-	progressFactor = getProgressFactor(levelDifference);
-	qualityFactor = getQualityFactor(levelDifference);
-}
-
 void craft::increaseProgress(int efficiency, bool isBrand)
 {
 	int buffedEfficiency = efficiency;
@@ -60,9 +25,9 @@ void craft::increaseProgress(int efficiency, bool isBrand)
 		muscleMemoryTime = 0;
 	}
 
-	if (innovationTime > 0)
+	if (venerationTime > 0)
 	{
-		buffedEfficiency += efficiency / 5;
+		buffedEfficiency += efficiency / 2;
 	}
 
 	if (isBrand && nameOfTheElementsTime > 0)
@@ -99,10 +64,10 @@ void craft::increaseQuality(int efficiency)
 
 	if (innovationTime > 0)
 	{
-		buffedEfficiency += efficiency / 5;
+		buffedEfficiency += efficiency / 2;
 	}
 
-	int control = crafter.control + min((max(0, innerQuietStacks - 1) * crafter.control) / 5, 3000);
+	int control = crafter.control + (max(0, innerQuietStacks - 1) * crafter.control) / 5;
 	
 	float baseQuality = (control * 35.f) / 100.f + 35.f;
 	float suggestionMod = (control + 10000.f) / (recipe.suggestedControl + 10000.f);
@@ -230,11 +195,6 @@ void craft::endStep()
 		changeDurability(5);
 		manipulationTime--;
 	}
-	if (ingenuityTime > 0)
-	{
-		ingenuityTime--;
-		if (ingenuityTime == 0) calculateFactors();
-	}
 	greatStridesTime--;
 	innovationTime--;
 	nameOfTheElementsTime--;
@@ -312,14 +272,8 @@ string craft::getState() const
 	output += stateBuffList("Waste Not 2: ", wasteNot2Time, &anybuffs);
 	output += stateBuffList("Manipulation: ", manipulationTime, &anybuffs);
 	output += stateBuffList("Inner Quiet: ", innerQuietStacks, &anybuffs);
-	output += stateBuffList("Ingenuity: ", ingenuityTime, &anybuffs);
 	output += stateBuffList("Great Strides: ", greatStridesTime, &anybuffs);
 	output += stateBuffList("Innovation: ", innovationTime, &anybuffs);
-	if (reuseActive)
-	{
-		anybuffs = true;
-		output += "Reuse; ";
-	}
 	output += stateBuffList("Name of Elements: ", nameOfTheElementsTime, &anybuffs);
 	if (observeCombo)
 	{
@@ -383,6 +337,13 @@ actionResult craft::delicateSynthesis()
 
 	hitDurability();
 	return actionResult::success;
+}
+
+actionResult craft::groundwork()
+{
+	int durabilityCost = (wasteNotTime > 0 || wasteNot2Time > 0) ? 10 : 20;
+
+	return commonSynth(-14, durability < durabilityCost ? 100 : 200, 100, true);
 }
 
 actionResult craft::intensiveSynthesis()
@@ -561,19 +522,6 @@ actionResult craft::reflect()
 	return output;
 }
 
-actionResult craft::ingenuity()
-{
-	if (!changeCP(-22)) return actionResult::failNoCP;
-	
-	return actionResult::success;
-}
-
-void craft::ingenuityPost()
-{
-	ingenuityTime = 5;
-	calculateFactors();
-}
-
 actionResult craft::greatStrides()
 {
 	if (!changeCP(-32)) return actionResult::failNoCP;
@@ -584,6 +532,18 @@ actionResult craft::greatStrides()
 void craft::greatStridesPost()
 {
 	greatStridesTime = 3;
+}
+
+actionResult craft::veneration()
+{
+	if (!changeCP(-18)) return actionResult::failNoCP;
+
+	return actionResult::success;
+}
+
+void craft::venerationPost()
+{
+	venerationTime = 4;
 }
 
 actionResult craft::innovation()
@@ -631,17 +591,6 @@ void craft::observePost()
 	observeCombo = true;
 }
 
-actionResult craft::reuse()
-{
-	if (reuseActive || quality < recipe.nominalQuality) return actionResult::failHardUnavailable;
-	if (rollPercent(67)) return actionResult::failSoftUnavailable;
-	if (!changeCP(-60)) return actionResult::failNoCP;
-
-	reuseActive = true;
-
-	return actionResult::success;
-}
-
 actionResult craft::performOne(actions action)
 {
 	switch (action)
@@ -651,6 +600,7 @@ actionResult craft::performOne(actions action)
 	case actions::rapidSynthesis: return rapidSynthesis();
 	case actions::focusedSynthesis: return focusedSynthesis();
 	case actions::delicateSynthesis: return delicateSynthesis();
+	case actions::groundwork: return groundwork();
 	case actions::intensiveSynthesis: return intensiveSynthesis();
 	case actions::muscleMemory: return muscleMemory();
 	case actions::brandOfTheElements: return brandOfTheElements();
@@ -675,14 +625,13 @@ actionResult craft::performOne(actions action)
 
 	case actions::innerQuiet: return innerQuiet();
 	case actions::reflect: return reflect();
-	case actions::ingenuity: return ingenuity();
 	case actions::greatStrides: return greatStrides();
+	case actions::veneration: return veneration();
 	case actions::innovation: return innovation();
 	case actions::nameOfTheElements: return nameOfTheElements();
 	case actions::finalAppraisal: return finalAppraisal();
 
 	case actions::observe: return observe();
-	case actions::reuse: return reuse();
 	default:
 		assert(false);
 		return actionResult::failHardUnavailable;
@@ -697,8 +646,8 @@ void craft::performOnePost(actions action)
 	case actions::wasteNot: return wasteNotPost();
 	case actions::wasteNot2: return wasteNot2Post();
 	case actions::manipulation: return manipulationPost();
-	case actions::ingenuity: return ingenuityPost();
 	case actions::greatStrides: return greatStridesPost();
+	case actions::veneration: return venerationPost();
 	case actions::innovation: return innovationPost();
 	case actions::nameOfTheElements:
 		return nameOfTheElementsPost();
@@ -779,7 +728,6 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 	craftResult.steps = step;
 	if (it != sequence.cend()) ++it;	// the iterator needs to sit on the one after the last craft in order for the next calculation to work
 	craftResult.invalidActions += static_cast<int>(distance(it, sequence.cend()));	// Count everything that didn't happen post-macro
-	craftResult.reuseUsed = reuseActive;
 
 	return craftResult;
 }
