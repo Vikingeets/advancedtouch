@@ -287,8 +287,9 @@ int solver::actionLevel(actions action)
 	case actions::tricksOfTheTrade:
 	case actions::observe:
 		return 13;
-	case actions::veneration: return 15;
-	case actions::wasteNot: return 15;
+	case actions::veneration:
+	case actions::wasteNot:
+		return 15;
 	case actions::standardTouch: return 18;
 	case actions::greatStrides: return 21;
 	case actions::innovation: return 26;
