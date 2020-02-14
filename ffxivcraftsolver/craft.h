@@ -139,9 +139,6 @@ private:
 
 	condition cond;
 
-	int progressFactor;
-	int qualityFactor;
-
 	// Buffs
 	int muscleMemoryTime = 0;
 	int wasteNotTime = 0;
@@ -197,8 +194,6 @@ public:
 		quality(initialQuality),
 		progress(0),
 		cond(condition::normal),
-		progressFactor(getProgressFactor(crafter.rLevel - recipe.rLevel)),
-		qualityFactor(getQualityFactor(crafter.rLevel - recipe.rLevel)),
 		normalLock(nLock),
 		rng(r)
 	{}
