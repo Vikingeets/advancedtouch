@@ -377,10 +377,8 @@ craft::sequenceType parseSequence(const rapidjson::Document& d)
 }
 
 int performSingle(const crafterStats& crafter, const recipeStats& recipe,
- const craft::sequenceType& sequence,
-	goalType goal,
- int initialQuality,
-	bool normalLock)
+	const craft::sequenceType& sequence, goalType goal,
+	int initialQuality, bool normalLock)
 {
 	random rng;
 	craft synth(initialQuality, crafter, recipe, normalLock, rng);
@@ -406,12 +404,9 @@ int performSingle(const crafterStats& crafter, const recipeStats& recipe,
 }
 
 int performMulti(const crafterStats& crafter, const recipeStats& recipe,
- const craft::sequenceType& sequence,
-	goalType goal,
- int initialQuality,
-	bool normalLock,
- int threads,
-	int simsPerSequence)
+	const craft::sequenceType& sequence, goalType goal,
+	int initialQuality, bool normalLock,
+	int threads, int simsPerSequence)
 {
 	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock);
 
@@ -478,26 +473,16 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 }
 
 int performSolve(const crafterStats& crafter,
- const recipeStats& recipe,
-
+	const recipeStats& recipe,
 	const craft::sequenceType& sequence,
-
 	goalType goal,
-
 	int initialQuality,
-
 	bool normalLock,
-
 	int threads,
-
 	int simsPerSequence,
-
 	int generations,
-
 	int population,
-
 	int maxCacheSize,
-
 	strategy strat,
 	bool useTricks,
 	bool gatherStats)
