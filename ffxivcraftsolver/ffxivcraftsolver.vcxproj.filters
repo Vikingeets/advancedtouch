@@ -62,8 +62,5 @@
     <None Include="RecipeLevelTable.csv">
       <Filter>Resources</Filter>
     </None>
-    <None Include="CraftLevelDifference.csv">
-      <Filter>Resources</Filter>
-    </None>
   </ItemGroup>
 </Project>
