@@ -196,6 +196,7 @@ void craft::endStep()
 		manipulationTime--;
 	}
 	greatStridesTime--;
+	venerationTime--;
 	innovationTime--;
 	nameOfTheElementsTime--;
 	finalAppraisalTime--;
@@ -273,6 +274,7 @@ string craft::getState() const
 	output += stateBuffList("Manipulation: ", manipulationTime, &anybuffs);
 	output += stateBuffList("Inner Quiet: ", innerQuietStacks, &anybuffs);
 	output += stateBuffList("Great Strides: ", greatStridesTime, &anybuffs);
+	output += stateBuffList("Veneration: ", venerationTime, &anybuffs);
 	output += stateBuffList("Innovation: ", innovationTime, &anybuffs);
 	output += stateBuffList("Name of Elements: ", nameOfTheElementsTime, &anybuffs);
 	if (observeCombo)
