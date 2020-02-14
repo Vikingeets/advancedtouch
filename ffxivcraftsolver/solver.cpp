@@ -320,11 +320,10 @@ int solver::actionLevel(actions action)
 
 // Constructor for multisynth mode
 solver::solver(const crafterStats & c, const recipeStats & r, const craft::sequenceType & seed,
-	goalType g, int pWiggle, int iQ, int tCnt, bool nLock) :
+	goalType g, int iQ, int tCnt, bool nLock) :
 	crafter(c),
 	recipe(r),
 	goal(g),
-	wiggleFactor(pWiggle),
 	initialQuality(iQ),
 	numberOfThreads(tCnt),
 	normalLock(nLock),
@@ -347,14 +346,13 @@ solver::solver(const crafterStats & c, const recipeStats & r, const craft::seque
 solver::solver(const crafterStats& c,
 	const recipeStats& r,
 	const craft::sequenceType& seed,
-	goalType g, int pWiggle, int iQ,
+	goalType g, int iQ,
 	int tCnt, bool nLock, strategy s,
 	int population,
 	bool uT, bool gS) :
 	crafter(c),
 	recipe(r),
 	goal(g),
-	wiggleFactor(pWiggle),
 	initialQuality(iQ),
 	numberOfThreads(tCnt),
 	normalLock(nLock),
@@ -390,7 +388,6 @@ solver::netResult solver::executeMultisim(int simulationsPerTrial)
 	orders.crafter = &crafter;
 	orders.recipe = &recipe;
 	orders.numberOfSimulations = simulationsPerTrial;
-	orders.wiggle = wiggleFactor;
 	orders.initialQuality = initialQuality;
 	orders.normalLock = normalLock;
 	orders.goal = goal;
@@ -489,7 +486,6 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 	orders.crafter = &crafter;
 	orders.recipe = &recipe;
 	orders.numberOfSimulations = simulationsPerTrial;
-	orders.wiggle = wiggleFactor;
 	orders.initialQuality = initialQuality;
 	orders.normalLock = normalLock;
 	orders.goal = goal;
@@ -810,7 +806,7 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 		}
 		craft synth(order.initialQuality, *order.crafter, *order.recipe, order.normalLock, rng);
 
-		craft::endResult result = synth.performAll((*order.trials)[trialNumber].sequence, order.goal, order.wiggle, false);
+		craft::endResult result = synth.performAll((*order.trials)[trialNumber].sequence, order.goal, false);
 		localResults[trialNumber].progress += result.progress;
 		if (result.progress >= order.recipe->difficulty)	// a failed synth is always worth 0 quality, even in hqorbust mode
 		{

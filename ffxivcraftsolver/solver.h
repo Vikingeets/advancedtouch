@@ -72,7 +72,6 @@ public:
 		crafterStats const * crafter;
 		recipeStats const * recipe;
 		int numberOfSimulations;
-		int wiggle;
 		int initialQuality;
 		bool normalLock;
 		goalType goal;
@@ -84,7 +83,6 @@ private:
 	const crafterStats& crafter;
 	const recipeStats& recipe;
 	goalType goal;
-	int wiggleFactor;
 	int initialQuality;
 	int numberOfThreads;
 	bool normalLock; 
@@ -123,14 +121,13 @@ public:
 
 	// Constructor for multisynth mode
 	solver(const crafterStats& c, const recipeStats & r, const craft::sequenceType& seed,
-		goalType g, int pWiggle, int iQ, int tCnt, bool nLock);
+		goalType g, int iQ, int tCnt, bool nLock);
 
 	// Constructor for solve mode
 	solver(const crafterStats& c,	// the crafter
 		const recipeStats& r,		// the recipe
 		const craft::sequenceType& seed,	// the initial seed (may be empty)
 		goalType g,		// the goal
-		int pWiggle,	// the "wiggle factor" to prevent a solution that may not be valid ingame
 		int iQ,			// the initial quality
 		int tCnt,		// the number of threads to use
 		bool nLock,		// whether all conditions should be normal

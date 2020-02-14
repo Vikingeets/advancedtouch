@@ -656,7 +656,7 @@ void craft::performOnePost(actions action)
 	}
 }
 
-craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType goal, int progressWiggle, bool echoEach)
+craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType goal, bool echoEach)
 {
 	endResult craftResult;
 	craftResult.invalidActions = 0;
@@ -698,14 +698,11 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 
 		if (*it == actions::finalAppraisal) continue;	// since it doesn't tick
 
-		if (durability <= 0 || progress + progressWiggle >= recipe.difficulty)
+		if (durability <= 0 || progress >= recipe.difficulty)
 			break;
 		endStep();
 		if (result == actionResult::success) performOnePost(*it);
 	}
-
-	if (progress - progressWiggle < recipe.difficulty)	// The sim says we hit the goal, but it might actually be under
-		progress -= progressWiggle;	// so make it fail
 
 	if (echoEach)
 	{

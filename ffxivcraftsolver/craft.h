@@ -265,5 +265,5 @@ private:
 public:
 	actionResult performOne(actions action);
 	void performOnePost(actions action);
-	endResult performAll(const sequenceType& sequence, goalType goal, int progessWiggle, bool echoEach = false);
+	endResult performAll(const sequenceType& sequence, goalType goal, bool echoEach = false);
 };
