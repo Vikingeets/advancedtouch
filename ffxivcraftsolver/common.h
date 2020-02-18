@@ -1,17 +1,15 @@
 #pragma once
 
-#include <array>
-
 enum class classes
 {
-	CRP = 0,
-	BSM = 1,
-	ARM = 2,
-	GSM = 3,
-	LTW = 4,
-	WVR = 5,
-	ALC = 6,
-	CUL = 7
+	CRP,
+	BSM,
+	ARM,
+	GSM,
+	LTW,
+	WVR,
+	ALC,
+	CUL
 };
 
 struct crafterStats
