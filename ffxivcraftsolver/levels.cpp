@@ -25,7 +25,6 @@ inline vector<string> commaSplit(const string& str)
 	return out;
 }
 
-const char* recipeTableFilename = "RecipeLevelTable.csv";
 const char* differenceTableFilename = "CraftLevelDifference.csv";
 
 struct recipeData
@@ -46,14 +45,10 @@ struct differenceData
 unordered_map<int32_t, recipeData> recipeDataTable;
 unordered_map<int16_t, differenceData> differenceDataTable;
 
-void populateRecipeTable()
+bool populateRecipeTable(const string& fileName)
 {
-	ifstream tableFile(recipeTableFilename, ios::in);
-	if (!tableFile)
-	{
-		cerr << "Failed to open " << recipeTableFilename << endl;
-		exit(1);
-	}
+	ifstream tableFile(fileName, ios::in);
+	if (!tableFile) return false;
 	
 	constexpr size_t buffsize = 8192;
 	char out[buffsize];
@@ -77,6 +72,7 @@ void populateRecipeTable()
 
 		recipeDataTable.insert(recipeDataTable.end(), pair<int32_t, recipeData>(rLvl, recipe));
 	}
+	return true;
 }
 
 void populateDifferenceTable()

@@ -1,7 +1,8 @@
 #pragma once
+#include <string>
 #include <utility>
 
-void populateRecipeTable();
+bool populateRecipeTable(const std::string& fileName);
 
 void populateDifferenceTable();
 
