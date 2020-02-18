@@ -343,7 +343,7 @@ actionResult craft::groundwork()
 {
 	int durabilityCost = (wasteNotTime > 0 || wasteNot2Time > 0) ? 10 : 20;
 
-	return commonSynth(-14, durability < durabilityCost ? 150 : 300, 100, true);
+	return commonSynth(-18, durability < durabilityCost ? 150 : 300, 100, true);
 }
 
 actionResult craft::intensiveSynthesis()
