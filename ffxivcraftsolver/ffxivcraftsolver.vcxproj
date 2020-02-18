@@ -335,6 +335,9 @@
     <Text Include="arguments.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CraftLevelDifference.csv">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+    </None>
     <None Include="generated.json" />
     <None Include="options.json" />
     <None Include="RecipeLevelTable.csv">
