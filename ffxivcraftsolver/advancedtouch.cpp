@@ -282,6 +282,7 @@ void parseRecipe(const rapidjson::Document& d, recipeStats* recipe)
 	}
 
 	populateRecipeTable();
+	populateDifferenceTable();
 
 	recipe->suggestedCraftsmanship = getSuggestedCraftsmanship(recipe->rLevel);
 	recipe->suggestedControl = getSuggestedControl(recipe->rLevel);

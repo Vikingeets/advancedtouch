@@ -37,8 +37,9 @@ void craft::increaseProgress(int efficiency, bool isBrand)
 
 	float baseProgress = (crafter.craftsmanship * 21.f) / 100.f + 2.f;
 	float suggestionMod = (crafter.craftsmanship + 10000.f) / (recipe.suggestedCraftsmanship + 10000.f);
+	float differenceMod = progressFactor / 100.f;
 
-	int progressIncrease = static_cast<int>(baseProgress * suggestionMod);
+	int progressIncrease = static_cast<int>(baseProgress * suggestionMod * differenceMod);
 
 	progress += (progressIncrease * buffedEfficiency) / 100;
 
@@ -70,6 +71,7 @@ void craft::increaseQuality(int efficiency)
 	
 	float baseQuality = (control * 35.f) / 100.f + 35.f;
 	float suggestionMod = (control + 10000.f) / (recipe.suggestedControl + 10000.f);
+	float differenceMod = qualityFactor / 100.f;
 	float conditionMod;
 
 	switch (cond)
@@ -88,7 +90,7 @@ void craft::increaseQuality(int efficiency)
 		break;
 	}
 
-	int qualityIncrease = static_cast<int>(baseQuality * suggestionMod * conditionMod);
+	int qualityIncrease = static_cast<int>(baseQuality * suggestionMod * differenceMod * conditionMod);
 
 	quality += (qualityIncrease * buffedEfficiency) / 100;
 

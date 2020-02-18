@@ -26,17 +26,25 @@ inline vector<string> commaSplit(const string& str)
 }
 
 const char* recipeTableFilename = "RecipeLevelTable.csv";
+const char* differenceTableFilename = "CraftLevelDifference.csv";
 
 struct recipeData
 {
 	int8_t classLevel;
-	int8_t stars;	// unused
+	int8_t stars;
 	uint16_t suggestedCraftsmanship;
 	uint16_t suggestedControl;
 };
 
+struct differenceData
+{
+	int16_t progressFactor;
+	int16_t qualityFactor;
+};
+
 // Accessed by multiple threads, but only written before they are started
 unordered_map<int32_t, recipeData> recipeDataTable;
+unordered_map<int16_t, differenceData> differenceDataTable;
 
 void populateRecipeTable()
 {
@@ -69,6 +77,35 @@ void populateRecipeTable()
 
 		recipeDataTable.insert(recipeDataTable.end(), pair<int32_t, recipeData>(rLvl, recipe));
 	}
+}
+
+void populateDifferenceTable()
+{
+	ifstream tableFile(differenceTableFilename, ios::in);
+	if (!tableFile)
+	{
+		cerr << "Failed to open " << differenceTableFilename << endl;
+		exit(1);
+	}
+
+	constexpr size_t buffsize = 8192;
+	char out[buffsize];
+	while (tableFile.getline(out, buffsize))
+	{
+		vector<string> split = commaSplit(string(out));
+		if (split.size() < 4) continue;
+
+		int16_t difference = atoi(split[1].c_str());
+		differenceData diff = {
+			static_cast<int16_t>(atoi(split[2].c_str())),
+			static_cast<int16_t>(atoi(split[3].c_str())),
+		};
+		if (diff.progressFactor < 20 ||  diff.qualityFactor < 20)
+			continue;
+
+		differenceDataTable.insert(differenceDataTable.end(), pair<int16_t, differenceData>(difference, diff));
+	}
+
 }
 
 const array<int, 30> cLevelToRLevel = {
@@ -122,6 +159,16 @@ int rlvlToMain(int rLvl)
 	return it->second.classLevel;
 }
 
+int getStars(int rLvl)
+{
+	assert(!recipeDataTable.empty());
+
+	if (rLvl < 1) rLvl = 1;
+	auto it = recipeDataTable.find(rLvl);
+	if (it == recipeDataTable.end()) return 4;
+
+	return it->second.stars;
+}
 int getSuggestedCraftsmanship(int rLvl)
 {
 	assert(!recipeDataTable.empty());
@@ -142,4 +189,30 @@ int getSuggestedControl(int rLvl)
 	if (it == recipeDataTable.end()) --it;
 
 	return it->second.suggestedControl;
+}
+
+int getProgressFactor(int difference)
+{
+	assert(!differenceDataTable.empty());
+
+	if (difference < -30) difference = -30;
+	else if (difference > 49) difference = 49;
+
+	auto it = differenceDataTable.find(difference);
+	if (it == differenceDataTable.end()) --it;
+
+	return it->second.progressFactor;
+}
+
+int getQualityFactor(int difference)
+{
+	assert(!differenceDataTable.empty());
+
+	if (difference < -30) difference = -30;
+	else if (difference > 49) difference = 49;
+
+	auto it = differenceDataTable.find(difference);
+	if (it == differenceDataTable.end()) --it;
+
+	return it->second.qualityFactor;
 }
