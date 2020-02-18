@@ -303,7 +303,6 @@ struct options
 	int maxCacheSize;
 
 	bool normalLock;
-	int wiggle;
 	int threads;
 
 	bool useTricks;
@@ -323,7 +322,6 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
 	opts->maxCacheSize = getIntIfExists(d, "/max cache size");
 	
 	opts->normalLock = getBoolIfExists(d, "/normal lock");
-	opts->wiggle = getIntIfExists(d, "/wiggle");
 	opts->threads = getIntIfExists(d, "/threads");
 	opts->useTricks = getBoolIfExists(d, "/use tricks");
 
@@ -384,14 +382,14 @@ craft::sequenceType parseSequence(const rapidjson::Document& d)
 	return sequence;
 }
 
-int performSingle(const crafterStats& crafter, const recipeStats& recipe, const craft::sequenceType& sequence,
-	goalType goal, int progressWiggle,
+int performSingle(const crafterStats& crafter, const recipeStats& recipe,
+	const craft::sequenceType& sequence, goalType goal,
 	int initialQuality, bool normalLock)
 {
 	random rng;
 	craft synth(initialQuality, crafter, recipe, normalLock, rng);
 
-	craft::endResult result = synth.performAll(sequence, goal, progressWiggle, true);
+	craft::endResult result = synth.performAll(sequence, goal, true);
 
 	cout << "Progress: " << result.progress << "/" << recipe.difficulty << " (" << (result.progress >= recipe.difficulty ? "success" : "failure") << ")\n";
 	switch (goal)
@@ -411,12 +409,12 @@ int performSingle(const crafterStats& crafter, const recipeStats& recipe, const 
 	return 0;
 }
 
-int performMulti(const crafterStats& crafter, const recipeStats& recipe, const craft::sequenceType& sequence,
-	goalType goal, int progressWiggle,
+int performMulti(const crafterStats& crafter, const recipeStats& recipe,
+	const craft::sequenceType& sequence, goalType goal,
 	int initialQuality, bool normalLock,
 	int threads, int simsPerSequence)
 {
-	solver solve(crafter, recipe, sequence, goal, progressWiggle, initialQuality, threads, normalLock);
+	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock);
 
 	solver::netResult result = solve.executeMultisim(simsPerSequence);
 
@@ -480,10 +478,10 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 	return true;
 }
 
-int performSolve(const crafterStats& crafter, const recipeStats& recipe,
+int performSolve(const crafterStats& crafter,
+	const recipeStats& recipe,
 	const craft::sequenceType& sequence,
 	goalType goal,
-	int progressWiggle,
 	int initialQuality,
 	bool normalLock,
 	int threads,
@@ -492,9 +490,10 @@ int performSolve(const crafterStats& crafter, const recipeStats& recipe,
 	int population,
 	int maxCacheSize,
 	strategy strat,
-	bool useTricks, bool gatherStats)
+	bool useTricks,
+	bool gatherStats)
 {
-	solver solve(crafter, recipe, sequence, goal, progressWiggle, initialQuality, threads, normalLock,
+	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock,
 		strat, population, useTricks, gatherStats);
 	
 	solver::trial result = solve.executeSolver(simsPerSequence, generations, maxCacheSize, solveUpdate);
@@ -811,7 +810,7 @@ int main(int argc, char* argv[])
 		if (command == commands::solve)
 		{	
 			craft::sequenceType seedSorted = seed;
-			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useTricks, true, true);
+			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useTricks, true);
 			sort(available.begin(), available.end());
 			sort(seedSorted.begin(), seedSorted.end());
 			// available is already unique
@@ -827,12 +826,12 @@ int main(int argc, char* argv[])
 	switch (command)
 	{
 	case commands::single:
-		return performSingle(crafter, recipe, seed, goal, opts.wiggle, initialQuality, opts.normalLock);
+		return performSingle(crafter, recipe, seed, goal, initialQuality, opts.normalLock);
 	case commands::multi:
-		return performMulti(crafter, recipe, seed, goal, opts.wiggle, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence);
+		return performMulti(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence);
 	case commands::solve:
 		signal(SIGINT, handler);
-		return performSolve(crafter, recipe, seed, goal, opts.wiggle, initialQuality, opts.normalLock, opts.threads,
-			opts.simsPerSequence, opts.generations, opts.population, opts.maxCacheSize, strat, opts.useTricks, gatherStatistics);
+		return performSolve(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence,
+			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useTricks, gatherStatistics);
 	}
 }

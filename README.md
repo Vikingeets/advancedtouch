@@ -99,8 +99,6 @@ Advanced Touch can cache the results of its simulations in memory to accelerate 
 
 Setting "normal lock" to true will disable the simulation of conditions. This will run faster and more consistently, but the solution might not be as good as the solver thinks it is, due to not accounting for the whims of the game's RNG.
 
-"wiggle" instructs the solver to produce a rotation which goes from well below the required progress to well above, just in case the game and the solver disagree on exact numbers, with the number setting how close is too close. It should be okay to leave at 0 for recipes where the effects of Ingenuity are exactly known (e.g. at the level cap).
-
 "threads" sets how many worker threads the program will use to perform a multi or solve. Setting it to the default of 0 will use as many threads as the computer has cores. (On Windows, the solver shouldn't have an effect on the game's performance even using all cores.)
 
 "use tricks" instructs the solver to try Tricks of the Trade in generated rotations. It might come up with something clever with conditions, it might not.

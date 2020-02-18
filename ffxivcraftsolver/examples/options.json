@@ -5,7 +5,6 @@
     "max cache size": 100000,
 
     "normal lock": false,
-    "wiggle":  0,
     "threads": 0,
 
     "use tricks": false
