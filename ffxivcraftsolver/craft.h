@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include "common.h"
+#include "levels.h"
 #include "random.h"
 
 enum class actions : char
