@@ -81,7 +81,7 @@ The recipe file is required and is a JSON document. All values are case-sensitiv
 
 "durability" is the recipe's durability rating.
 
-"quality" is the quality required to guarantee a 100% HQ chance. It should still be provided in max quality or collectability mode, as it is used internally, e.g. for the availablility of Reuse.
+"quality" is the quality required to guarantee a 100% HQ chance. It should still be provided in max quality or collectability mode, as it is used internally.
 
 # Options
 
