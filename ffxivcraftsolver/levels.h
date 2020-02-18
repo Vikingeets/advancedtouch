@@ -4,7 +4,7 @@
 
 bool populateRecipeTable(const std::string& fileName);
 
-void populateDifferenceTable();
+bool populateDifferenceTable(const std::string& fileName);
 
 int mainToRlvl(int level);
 

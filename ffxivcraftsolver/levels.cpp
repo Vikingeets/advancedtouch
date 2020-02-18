@@ -25,8 +25,6 @@ inline vector<string> commaSplit(const string& str)
 	return out;
 }
 
-const char* differenceTableFilename = "CraftLevelDifference.csv";
-
 struct recipeData
 {
 	int8_t classLevel;
@@ -75,14 +73,10 @@ bool populateRecipeTable(const string& fileName)
 	return true;
 }
 
-void populateDifferenceTable()
+bool populateDifferenceTable(const string& fileName)
 {
-	ifstream tableFile(differenceTableFilename, ios::in);
-	if (!tableFile)
-	{
-		cerr << "Failed to open " << differenceTableFilename << endl;
-		exit(1);
-	}
+	ifstream tableFile(fileName, ios::in);
+	if (!tableFile) return false;
 
 	constexpr size_t buffsize = 8192;
 	char out[buffsize];
@@ -101,7 +95,7 @@ void populateDifferenceTable()
 
 		differenceDataTable.insert(differenceDataTable.end(), pair<int16_t, differenceData>(difference, diff));
 	}
-
+	return true;
 }
 
 const array<int, 30> cLevelToRLevel = {

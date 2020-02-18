@@ -282,12 +282,18 @@ void parseRecipe(const rapidjson::Document& d, recipeStats* recipe)
 	}
 
 	const char* recipeTableFilename = "RecipeLevelTable.csv";
+	const char* differenceTableFilename = "CraftLevelDifference.csv";
+
 	if (!populateRecipeTable(recipeTableFilename))
 	{
 		cerr << "Failed to open " << recipeTableFilename << endl;
 		exit(1);
 	}
-	populateDifferenceTable();
+	if(!populateDifferenceTable(differenceTableFilename))
+	{
+		cerr << "Failed to open " << differenceTableFilename << endl;
+		exit(1);
+	}
 
 	recipe->suggestedCraftsmanship = getSuggestedCraftsmanship(recipe->rLevel);
 	recipe->suggestedControl = getSuggestedControl(recipe->rLevel);
