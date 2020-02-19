@@ -662,6 +662,7 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 {
 	endResult craftResult;
 	craftResult.invalidActions = 0;
+	int softInvalids = 0;
 
 	craft::sequenceType::const_iterator it;
 	for (it = sequence.cbegin(); it != sequence.cend(); ++it)
@@ -695,10 +696,15 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 		}
 		if (result == actionResult::failNoCP || result == actionResult::failHardUnavailable)
 			craftResult.invalidActions++;
+		if (result == actionResult::failSoftUnavailable) softInvalids++;
 		if (result != actionResult::success && result != actionResult::failRNG)
 			continue;
 
-		if (*it == actions::finalAppraisal) continue;	// since it doesn't tick
+		if (*it == actions::finalAppraisal)
+		{
+			softInvalids++;	// I have never seen this action be useful in a result.
+			continue;	// since it doesn't tick
+		}
 
 		if (durability <= 0 || progress >= recipe.difficulty)
 			break;
@@ -727,6 +733,10 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 	craftResult.steps = step;
 	if (it != sequence.cend()) ++it;	// the iterator needs to sit on the one after the last craft in order for the next calculation to work
 	craftResult.invalidActions += static_cast<int>(distance(it, sequence.cend()));	// Count everything that didn't happen post-macro
+
+	// The solver has a nasty habit of junking up results with soft invalids
+	// So aggressively prune them out of anything that they don't help a 100% qual of.
+	if (quality < recipe.quality) craftResult.invalidActions += softInvalids;
 
 	return craftResult;
 }
