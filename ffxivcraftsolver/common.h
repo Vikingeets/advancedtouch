@@ -1,17 +1,5 @@
 #pragma once
 
-enum class classes
-{
-	CRP,
-	BSM,
-	ARM,
-	GSM,
-	LTW,
-	WVR,
-	ALC,
-	CUL
-};
-
 struct crafterStats
 {
 	int level;		// The level shown ingame. Used for ability availability
@@ -19,7 +7,6 @@ struct crafterStats
 	int craftsmanship;
 	int control;
 	int CP;
-	classes classKind;	// The crafter's class
 };
 
 struct recipeStats

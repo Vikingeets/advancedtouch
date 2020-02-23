@@ -35,6 +35,18 @@ std::mutex random::devicelock;
 
 volatile sig_atomic_t termFlag = 0;
 
+enum class classes
+{
+	CRP,
+	BSM,
+	ARM,
+	GSM,
+	LTW,
+	WVR,
+	ALC,
+	CUL
+};
+
 extern "C" void handler(int sig)
 {
 	if (sig == SIGINT)
@@ -141,7 +153,7 @@ bool getBoolIfExists(const rapidjson::Document& d, const char* key, bool def = f
 	else return def;
 }
 
-void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFood, bool useMedicine)
+void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFood, bool useMedicine, classes classKind)
 {
 	if (d.HasParseError())
 	{
@@ -186,7 +198,7 @@ void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFoo
 	}
 
 	string prefix;
-	switch (crafter->classKind)
+	switch (classKind)
 	{
 	case classes::CRP:
 		prefix = "/crp/";
@@ -600,6 +612,8 @@ int main(int argc, char* argv[])
 
 	bool gatherStatistics = false;
 
+	classes crafterClass;
+
 	options opts;
 
 	string currentArgvOrig = argv[1];
@@ -663,14 +677,14 @@ int main(int argc, char* argv[])
 			string givenClassOrig = argv[currentArgc];
 			string givenClass = lowercase(givenClassOrig);
 
-			if (givenClass == "crp" || givenClass == "carpenter") crafter.classKind = classes::CRP;
-			else if (givenClass == "bsm" || givenClass == "blacksmith") crafter.classKind = classes::BSM;
-			else if (givenClass == "arm" || givenClass == "armorer") crafter.classKind = classes::ARM;
-			else if (givenClass == "gsm" || givenClass == "goldsmith") crafter.classKind = classes::GSM;
-			else if (givenClass == "ltw" || givenClass == "leatherworker") crafter.classKind = classes::LTW;
-			else if (givenClass == "wvr" || givenClass == "weaver") crafter.classKind = classes::WVR;
-			else if (givenClass == "alc" || givenClass == "alchemist") crafter.classKind = classes::ALC;
-			else if (givenClass == "cul" || givenClass == "culinarian") crafter.classKind = classes::CUL;
+			if (givenClass == "crp" || givenClass == "carpenter") crafterClass = classes::CRP;
+			else if (givenClass == "bsm" || givenClass == "blacksmith") crafterClass = classes::BSM;
+			else if (givenClass == "arm" || givenClass == "armorer") crafterClass = classes::ARM;
+			else if (givenClass == "gsm" || givenClass == "goldsmith") crafterClass = classes::GSM;
+			else if (givenClass == "ltw" || givenClass == "leatherworker") crafterClass = classes::LTW;
+			else if (givenClass == "wvr" || givenClass == "weaver") crafterClass = classes::WVR;
+			else if (givenClass == "alc" || givenClass == "alchemist") crafterClass = classes::ALC;
+			else if (givenClass == "cul" || givenClass == "culinarian") crafterClass = classes::CUL;
 			else
 			{
 				cerr << "unknown class '" << givenClassOrig << "'\n";
@@ -783,7 +797,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	parseStats(crafterStatsDocument, &crafter, useFood, useMedicine);
+	parseStats(crafterStatsDocument, &crafter, useFood, useMedicine, crafterClass);
 	
 	if (!recipeStatsProvided)
 	{
