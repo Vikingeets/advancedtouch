@@ -1,0 +1,229 @@
+#include "advancedtouch.h"
+#include "levels.h"
+#include "craft.h"
+#include "solver.h"
+
+using namespace std;
+
+const map<actions, int> atActionsToCActions = {
+	{actions::basicSynth, AT_SYNTH_BASICSYNTH},
+	{actions::carefulSynthesis, AT_SYNTH_CAREFULSYNTH},
+	{actions::rapidSynthesis, AT_SYNTH_RAPIDSYNTH},
+	{actions::focusedSynthesis, AT_SYNTH_FOCUSEDSYNTH},
+	{actions::delicateSynthesis, AT_SYNTH_DELICATESYNTH},
+	{actions::groundwork, AT_SYNTH_GROUNDWORK},
+	{actions::intensiveSynthesis, AT_SYNTH_INTENSIVESYNTH},
+	{actions::muscleMemory, AT_SYNTH_MUSCLEMEMORY},
+	{actions::brandOfTheElements, AT_SYNTH_BRANDOFELEMENTS},
+
+	{actions::basicTouch, AT_TOUCH_BASICTOUCH},
+	{actions::standardTouch, AT_TOUCH_STANDARDTOUCH},
+	{actions::hastyTouch, AT_TOUCH_HASTYTOUCH},
+	{actions::byregotsBlessing, AT_TOUCH_BYREGOTS},
+	{actions::preciseTouch, AT_TOUCH_PRECISETOUCH},
+	{actions::focusedTouch, AT_TOUCH_FOCUSEDTOUCH},
+	{actions::patientTouch, AT_TOUCH_PATIENTTOUCH},
+	{actions::prudentTouch, AT_TOUCH_PRUDENTTOUCH},
+	{actions::preparatoryTouch, AT_TOUCH_PREPARATORYTOUCH},
+	{actions::trainedEye, AT_TOUCH_TRAINEDEYE},
+
+	{actions::tricksOfTheTrade, AT_TRICKSOFTHETRADE},
+
+	{actions::mastersMend, AT_DURA_MASTERSMEND},
+	{actions::wasteNot, AT_DURA_WASTENOT},
+	{actions::wasteNot2, AT_DURA_WASTENOT2},
+	{actions::manipulation, AT_DURA_MANIPULATION},
+
+	{actions::innerQuiet, AT_BUFF_INNERQUIET},
+	{actions::reflect, AT_BUFF_REFLECT},
+	{actions::greatStrides, AT_BUFF_GREATSTRIDES},
+	{actions::veneration, AT_BUFF_VENERATION},
+	{actions::innovation, AT_BUFF_INNOVATION},
+	{actions::nameOfTheElements, AT_BUFF_NAMEOFELEMENTS},
+	{actions::finalAppraisal, AT_BUFF_FINALAPPRAISAL},
+
+	{actions::observe, AT_OBSERVE}
+};
+
+int atActionToCAction(actions action)
+{
+	return atActionsToCActions.at(action);
+}
+
+void populateResultSequence(atSolverResult* result, craft::sequenceType sequence)
+{
+	result->sequenceLength = sequence.size();
+	if (sequence.size() > 100) sequence.resize(100);
+	for (int i = 0; i < sequence.size(); ++i)
+		result->sequence[i] = atActionToCAction(sequence[i]);
+}
+
+actions cActionToATAction(int action)
+{
+	auto it = find_if(atActionsToCActions.cbegin(), atActionsToCActions.cend(),
+		[action](const pair<actions, int>& p) { return action == p.second; });
+	if (it == atActionsToCActions.end()) terminate();
+	else return it->first;
+}
+
+atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence, int initialSequenceSize, int cGoal, int initialQuality, int threads, int normalLock, int cStrat, int population, int useTricks)
+{
+	craft::sequenceType seed;
+	seed.reserve(initialSequenceSize);
+
+	for (int i = 0; i < initialSequenceSize; ++i)
+		seed.push_back(cActionToATAction(initialSequence[i]));
+
+	crafterStats craft;
+	craft.level = crafter.level;
+	craft.rLevel = crafter.rlevel;
+	craft.craftsmanship = crafter.craftsmanship;
+	craft.control = crafter.control;
+	craft.CP = crafter.CP;
+
+	recipeStats rec;
+	rec.rLevel = recipe.rLevel;
+	rec.difficulty = recipe.difficulty;
+	rec.quality = recipe.quality;
+	rec.nominalQuality = recipe.displayedQuality;
+	rec.durability = recipe.durability;
+	rec.suggestedCraftsmanship = recipe.suggestedCraftsmanship;
+	rec.suggestedControl = recipe.suggestedControl;
+
+	goalType solveGoal;
+	switch (cGoal)
+	{
+	case AT_GOAL_HQ:
+		solveGoal = goalType::quality;
+		break;
+	case AT_GOAL_MAXQUALITY:
+		solveGoal = goalType::maxQuality;
+		break;
+	case AT_GOAL_COLLECTABILITY:
+		solveGoal = goalType::collectability;
+		break;
+	default: terminate();
+	}
+
+	strategy strat;
+	switch (cStrat)
+	{
+	case AT_STRATEGY_STANDARD:
+		strat = strategy::standard;
+		break;
+	case AT_STRATEGY_HQORBUST:
+		strat = strategy::hqOrBust;
+		break;
+	case AT_STRATEGY_NQONLY:
+		strat = strategy::nqOnly;
+		break;
+	default: terminate();
+	}
+
+	bool nLock = normalLock != 0;
+	bool uT = useTricks != 0;
+
+	return reinterpret_cast<atSolver*>(new solver(craft, rec, seed, solveGoal, initialQuality, threads, nLock, strat, population, uT, false));
+}
+
+int atLoadRecipeTable(const char* filename)
+{
+	return populateRecipeTable(filename) ? 0 : 1;
+}
+
+int atLoadDifferenceTable(const char* filename)
+{
+	return populateDifferenceTable(filename) ? 0 : 1;
+}
+
+atSolverCallback cCallback;
+
+bool cSolverCallback(int generations, int currentGeneration, int simsPerTrial, goalType goal, strategy strat, solver::trial status, int uniquePopulation, int cacheHits)
+{
+	if (!cCallback) return true;
+
+	(void)generations;
+	(void)simsPerTrial;
+	(void)strat;
+	(void)uniquePopulation;
+	(void)cacheHits;
+
+	atSolverResult result;
+
+	populateResultSequence(&result, status.sequence);
+
+	result.successes = status.outcome.successes;
+	switch (goal)
+	{
+	case goalType::quality:
+		result.hqPercent = status.outcome.hqPercent;
+		break;
+	case goalType::maxQuality:
+		result.quality = status.outcome.quality;
+		break;
+	case goalType::collectability:
+		result.collectableHit = status.outcome.collectableGoalsHit;
+		break;
+	}
+
+	return cCallback(currentGeneration, result) == 0;
+}
+
+atSolverResult atExecuteSimulations(atSolver* cSolver, int numberOfSimulations)
+{
+	solver* solve = reinterpret_cast<solver*>(cSolver);
+
+	atSolverResult result;
+	solver::trial simResult = solve->executeMultisim(numberOfSimulations);
+
+	populateResultSequence(&result, simResult.sequence);
+
+	result.successes = simResult.outcome.successes;
+	switch (solve->getGoal())
+	{
+	case goalType::quality:
+		result.hqPercent = simResult.outcome.hqPercent;
+		break;
+	case goalType::maxQuality:
+		result.quality = simResult.outcome.quality;
+		break;
+	case goalType::collectability:
+		result.collectableHit = simResult.outcome.collectableGoalsHit;
+		break;
+	}
+
+	return result;
+}
+
+atSolverResult atExecuteSolve(atSolver* cSolver, int simulationsPerSequence, int generations, int maxCacheSize, atSolverCallback callback)
+{
+	solver* solve = reinterpret_cast<solver*>(cSolver);
+	atSolverResult result;
+
+	cCallback = callback;
+
+	solver::trial solveResult = solve->executeSolver(simulationsPerSequence, generations, maxCacheSize, cSolverCallback);
+
+	populateResultSequence(&result, solveResult.sequence);
+	
+	result.successes = solveResult.outcome.successes;
+	switch (solve->getGoal())
+	{
+	case goalType::quality:
+		result.hqPercent = solveResult.outcome.hqPercent;
+		break;
+	case goalType::maxQuality:
+		result.quality = solveResult.outcome.quality;
+		break;
+	case goalType::collectability:
+		result.collectableHit = solveResult.outcome.collectableGoalsHit;
+		break;
+	}
+
+	return result;
+}
+
+void atDeinitSolver(atSolver* solve)
+{
+	delete reinterpret_cast<solver*>(solve);
+}

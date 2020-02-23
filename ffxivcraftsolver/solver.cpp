@@ -376,7 +376,7 @@ solver::solver(const crafterStats& c,
 		[&seed](trial& t) {t.sequence = seed; });
 }
 
-solver::netResult solver::executeMultisim(int simulationsPerTrial)
+solver::trial solver::executeMultisim(int simulationsPerTrial)
 {
 	vector<thread> threads;
 	
@@ -402,7 +402,7 @@ solver::netResult solver::executeMultisim(int simulationsPerTrial)
 	for (auto& t : threads)
 		t.join();
 
-	return trials[0].outcome;
+	return trials[0];
 }
 
 // returns true if a is better than b, so sorting ends up best to worst

@@ -29,6 +29,9 @@
     <ClCompile Include="advancedtouch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="capi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="random.h">
@@ -44,6 +47,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="solver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="advancedtouch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

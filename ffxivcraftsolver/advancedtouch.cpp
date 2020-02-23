@@ -434,7 +434,7 @@ int performMulti(const crafterStats& crafter, const recipeStats& recipe,
 {
 	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock);
 
-	solver::netResult result = solve.executeMultisim(simsPerSequence);
+	solver::netResult result = solve.executeMultisim(simsPerSequence).outcome;
 
 	cout << result.successes << " completed (" << (result.successes * 100) / simsPerSequence << "%)\n";
 	switch (goal)

@@ -319,12 +319,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="capi.cpp" />
     <ClCompile Include="craft.cpp" />
     <ClCompile Include="advancedtouch.cpp" />
     <ClCompile Include="levels.cpp" />
     <ClCompile Include="solver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="advancedtouch.h" />
     <ClInclude Include="craft.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="levels.h" />

@@ -80,8 +80,8 @@ public:
 private:
 	threadOrder order;	// not atomic: protected with orderSetLock
 
-	const crafterStats& crafter;
-	const recipeStats& recipe;
+	const crafterStats crafter;
+	const recipeStats recipe;
 	goalType goal;
 	int initialQuality;
 	int numberOfThreads;
@@ -137,7 +137,7 @@ public:
 		bool gS			// gather statistics?
 	);
 
-	netResult executeMultisim(int simulationsPerTrial);
+	trial executeMultisim(int simulationsPerTrial);
 
 	using solverCallback = std::function<
 		bool(					// return true to continue solving, false to abort
@@ -157,7 +157,11 @@ public:
 		int maxCacheSize,
 		solverCallback callback
 	);
-																									// due to the whole vector<atomic> thing
+
+	goalType getGoal() const
+	{
+		return goal;
+	}																									// due to the whole vector<atomic> thing
 	
 	/* interthread communication */
 	// called by main thread
