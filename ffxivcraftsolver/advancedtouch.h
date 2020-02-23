@@ -110,7 +110,7 @@ atSolver* atInitSolver(
 	int normalLock,				/* 0 to account for conditions. Non-0 to only consider normal (faster but less accurate) */
 	int strategy,
 	int population,				/* Number of rotations to consider at a time. Must be > 0 and even. */
-	int useTricks				/* 0 to disable using Tricks of the trade. Non-0 to consider using it. */
+	int useConditionals			/* 0 to disable using actions that need a condition. Non-0 to consider using them. */
 );
 	
 /* You must provide both .csv files before you can begin solving! Returns 0 on success, 1 on failure */
@@ -125,7 +125,7 @@ typedef int (*atSolverCallback)(
 
 /* Instead of solving, you may instead simulate a single sequence. */
 /* It will be initialSequence if no solving has been done, or the best sequence if it has. */
-/* strategy and useTricks will be ignored. Set population above to at least 2. */
+/* strategy and useConditionals will be ignored. Set population above to at least 2. */
 atSolverResult atExecuteSimulations(
 	atSolver* solver,
 	int numberOfSimulations

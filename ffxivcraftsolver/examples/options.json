@@ -7,5 +7,5 @@
     "normal lock": false,
     "threads": 0,
 
-    "use tricks": false
+    "use conditionals": false
 }

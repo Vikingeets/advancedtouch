@@ -323,7 +323,7 @@ struct options
 	bool normalLock;
 	int threads;
 
-	bool useTricks;
+	bool useConditionals;
 };
 
 void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
@@ -341,7 +341,7 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
 	
 	opts->normalLock = getBoolIfExists(d, "/normal lock");
 	opts->threads = getIntIfExists(d, "/threads");
-	opts->useTricks = getBoolIfExists(d, "/use tricks");
+	opts->useConditionals = getBoolIfExists(d, "/use conditionals");
 
 	bitset<3> missingStats;
 	missingStats[0] = opts->simsPerSequence <= 0;
@@ -508,11 +508,11 @@ int performSolve(const crafterStats& crafter,
 	int population,
 	int maxCacheSize,
 	strategy strat,
-	bool useTricks,
+	bool useConditionals,
 	bool gatherStats)
 {
 	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock,
-		strat, population, useTricks, gatherStats);
+		strat, population, useConditionals, gatherStats);
 	
 	solver::trial result = solve.executeSolver(simsPerSequence, generations, maxCacheSize, solveUpdate);
 	solver::netResult outcome = result.outcome;
@@ -830,7 +830,7 @@ int main(int argc, char* argv[])
 		if (command == commands::solve)
 		{	
 			craft::sequenceType seedSorted = seed;
-			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useTricks, true);
+			craft::sequenceType available = solver::getAvailable(crafter, recipe, opts.useConditionals, true);
 			sort(available.begin(), available.end());
 			sort(seedSorted.begin(), seedSorted.end());
 			// available is already unique
@@ -852,6 +852,6 @@ int main(int argc, char* argv[])
 	case commands::solve:
 		signal(SIGINT, handler);
 		return performSolve(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence,
-			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useTricks, gatherStatistics);
+			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useConditionals, gatherStatistics);
 	}
 }
