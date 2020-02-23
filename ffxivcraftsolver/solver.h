@@ -113,7 +113,7 @@ private:
 	bool compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial, bool alwaysRejectInvalids) const;
 
 public:
-	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool includeFirst);
+	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useConditionals, bool includeFirst);
 
 	static int actionLevel(actions action);
 
@@ -133,7 +133,7 @@ public:
 		bool nLock,		// whether all conditions should be normal
 		strategy s,		// the strategy
 		int population,	// the population. must be here to properly allocate counter vector
-		bool uT,		// use tricks of the trade?
+		bool uC,		// use conditionals?
 		bool gS			// gather statistics?
 	);
 

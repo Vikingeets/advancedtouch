@@ -249,8 +249,21 @@ bool isFirstAction(actions action)
 	}
 }
 
+bool isConditional(actions action)
+{
+	switch (action)
+	{
+	case actions::intensiveSynthesis:
+	case actions::preciseTouch:
+	case actions::tricksOfTheTrade:
+		return true;
+	default:
+		return false;
+	}
+}
+
 // Would return a set, but needs random access iterators for the mutator
-vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useTricks, bool includeFirst)
+vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useConditionals, bool includeFirst)
 {
 	vector<actions> output;
 	for(actions action : allActions)
@@ -258,7 +271,7 @@ vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeSt
 		// Reject by level
 		if (actionLevel(action) > crafter.level) continue;
 
-		if (!useTricks && action == actions::tricksOfTheTrade) continue;
+		if (!useConditionals && isConditional(action)) continue;
 
 		if (!includeFirst && isFirstAction(action))
 			continue;
@@ -351,7 +364,7 @@ solver::solver(const crafterStats& c,
 	goalType g, int iQ,
 	int tCnt, bool nLock, strategy s,
 	int population,
-	bool uT, bool gS) :
+	bool uC, bool gS) :
 	crafter(c),
 	recipe(r),
 	goal(g),
@@ -364,8 +377,8 @@ solver::solver(const crafterStats& c,
 	simResults(population),
 	cached(population, false),
 	sequenceCounters(population),
-	availableActions(getAvailable(c, r, uT && !nLock, true)),
-	availableWithoutFirst(getAvailable(c, r, uT && !nLock, false)),
+	availableActions(getAvailable(c, r, uC && !nLock, true)),
+	availableWithoutFirst(getAvailable(c, r, uC && !nLock, false)),
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);

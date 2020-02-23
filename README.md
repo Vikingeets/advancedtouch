@@ -101,7 +101,7 @@ Setting "normal lock" to true will disable the simulation of conditions. This wi
 
 "threads" sets how many worker threads the program will use to perform a multi or solve. Setting it to the default of 0 will use as many threads as the computer has cores. (On Windows, the solver shouldn't have an effect on the game's performance even using all cores.)
 
-"use tricks" instructs the solver to try Tricks of the Trade in generated rotations. It might come up with something clever with conditions, it might not.
+"use conditionals" instructs the solver to try actions that require a condition (i.e. Intensive Synthesis, Precise Touch, and Tricks of the Trade) in generated rotations. It might come up with something clever with conditions, it might not.
 
 # Examples
 `advancedtouch single -j crp -f examples/9crp50cul.json -r examples/ashlumberrecipe.json -s examples/ashlumbersequence.json`
