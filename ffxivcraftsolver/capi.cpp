@@ -94,7 +94,7 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 	switch (cGoal)
 	{
 	case AT_GOAL_HQ:
-		solveGoal = goalType::quality;
+		solveGoal = goalType::hq;
 		break;
 	case AT_GOAL_MAXQUALITY:
 		solveGoal = goalType::maxQuality;
@@ -155,7 +155,7 @@ bool cSolverCallback(int generations, int currentGeneration, int simsPerTrial, g
 	result.successes = status.outcome.successes;
 	switch (goal)
 	{
-	case goalType::quality:
+	case goalType::hq:
 		result.hqPercent = status.outcome.hqPercent;
 		break;
 	case goalType::maxQuality:
@@ -181,7 +181,7 @@ atSolverResult atExecuteSimulations(atSolver* cSolver, int numberOfSimulations)
 	result.successes = simResult.outcome.successes;
 	switch (solve->getGoal())
 	{
-	case goalType::quality:
+	case goalType::hq:
 		result.hqPercent = simResult.outcome.hqPercent;
 		break;
 	case goalType::maxQuality:
@@ -209,7 +209,7 @@ atSolverResult atExecuteSolve(atSolver* cSolver, int simulationsPerSequence, int
 	result.successes = solveResult.outcome.successes;
 	switch (solve->getGoal())
 	{
-	case goalType::quality:
+	case goalType::hq:
 		result.hqPercent = solveResult.outcome.hqPercent;
 		break;
 	case goalType::maxQuality:

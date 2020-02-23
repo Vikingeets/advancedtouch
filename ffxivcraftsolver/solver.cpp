@@ -441,7 +441,7 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 			return a.outcome.progress > b.outcome.progress;
 		switch (goal)
 		{
-		case goalType::quality:
+		case goalType::hq:
 			if (a.outcome.hqPercent == 100 * simulationsPerTrial && b.outcome.hqPercent == 100 * simulationsPerTrial)
 				break;	// i.e. go to nqOnly for length comparison
 			else if (a.outcome.hqPercent != b.outcome.hqPercent)
@@ -636,7 +636,7 @@ void solver::reportThreadSimResults(const vector<netResult>& threadResults)
 		simResults[i].quality += threadResults[i].quality;
 		switch (goal)
 		{
-		case goalType::quality:
+		case goalType::hq:
 			simResults[i].hqPercent += threadResults[i].hqPercent;
 			break;
 		case goalType::maxQuality:
@@ -816,7 +816,7 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 			localResults[trialNumber].quality += result.quality;
 			switch (order.goal)
 			{
-			case goalType::quality:
+			case goalType::hq:
 				localResults[trialNumber].hqPercent += result.hqPercent;
 				break;
 			case goalType::maxQuality:

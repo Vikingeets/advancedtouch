@@ -412,7 +412,7 @@ int performSingle(const crafterStats& crafter, const recipeStats& recipe,
 	cout << "Progress: " << result.progress << "/" << recipe.difficulty << " (" << (result.progress >= recipe.difficulty ? "success" : "failure") << ")\n";
 	switch (goal)
 	{
-	case goalType::quality:
+	case goalType::hq:
 		cout << result.hqPercent << "% HQ chance\n";
 		break;
 	case goalType::maxQuality:
@@ -439,7 +439,7 @@ int performMulti(const crafterStats& crafter, const recipeStats& recipe,
 	cout << result.successes << " completed (" << (result.successes * 100) / simsPerSequence << "%)\n";
 	switch (goal)
 	{
-	case goalType::quality:
+	case goalType::hq:
 		cout << "Average HQ: " << result.hqPercent / simsPerSequence << "%\n";
 		break;
 	case goalType::maxQuality:
@@ -469,7 +469,7 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 	{
 		switch (goal)
 		{
-		case goalType::quality:
+		case goalType::hq:
 			cout << status.outcome.hqPercent / simsPerTrial << "% HQ, ";
 			break;
 		case goalType::maxQuality:
@@ -520,7 +520,7 @@ int performSolve(const crafterStats& crafter,
 	cout << '\n' << outcome.successes << " completed (" << (outcome.successes * 100) / simsPerSequence << "%)\n";
 	switch (goal)
 	{
-	case goalType::quality:
+	case goalType::hq:
 		cout << "Average HQ: " << outcome.hqPercent / simsPerSequence << "%\n";
 		break;
 	case goalType::maxQuality:
@@ -595,7 +595,7 @@ int main(int argc, char* argv[])
 	recipeStats recipe;
 	int initialQuality = 0;
 
-	goalType goal = goalType::quality;
+	goalType goal = goalType::hq;
 	strategy strat = strategy::standard;
 
 	rapidjson::Document crafterStatsDocument;
@@ -717,7 +717,7 @@ int main(int argc, char* argv[])
 		}
 		else if (currentArgv == "-q")
 		{
-			goal = goalType::quality;
+			goal = goalType::hq;
 		}
 		else if (currentArgv == "-r")
 		{

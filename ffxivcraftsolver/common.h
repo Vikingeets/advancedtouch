@@ -30,7 +30,7 @@ enum class strategy
 
 enum class goalType
 {
-	quality,		// Maximize average HQ%
+	hq,				// Maximize average HQ%
 	maxQuality,		// Push quality as far as possible
 	collectability	// Hitting the goal is all that matters
 };
