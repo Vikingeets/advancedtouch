@@ -149,16 +149,6 @@ int rlvlToMain(int rLvl)
 	return it->second.classLevel;
 }
 
-int getStars(int rLvl)
-{
-	assert(!recipeDataTable.empty());
-
-	if (rLvl < 1) rLvl = 1;
-	auto it = recipeDataTable.find(rLvl);
-	if (it == recipeDataTable.end()) return 4;
-
-	return it->second.stars;
-}
 int getSuggestedCraftsmanship(int rLvl)
 {
 	assert(!recipeDataTable.empty());
