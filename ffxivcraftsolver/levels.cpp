@@ -47,7 +47,9 @@ bool populateRecipeTable(const string& fileName)
 {
 	ifstream tableFile(fileName, ios::in);
 	if (!tableFile) return false;
-	
+
+	recipeDataTable.clear();
+
 	constexpr size_t buffsize = 8192;
 	char out[buffsize];
 	while (tableFile.getline(out, buffsize))
@@ -77,6 +79,8 @@ bool populateDifferenceTable(const string& fileName)
 {
 	ifstream tableFile(fileName, ios::in);
 	if (!tableFile) return false;
+
+	differenceDataTable.clear();
 
 	constexpr size_t buffsize = 8192;
 	char out[buffsize];
