@@ -250,7 +250,7 @@ void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFoo
 		exit(1);
 	}
 
-	crafter->rLevel = mainToRlvl(crafter->level);
+	crafter->cLevel = mainToRlvl(crafter->level);
 
 	crafter->craftsmanship += min((crafter->craftsmanship * foodCraftsmanshipPercent) / 100, foodCraftsmanshipMax);
 	crafter->control += min((crafter->control * foodControlPercent) / 100, foodControlMax);

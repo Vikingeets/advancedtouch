@@ -197,8 +197,8 @@ public:
 		quality(initialQuality),
 		progress(0),
 		cond(condition::normal),
-		progressFactor(getProgressFactor(crafter.rLevel - recipe.rLevel)),
-		qualityFactor(getQualityFactor(crafter.rLevel - recipe.rLevel)),
+		progressFactor(getProgressFactor(crafter.cLevel - recipe.rLevel)),
+		qualityFactor(getQualityFactor(crafter.cLevel - recipe.rLevel)),
 		normalLock(nLock),
 		rng(r)
 	{}

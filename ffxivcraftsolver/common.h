@@ -3,7 +3,7 @@
 struct crafterStats
 {
 	int level;		// The level shown ingame. Used for ability availability
-	int rLevel;		// The equivalent rLevel, e.g. level 70 is rLevel 290
+	int cLevel;		// The equivalent cLevel, e.g. level 70 is cLevel 290
 	int craftsmanship;
 	int control;
 	int CP;

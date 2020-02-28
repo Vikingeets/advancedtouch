@@ -76,7 +76,7 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 
 	crafterStats craft;
 	craft.level = crafter.level;
-	craft.rLevel = crafter.rlevel;
+	craft.cLevel = crafter.cLevel;
 	craft.craftsmanship = crafter.craftsmanship;
 	craft.control = crafter.control;
 	craft.CP = crafter.CP;

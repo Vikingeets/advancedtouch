@@ -64,7 +64,7 @@ struct atSolver;
 struct atCrafter
 {
 	int level;				/* The crafter's job level */
-	int rlevel;				/* And their rlevel */
+	int cLevel;				/* And their cLevel */
 	int craftsmanship;
 	int control;
 	int CP;
