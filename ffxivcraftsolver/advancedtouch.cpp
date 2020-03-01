@@ -229,14 +229,14 @@ void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFoo
 	}
 
 	crafter->level = getIntIfExists(d, (prefix + "level").c_str());
-	crafter->craftsmanship = getIntIfExists(d, (prefix + "craftsmanship").c_str());
-	crafter->control = getIntIfExists(d, (prefix + "control").c_str());
+	crafter->craftsmanship = getIntIfExists(d, (prefix + "craftsmanship").c_str(), -1);
+	crafter->control = getIntIfExists(d, (prefix + "control").c_str(), -1);
 	crafter->CP = getIntIfExists(d, (prefix + "cp").c_str(), -1);
 
 	bitset<4> missingStats;
 	missingStats[0] = crafter->level <= 0 || crafter->level > 80;
-	missingStats[1] = crafter->craftsmanship <= 0;
-	missingStats[2] = crafter->control <= 0;
+	missingStats[1] = crafter->craftsmanship <= -1;
+	missingStats[2] = crafter->control <= -1;
 	missingStats[3] = crafter->CP <= -1;		// they want to try zero CP they're welcome to
 
 	if (missingStats.any())
