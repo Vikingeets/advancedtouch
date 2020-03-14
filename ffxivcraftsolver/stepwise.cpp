@@ -109,17 +109,17 @@ bool doAction(actions action, craft::rngOverride over, craft* crafting, craft::s
 	switch (result)
 	{
 	case craft::actionResult::success:
-		cout << " success\n";
+		cout << " success\n\n";
 		break;
 	case craft::actionResult::failRNG:
-		cout << " failed roll\n";
+		cout << " failed roll\n\n";
 		break;
 	case craft::actionResult::failNoCP:
-		cout << " insufficient CP\n";
+		cout << " insufficient CP\n\n";
 		break;
 	case craft::actionResult::failHardUnavailable:
 	case craft::actionResult::failSoftUnavailable:
-		cout << " not available\n";
+		cout << " not available\n\n";
 		break;
 	}
 	bool output = result == craft::actionResult::success || result == craft::actionResult::failRNG;
@@ -263,7 +263,7 @@ actions doSolve(
 	seed->insert(seed->end(), result.cbegin(), result.cend());
 
 	actions suggestion = result.front();
-	cout << "Suggested action: " << simpleText.at(suggestion) << '\n';
+	cout << "Suggested action: " << simpleText.at(suggestion) << "\n\n";
 
 	return suggestion;
 }
@@ -452,9 +452,9 @@ int performStepwise(
 				continue;
 			}
 			craft::rngOverride over;
-			if (command.size() == 2 || command[2] == "?") over = craft::rngOverride::random;
-			else if (command[2] == "s") over = craft::rngOverride::success;
-			else if (command[2] == "f") over = craft::rngOverride::failure;
+			if (command.size() == 1 || command[1] == "?") over = craft::rngOverride::random;
+			else if (command[1] == "s") over = craft::rngOverride::success;
+			else if (command[1] == "f") over = craft::rngOverride::failure;
 			else
 			{
 				cout << "Unknown success/failure. Set s, f, or ?" << '\n';
@@ -463,6 +463,7 @@ int performStepwise(
 			}
 			printStatus = doAction(lastSuggested, over, &currentStatus, currentSeed);
 			if (!printStatus) continue;
+			lastSuggested = actions::invalid;
 		}
 		else if (command[0] == "undo" || command[0] == "u")
 		{

@@ -409,6 +409,12 @@ solver::solver(const crafterStats& c,
 	availableWithoutFirst(getAvailable(c, r, true, false)),
 	threadsDone(0)
 {
+	assert(numberOfThreads > 0);
+
+	order.command = threadCommand::terminate;
+
+	for_each(trials.begin(), trials.end(),
+		[&seed](trial& t) {t.sequence = seed; });
 }
 
 solver::trial solver::executeMultisim(int simulationsPerTrial)
