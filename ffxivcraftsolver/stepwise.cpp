@@ -1,0 +1,461 @@
+#include "common.h"
+#include "craft.h"
+#include "solver.h"
+#include "stepwise.h"
+
+#include <cassert>
+#include <csignal>
+#include <string>
+#include <vector>
+#include <stack>
+#include <iostream>
+
+using namespace std;
+
+constexpr int generationMultiplier = 10;
+
+constexpr int invalidInt = numeric_limits<int>::min();
+
+extern volatile sig_atomic_t termFlag;
+
+extern "C" void stepwiseHandler(int sig)
+{
+	if (sig == SIGINT)
+		termFlag = 1;
+}
+
+int stringToInt(const string& str, int minimum)
+{
+	try
+	{
+		int i = static_cast<int>(stoul(str));
+		if (i < minimum) return invalidInt;
+		else return i;
+	}
+	catch (logic_error)
+	{
+		return invalidInt;
+	}
+}
+
+craft undo(stack<craft>& history, int amount)
+{
+	assert(!history.empty());
+	for (int i = 0; i < amount; ++i)
+	{
+		if (history.size() == 1) break;
+		history.pop();
+	}
+	return history.top();
+}
+
+bool isBuff(actions action)
+{
+	switch (action)
+	{
+	case actions::muscleMemory:
+	case actions::wasteNot:
+	case actions::wasteNot2:
+	case actions::manipulation:
+	case actions::innerQuiet:
+	case actions::reflect:
+	case actions::greatStrides:
+	case actions::veneration:
+	case actions::innovation:
+	case actions::nameOfTheElements:
+	case actions::finalAppraisal:
+	case actions::observe:
+		return true;
+	default:
+		return false;
+	}
+}
+
+bool applyBuff(const vector<string>& command, craft* crafting)
+{
+	if (command.size() == 1)
+	{
+		cout << "Possible buffs:\n";
+		for (auto it = simpleText.begin(); it != simpleText.end(); ++it)
+			if (isBuff(it->first)) cout << '\t' << it->second << '\n';
+		return false;
+	}
+	const string& buffName = lowercase(command[1]);
+	auto it = find_if(simpleText.begin(), simpleText.end(),
+		[&buffName](const pair<actions, string>& p){return buffName == lowercase(p.second); });
+	if (it == simpleText.end())
+	{
+		cout << "Unknown action:" << command[1] << "\n";
+		return false;
+	}
+	if (!isBuff(it->first))
+	{
+		cout << command[1] << " is not a buff";
+		return false;
+	}
+	if (command.size() == 2)
+	{
+		if (it->first == actions::innerQuiet)
+			cout << command[1] << " requires a stack amount\n";
+		else if (it->first == actions::observe)
+			cout << command[1] << " requires 0 to disable or 1 to enable\n";
+		else
+			cout << command[1] << " requires a duration\n";
+		return false;
+	}
+	int duration = stringToInt(command[2], it->first == actions::nameOfTheElements ? -1 : 0);
+	if (duration == invalidInt)
+	{
+		cout << command[1] << " must be set to at least " << (it->first == actions::nameOfTheElements? "-1" : "0");
+		return false;
+	}
+	crafting->setBuff(it->first, duration);
+	return true;
+}
+
+bool doAction(actions action, craft::rngOverride over, craft* crafting, craft::sequenceType& seed)
+{
+	cout << "Performing " << simpleText.at(action) << ":";
+	craft::actionResult result = crafting->performOneComplete(action, over);
+	switch (result)
+	{
+	case craft::actionResult::success:
+		cout << "success\n";
+		break;
+	case craft::actionResult::failRNG:
+		cout << "failed roll\n";
+		break;
+	case craft::actionResult::failNoCP:
+		cout << "insufficient CP\n";
+		break;
+	case craft::actionResult::failHardUnavailable:
+	case craft::actionResult::failSoftUnavailable:
+		cout << "not available\n";
+		break;
+	}
+	bool output = result == craft::actionResult::success || result == craft::actionResult::failRNG;
+	if (output)
+	{
+		if (seed.size() >= crafting->getStep()) seed[crafting->getStep() - 1] = action;
+		else seed.push_back(action);
+	}
+
+	return output;
+}
+
+bool doAction(const vector<string>& command, craft* crafting, craft::sequenceType& seed)
+{
+	if (command.size() == 1)
+	{
+		cout << "Possible actions:\n";
+		for (auto it = simpleText.begin(); it != simpleText.end(); ++it)
+			cout << '\t' << it->second << '\n';
+		return false;
+	}
+
+	if (crafting->maxedProgress())
+	{
+		cout << "The craft is complete. Either undo, reset, quit, or lower progress.\n";
+		return false;
+	}
+	else if (crafting->outOfDurability())
+	{
+		cout << "The craft has failed. Either undo, reset, quit, or raise durability.\n";
+		return false;
+	}
+
+	const string& actionName = lowercase(command[1]);
+	auto it = find_if(simpleText.begin(), simpleText.end(),
+		[&actionName](const pair<actions, string>& p) {return actionName == lowercase(p.second); });
+	if (it == simpleText.end())
+	{
+		cout << "Unknown action:" << command[1] << "\n";
+		return false;
+	}
+	craft::rngOverride over;
+	if (command.size() == 2 || command[2] == "?") over = craft::rngOverride::random;
+	else if (command[2] == "s") over = craft::rngOverride::success;
+	else if (command[2] == "f") over = craft::rngOverride::failure;
+	else
+	{
+		cout << "Unknown success/failure. Set s, f, or ?" << '\n';
+		return false;
+	}
+	return doAction(it->first, over, crafting, seed);
+}
+
+bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, goalType goal, strategy strat, solver::trial status, int uniquePopulation, int cacheHits)
+{
+	(void)uniquePopulation;
+	(void)cacheHits;
+	if (termFlag) return false;
+
+	const chrono::milliseconds updateDelay(500ms);
+	static chrono::time_point<chrono::steady_clock> stepwiseNextUpdate(chrono::steady_clock::now() + updateDelay);
+	if (chrono::steady_clock::now() < stepwiseNextUpdate) return true;
+
+	cout << currentGeneration << "/" << generations;
+	if (strat != strategy::nqOnly)
+	{
+		switch (goal)
+		{
+		case goalType::hq:
+			cout << status.outcome.hqPercent / simsPerTrial << "% HQ";
+			break;
+		case goalType::maxQuality:
+			cout << status.outcome.quality / simsPerTrial << " quality";
+			break;
+		case goalType::collectability:
+			cout << status.outcome.collectableGoalsHit * 100 / simsPerTrial << "% hit goal";
+			break;
+		}
+	}
+	cout << endl;
+
+	stepwiseNextUpdate = chrono::steady_clock::now() + updateDelay;
+
+	return true;
+}
+
+actions doSolve(
+	const vector<string>& command,
+	const crafterStats& c,
+	const recipeStats& r,
+	craft::sequenceType* seed,
+	goalType g,
+	const craft& iS,
+	int tCnt,
+	strategy s,
+	int population,
+	int simsPerTrial,
+	int generations
+)
+{
+	if (iS.maxedProgress())
+	{
+		cout << "The craft is complete. Either undo, reset, quit, or lower progress.\n";
+		return actions::invalid;
+	}
+	else if (iS.outOfDurability())
+	{
+		cout << "The craft has failed. Either undo, reset, quit, or raise durability.\n";
+		return actions::invalid;
+	}
+	if (command.size() > 1)
+	{
+		generations = stringToInt(command[2], 1);
+		if (generations == invalidInt)
+		{
+			cout << "You must set at least 1 generation, or omit to use the value in the options file.\n";
+			return actions::invalid;
+		}
+	}
+
+	int partialIncrement = iS.getStep() - 1;
+	if (partialIncrement > seed->size()) partialIncrement = seed->size();
+	craft::sequenceType partialSeed(next(seed->begin(), partialIncrement), seed->end());
+
+	signal(SIGINT, stepwiseHandler);
+
+	solver solve(c, r, partialSeed, g, iS, tCnt, s, population);
+
+	craft::sequenceType result = solve.executeSolver(simsPerTrial, generations * generationMultiplier, generations, 0, stepwiseUpdate).sequence;
+
+	termFlag = 0;
+	signal(SIGINT, SIG_DFL);
+
+	if (result.empty())
+	{
+		// Shouldn't Happen
+		cout << "The solver was unable to find an action.";
+		return actions::invalid;
+	}
+	seed->resize(min(static_cast<int>(seed->size()), partialIncrement));
+	seed->insert(seed->end(), result.cbegin(), result.cend());
+
+	actions suggestion = result.front();
+	cout << "Suggested action: " << simpleText.at(suggestion);
+
+	return suggestion;
+}
+
+int performStepwise(
+	const crafterStats& crafter,
+	const recipeStats& recipe,
+	const craft::sequenceType& seed,
+	goalType goal,
+	int initialQuality,
+	int threads,
+	int simsPerSequence,
+	int stepwiseGenerations,
+	int population,
+	strategy strat
+	)
+{
+	craft currentStatus = craft(initialQuality, crafter, recipe, false);
+	random rand;
+	currentStatus.setRNG(&rand);
+
+	stack<craft> craftHistory;
+	craftHistory.push(currentStatus);
+
+	bool printStatus = true;
+	actions lastSuggested = actions::invalid;
+
+	// Holds an entire sequence, start to end. Modified as actions happen.
+	craft::sequenceType currentSeed = seed;
+
+	while (true)
+	{
+		if (printStatus)
+		{
+			cout << "Step " << currentStatus.getStep() << '\n';
+			cout << currentStatus.getState();
+		}
+		cout << endl;
+		printStatus = true;
+
+		string commandString;
+		cout << "> ";
+		getline(cin, commandString);
+
+		vector<string> commandOrig = tokenSplit(commandString, ' ');
+		if (commandOrig.empty())
+		{
+			printStatus = false;
+			continue;
+		}
+		vector<string> command = commandOrig;
+		for (auto& cmd : command)
+			cmd = lowercase(cmd);
+
+		if (command[0] == "step" || command[0] == "s")
+		{
+			if (command.size() == 1)
+			{
+				cout << "Step number required\n";
+				printStatus = false;
+				continue;
+			}
+			int step = stringToInt(command[1], 1);
+			if (step == invalidInt)
+			{
+				cout << "Step must be at least 1";
+				printStatus = false;
+				continue;
+			}
+			else currentStatus.setStep(step);
+		}
+		else if (command[0] == "progress" || command[0] == "p")
+		{
+			if (command.size() == 1)
+			{
+				cout << "Progress amount required\n";
+				printStatus = false;
+				continue;
+			}
+			int progress = stringToInt(command[1], 0);
+			if (progress == invalidInt)
+			{
+				cout << "Progress must be at least 0";
+				printStatus = false;
+				continue;
+			}
+			else currentStatus.setProgress(progress);
+		}
+		else if (command[0] == "quality" || command[0] == "q")
+		{
+			if (command.size() == 1)
+			{
+				cout << "Quality amount required\n";
+				printStatus = false;
+				continue;
+			}
+			int quality = stringToInt(command[1], 0);
+			if (quality == invalidInt)
+			{
+				cout << "Quality must be at least 0";
+				printStatus = false;
+				continue;
+			}
+			else currentStatus.setQuality(quality);
+		}
+		else if (command[0] == "durability" || command[0] == "d")
+		{
+			if (command.size() == 1)
+			{
+				cout << "Durabilty required\n";
+				printStatus = false;
+				continue;
+			}
+			int durability = stringToInt(command[1], -15);
+			if (durability == invalidInt)
+			{
+				cout << "Durability must be at least -15";
+				printStatus = false;
+				continue;
+			}
+			else currentStatus.setDurability(durability);
+		}
+		else if (command[0] == "condition" || command[0] == "c")
+		{
+			if (command.size() == 1)
+			{
+				cout << "Condition required: e, g, n, or p\n";
+				printStatus = false;
+				continue;
+			}
+			if (command[1] == "e")
+				currentStatus.setCondition(craft::condition::excellent);
+			else if (command[1] == "g")
+				currentStatus.setCondition(craft::condition::good);
+			else if (command[1] == "n")
+				currentStatus.setCondition(craft::condition::normal);
+			else if (command[1] == "p")
+				currentStatus.setCondition(craft::condition::poor);
+			else
+			{
+				cout << "Condition required: e, g, n, or p\n";
+				printStatus = false;
+				continue;
+			}
+		}
+		else if (command[0] == "cp" || command[0] == "c")
+		{
+			if (command.size() == 1)
+			{
+				cout << "CP amount required\n";
+				printStatus = false;
+				continue;
+			}
+			int CP = stringToInt(command[1], 0);
+			if (CP == invalidInt)
+			{
+				cout << "CP must be at least 0";
+				printStatus = false;
+				continue;
+			}
+			else currentStatus.setCP(CP);
+		}
+		else if (command[0] == "buff")
+		{
+			printStatus = applyBuff(commandOrig, &currentStatus);
+			if (!printStatus) continue;
+		}
+		else if (command[0] == "action" || command[0] == "ac")
+		{
+			printStatus = doAction(commandOrig, &currentStatus, currentSeed);
+			if (!printStatus) continue;
+		}
+		else if (command[0] == "solve" || command[0] == "so")
+		{
+			lastSuggested = doSolve(commandOrig, crafter, recipe, &currentSeed, goal, currentStatus, threads, strat, population, simsPerSequence, stepwiseGenerations);
+			printStatus = lastSuggested != actions::invalid;
+			if (!printStatus) continue;
+		}
+
+		craftHistory.push(currentStatus);
+	}
+
+	return 0;
+}
