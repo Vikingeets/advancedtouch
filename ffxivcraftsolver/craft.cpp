@@ -278,7 +278,7 @@ string craft::getState() const
 
 	output += "Buffs: ";
 	bool anybuffs = false;
-	output += stateBuffList("Final Appraisal: ", finalAppraisalTime, &anybuffs);
+	output += stateBuffList("Muscle Memory: ", muscleMemoryTime, &anybuffs);
 	output += stateBuffList("Waste Not: ", wasteNotTime, &anybuffs);
 	output += stateBuffList("Waste Not 2: ", wasteNot2Time, &anybuffs);
 	output += stateBuffList("Manipulation: ", manipulationTime, &anybuffs);
@@ -286,7 +286,8 @@ string craft::getState() const
 	output += stateBuffList("Great Strides: ", greatStridesTime, &anybuffs);
 	output += stateBuffList("Veneration: ", venerationTime, &anybuffs);
 	output += stateBuffList("Innovation: ", innovationTime, &anybuffs);
-	output += stateBuffList("Name of Elements: ", nameOfTheElementsTime, &anybuffs);
+	output += stateBuffList("Final Appraisal: ", finalAppraisalTime, &anybuffs);
+	output += stateBuffList("Name of the Elements: ", nameOfTheElementsTime, &anybuffs);
 	if (observeCombo)
 	{
 		anybuffs = true;

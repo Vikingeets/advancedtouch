@@ -38,17 +38,6 @@ int stringToInt(const string& str, int minimum)
 	}
 }
 
-craft undo(stack<craft>& history, int amount)
-{
-	assert(!history.empty());
-	for (int i = 0; i < amount; ++i)
-	{
-		if (history.size() == 1) break;
-		history.pop();
-	}
-	return history.top();
-}
-
 bool isBuff(actions action)
 {
 	switch (action)
@@ -106,7 +95,7 @@ bool applyBuff(const vector<string>& command, craft* crafting)
 	int duration = stringToInt(command[2], it->first == actions::nameOfTheElements ? -1 : 0);
 	if (duration == invalidInt)
 	{
-		cout << command[1] << " must be set to at least " << (it->first == actions::nameOfTheElements? "-1" : "0");
+		cout << command[2] << " must be set to at least " << (it->first == actions::nameOfTheElements? "-1" : "0");
 		return false;
 	}
 	crafting->setBuff(it->first, duration);
@@ -120,23 +109,23 @@ bool doAction(actions action, craft::rngOverride over, craft* crafting, craft::s
 	switch (result)
 	{
 	case craft::actionResult::success:
-		cout << "success\n";
+		cout << " success\n";
 		break;
 	case craft::actionResult::failRNG:
-		cout << "failed roll\n";
+		cout << " failed roll\n";
 		break;
 	case craft::actionResult::failNoCP:
-		cout << "insufficient CP\n";
+		cout << " insufficient CP\n";
 		break;
 	case craft::actionResult::failHardUnavailable:
 	case craft::actionResult::failSoftUnavailable:
-		cout << "not available\n";
+		cout << " not available\n";
 		break;
 	}
 	bool output = result == craft::actionResult::success || result == craft::actionResult::failRNG;
-	if (output)
+	if (output && action != actions::finalAppraisal)
 	{
-		if (seed.size() >= crafting->getStep()) seed[crafting->getStep() - 1] = action;
+		if (seed.size() >= crafting->getStep() - 1) seed[crafting->getStep() - 2] = action;
 		else seed.push_back(action);
 	}
 
@@ -200,13 +189,13 @@ bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, go
 		switch (goal)
 		{
 		case goalType::hq:
-			cout << status.outcome.hqPercent / simsPerTrial << "% HQ";
+			cout << ", " << status.outcome.hqPercent / simsPerTrial << "% HQ";
 			break;
 		case goalType::maxQuality:
-			cout << status.outcome.quality / simsPerTrial << " quality";
+			cout << ", " << status.outcome.quality / simsPerTrial << " quality";
 			break;
 		case goalType::collectability:
-			cout << status.outcome.collectableGoalsHit * 100 / simsPerTrial << "% hit goal";
+			cout << ", " << status.outcome.collectableGoalsHit * 100 / simsPerTrial << "% hit goal";
 			break;
 		}
 	}
@@ -243,7 +232,7 @@ actions doSolve(
 	}
 	if (command.size() > 1)
 	{
-		generations = stringToInt(command[2], 1);
+		generations = stringToInt(command[1], 1);
 		if (generations == invalidInt)
 		{
 			cout << "You must set at least 1 generation, or omit to use the value in the options file.\n";
@@ -274,7 +263,7 @@ actions doSolve(
 	seed->insert(seed->end(), result.cbegin(), result.cend());
 
 	actions suggestion = result.front();
-	cout << "Suggested action: " << simpleText.at(suggestion);
+	cout << "Suggested action: " << simpleText.at(suggestion) << '\n';
 
 	return suggestion;
 }
@@ -446,6 +435,7 @@ int performStepwise(
 		{
 			printStatus = doAction(commandOrig, &currentStatus, currentSeed);
 			if (!printStatus) continue;
+			lastSuggested = actions::invalid;
 		}
 		else if (command[0] == "solve" || command[0] == "so")
 		{
@@ -453,9 +443,70 @@ int performStepwise(
 			printStatus = lastSuggested != actions::invalid;
 			if (!printStatus) continue;
 		}
+		else if (command[0] == "suggested" || command[0] == "su")
+		{
+			if (lastSuggested == actions::invalid)
+			{
+				cout << "No action has been suggested for this step. Please execute the solver.\n";
+				printStatus = false;
+				continue;
+			}
+			craft::rngOverride over;
+			if (command.size() == 2 || command[2] == "?") over = craft::rngOverride::random;
+			else if (command[2] == "s") over = craft::rngOverride::success;
+			else if (command[2] == "f") over = craft::rngOverride::failure;
+			else
+			{
+				cout << "Unknown success/failure. Set s, f, or ?" << '\n';
+				printStatus = false;
+				continue;
+			}
+			printStatus = doAction(lastSuggested, over, &currentStatus, currentSeed);
+			if (!printStatus) continue;
+		}
+		else if (command[0] == "undo" || command[0] == "u")
+		{
+			if (craftHistory.empty()) continue;	// Shouldn't Happen
+			int amount;
+			if (command.size() == 1) amount = 1;
+			else
+			{
+				amount = stringToInt(command[1], 0);
+				if (amount == invalidInt)
+				{
+					cout << "Undo amount must be at least 0.\n";
+					printStatus = false;
+					continue;
+				}
+			}
+			for (int i = 0; i < amount; ++i)
+			{
+				if (craftHistory.size() == 1) break;
+				craftHistory.pop();
+			}
+			currentStatus = craftHistory.top();
+			continue;
+		}
+		else if (command[0] == "reset")
+		{
+			currentStatus = craft(initialQuality, crafter, recipe, false);
+			craftHistory = stack<craft>();
+			craftHistory.push(currentStatus);
+			lastSuggested = actions::invalid;
+			// Don't reset the seed; it can help prime future solutions
+			continue;
+		}
+		else if (command[0] == "exit" || command[0] == "quit")
+		{
+			return 0;
+		}
+		else
+		{
+			cout << "Unknown command " << command[0] << '\n';
+			printStatus = false;
+			continue;
+		}
 
 		craftHistory.push(currentStatus);
 	}
-
-	return 0;
 }

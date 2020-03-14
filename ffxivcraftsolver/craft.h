@@ -137,8 +137,8 @@ public:
 	};
 
 private:
-	const crafterStats crafter;
-	const recipeStats recipe;
+	crafterStats crafter;
+	recipeStats recipe;
 
 	int step;
 	int durability; 
@@ -165,7 +165,7 @@ private:
 	int finalAppraisalTime = 0;
 	bool observeCombo = false;	// For Focused combo
 
-	const bool normalLock;
+	bool normalLock;
 
 	random* rng;
 	rngOverride over;
@@ -200,6 +200,8 @@ public:
 	craft() = delete;
 	craft(const craft&) = default;
 	craft(craft&&) = default;
+	craft& operator=(const craft&) = default;
+
 	craft(int initialQuality, crafterStats cS, recipeStats rS, bool nLock) :
 		crafter(cS),
 		recipe(rS),
