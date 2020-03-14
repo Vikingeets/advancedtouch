@@ -14,6 +14,7 @@
 #include "levels.h"
 #include "craft.h"
 #include "solver.h"
+#include "stepwise.h"
 
 #ifndef RAPIDJSON_HAS_STDSTRING
 #define RAPIDJSON_HAS_STDSTRING 1
@@ -51,12 +52,6 @@ extern "C" void handler(int sig)
 {
 	if (sig == SIGINT)
 		termFlag = 1;
-}
-
-string lowercase(string makeLower)
-{
-	transform(makeLower.begin(), makeLower.end(), makeLower.begin(), tolower);
-	return makeLower;
 }
 
 int stringToInt(const string& str, char letter, int minimum = 1)
@@ -861,7 +856,7 @@ int main(int argc, char* argv[])
 		return performSolve(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence,
 			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useConditionals, gatherStatistics);
 	case commands::stepwise:
-		assert(false);
-		exit(1);
+		return performStepwise(crafter, recipe, seed, goal, initialQuality, opts.threads,
+			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, strat);
 	}
 }

@@ -276,17 +276,22 @@ private:
 	actionResult observe();
 	void observePost();
 
-public:
 	actionResult performOne(actions action, rngOverride override = rngOverride::random);
 	void performOnePost(actions action);
+
+public:
+	// Also ends the step and does the post action
+	actionResult performOneComplete(actions action, rngOverride override);
 	endResult performAll(const sequenceType& sequence, goalType goal, bool echoEach = false);
 
 	void setStep(int s) { step = s; }
 	int getStep() const { return step; }
-	void setDurability(int d) { durability = d; }
+	void setDurability(int d) { durability = std::min(d, recipe.durability); }
+	bool outOfDurability() const { return durability <= 0; }
 	void setProgress(int p) { progress = p; }
+	bool maxedProgress() const { return progress >= recipe.difficulty; }
 	void setQuality(int q) { quality = q; }
 	void setCondition(condition c) { cond = c; }
-	void setCP(int cp) { CP = cp; }
-	bool setBuff(actions buff, int timeOrStacks);
+	void setCP(int cp) { CP = std::min(cp, crafter.CP); }
+	void setBuff(actions buff, int timeOrStacks);
 };

@@ -670,6 +670,22 @@ void craft::performOnePost(actions action)
 	}
 }
 
+actionResult craft::performOneComplete(actions action, rngOverride override)
+{
+	actionResult output = performOne(action, override);
+
+	if (output != actionResult::success && output != actionResult::failRNG)
+		return output;
+
+	if (action == actions::finalAppraisal) return output;
+
+	endStep();
+
+	if(output == actionResult::success) performOnePost(action);
+
+	return output;
+}
+
 craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType goal, bool echoEach)
 {
 	endResult craftResult;
@@ -753,50 +769,50 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 	return craftResult;
 }
 
-bool craft::setBuff(actions buff, int timeOrStacks)
+void craft::setBuff(actions buff, int timeOrStacks)
 {
 	if (timeOrStacks < -1) timeOrStacks = -1;
 	switch (buff)
 	{
 	case actions::muscleMemory:
 		muscleMemoryTime = timeOrStacks;
-		return true;
+		return;
 	case actions::wasteNot:
 		wasteNotTime = timeOrStacks;
 		wasteNot2Time = 0;
-		return true;
+		return;
 	case actions::wasteNot2:
 		wasteNot2Time = timeOrStacks;
 		wasteNotTime = 0;
-		return true;
+		return;
 	case actions::manipulation:
 		manipulationTime = timeOrStacks;
-		return true;
+		return;
 	case actions::innerQuiet:
 		if (timeOrStacks < 0) timeOrStacks = 0;
 		else if (timeOrStacks > 11) timeOrStacks = 11;
 		innerQuietStacks = timeOrStacks;
-		return true;
+		return;
 	case actions::greatStrides:
 		greatStridesTime = timeOrStacks;
-		return true;
+		return;
 	case actions::veneration:
 		venerationTime = timeOrStacks;
-		return true;
+		return;
 	case actions::innovation:
 		innovationTime = timeOrStacks;
-		return true;
+		return;
 	case actions::nameOfTheElements:
 		nameOfTheElementsUsed = timeOrStacks >= 0;
 		nameOfTheElementsTime = timeOrStacks;
-		return true;
+		return;
 	case actions::finalAppraisal:
 		finalAppraisalTime = timeOrStacks;
-		return true;
+		return;
 	case actions::observe:
 		observeCombo = timeOrStacks > 0;
-		return true;
+		return;
 	default:
-		return false;
+		return;
 	}
 }
