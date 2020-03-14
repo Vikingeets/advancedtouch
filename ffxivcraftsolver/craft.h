@@ -48,7 +48,9 @@ enum class actions : char
 	nameOfTheElements,
 	finalAppraisal,
 
-	observe
+	observe,
+
+	invalid
 };
 
 const std::map<actions, std::string> simpleText = {
@@ -127,6 +129,13 @@ public:
 		failSoftUnavailable		// for things that might randomly proc
 	};
 
+	enum class rngOverride
+	{
+		success,
+		failure,
+		random
+	};
+
 private:
 	const crafterStats crafter;
 	const recipeStats recipe;
@@ -158,7 +167,8 @@ private:
 
 	const bool normalLock;
 
-	random& rng;
+	random* rng;
+	rngOverride over;
 
 	// chance == 70 means 70% success and so on
 	inline bool rollPercent(int chance) const;
@@ -188,7 +198,9 @@ private:
 
 public:
 	craft() = delete;
-	craft(int initialQuality, crafterStats cS, recipeStats rS, bool nLock, random& r) :
+	craft(const craft&) = default;
+	craft(craft&&) = default;
+	craft(int initialQuality, crafterStats cS, recipeStats rS, bool nLock) :
 		crafter(cS),
 		recipe(rS),
 		step(1),
@@ -200,10 +212,12 @@ public:
 		progressFactor(getProgressFactor(crafter.cLevel - recipe.rLevel)),
 		qualityFactor(getQualityFactor(crafter.cLevel - recipe.rLevel)),
 		normalLock(nLock),
-		rng(r)
+		rng(nullptr)
 	{}
 
 	std::string getState() const;
+
+	void setRNG(random* r) { rng = r; }
 
 private:
 	actionResult commonSynth(int cpChange, int efficiency, int successChance, bool doubleDurability = false);
@@ -263,7 +277,16 @@ private:
 	void observePost();
 
 public:
-	actionResult performOne(actions action);
+	actionResult performOne(actions action, rngOverride override = rngOverride::random);
 	void performOnePost(actions action);
 	endResult performAll(const sequenceType& sequence, goalType goal, bool echoEach = false);
+
+	void setStep(int s) { step = s; }
+	int getStep() const { return step; }
+	void setDurability(int d) { durability = d; }
+	void setProgress(int p) { progress = p; }
+	void setQuality(int q) { quality = q; }
+	void setCondition(condition c) { cond = c; }
+	void setCP(int cp) { CP = cp; }
+	bool setBuff(actions buff, int timeOrStacks);
 };

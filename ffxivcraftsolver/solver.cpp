@@ -339,9 +339,8 @@ solver::solver(const crafterStats & c, const recipeStats & r, const craft::seque
 	crafter(c),
 	recipe(r),
 	goal(g),
-	initialQuality(iQ),
+	initialState(iQ, c, r, nLock),
 	numberOfThreads(tCnt),
-	normalLock(nLock),
 	strat(strategy::standard),	// here and gatherStatistics not used for multisynth,
 	gatherStatistics(false),	// but it makes the compiler happy
 	trials(1),
@@ -368,9 +367,8 @@ solver::solver(const crafterStats& c,
 	crafter(c),
 	recipe(r),
 	goal(g),
-	initialQuality(iQ),
+	initialState(iQ, c, r, nLock),
 	numberOfThreads(tCnt),
-	normalLock(nLock),
 	strat(s),
 	gatherStatistics(gS),
 	trials(population),
@@ -389,6 +387,30 @@ solver::solver(const crafterStats& c,
 		[&seed](trial& t) {t.sequence = seed; });
 }
 
+// Constructor for solve mode with initial state
+solver::solver(const crafterStats& c,
+	const recipeStats& r,
+	const craft::sequenceType& seed,
+	goalType g, const craft& iS,
+	int tCnt, strategy s,
+	int population) :
+	crafter(c),
+	recipe(r),
+	goal(g),
+	initialState(iS),
+	numberOfThreads(tCnt),
+	strat(s),
+	gatherStatistics(false),
+	trials(population),
+	simResults(population),
+	cached(population, false),
+	sequenceCounters(population),
+	availableActions(getAvailable(c, r, true, initialState.getStep() == 1)),
+	availableWithoutFirst(getAvailable(c, r, true, false)),
+	threadsDone(0)
+{
+}
+
 solver::trial solver::executeMultisim(int simulationsPerTrial)
 {
 	vector<thread> threads;
@@ -403,8 +425,7 @@ solver::trial solver::executeMultisim(int simulationsPerTrial)
 	orders.crafter = &crafter;
 	orders.recipe = &recipe;
 	orders.numberOfSimulations = simulationsPerTrial;
-	orders.initialQuality = initialQuality;
-	orders.normalLock = normalLock;
+	order.initialState = &initialState;
 	orders.goal = goal;
 
 	setOrder(orders);
@@ -485,7 +506,7 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 	return sequenceTime(a.sequence) < sequenceTime(b.sequence);
 }
 
-solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int maxCacheSize, solver::solverCallback callback)
+solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int generationStreak, int maxCacheSize, solver::solverCallback callback)
 {
 	vector<thread> threads;
 	for (int i = 0; i < numberOfThreads; i++)
@@ -501,9 +522,11 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 	orders.crafter = &crafter;
 	orders.recipe = &recipe;
 	orders.numberOfSimulations = simulationsPerTrial;
-	orders.initialQuality = initialQuality;
-	orders.normalLock = normalLock;
+	orders.initialState = &initialState;
 	orders.goal = goal;
+
+	actions lastStarter = actions::invalid;
+	int starterStreak = 0;
 	for (int gen = 0; gen < generations; gen++)
 	{
 		mutated.clear();
@@ -565,6 +588,26 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 
 		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, trials.front(), uniquePopulation, cacheHits))
 			break;
+
+		if (generationStreak > 0)
+		{
+			if (trials.front().sequence.empty())
+			{
+				lastStarter = actions::invalid;
+				starterStreak = 0;
+			}
+			actions currentStarter = trials.front().sequence.front();
+			if (currentStarter == lastStarter)
+			{
+				starterStreak++;
+				if (starterStreak >= generationStreak) break;
+			}
+			else
+			{
+				lastStarter = currentStarter;
+				starterStreak = 0;
+			}
+		}
 
 		if(maxCacheSize > 0) cache.populateCache(trials);
 	}
@@ -819,7 +862,8 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 			trialNumber++;
 			continue;
 		}
-		craft synth(order.initialQuality, *order.crafter, *order.recipe, order.normalLock, rng);
+		craft synth(*order.initialState);
+		synth.setRNG(&rng);
 
 		craft::endResult result = synth.performAll((*order.trials)[trialNumber].sequence, order.goal, false);
 		localResults[trialNumber].progress += result.progress;
