@@ -391,6 +391,9 @@
     <Text Include="arguments.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\LICENSE" />
+    <None Include="..\README.md" />
+    <None Include="..\STEPWISE.md" />
     <None Include="CraftLevelDifference.csv">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
     </None>
