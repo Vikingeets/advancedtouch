@@ -12,7 +12,7 @@
 
 using namespace std;
 
-constexpr int generationMultiplier = 10;
+constexpr int generationMultiplier = 5;
 
 constexpr int invalidInt = numeric_limits<int>::min();
 
