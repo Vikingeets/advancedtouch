@@ -71,9 +71,8 @@ public:
 		// used in sim mode
 		crafterStats const * crafter;
 		recipeStats const * recipe;
+		craft const * initialState;
 		int numberOfSimulations;
-		int initialQuality;
-		bool normalLock;
 		goalType goal;
 	};
 
@@ -83,9 +82,8 @@ private:
 	const crafterStats crafter;
 	const recipeStats recipe;
 	goalType goal;
-	int initialQuality;
+	craft initialState;
 	int numberOfThreads;
-	bool normalLock; 
 	
 	strategy strat;
 
@@ -137,6 +135,17 @@ public:
 		bool gS			// gather statistics?
 	);
 
+	// Constructor for solve mode with initial state
+	solver(const crafterStats& c,
+		const recipeStats& r,
+		const craft::sequenceType& seed,
+		goalType g,
+		const craft& iS,
+		int tCnt,
+		strategy s,
+		int population
+	);
+
 	trial executeMultisim(int simulationsPerTrial);
 
 	using solverCallback = std::function<
@@ -154,6 +163,7 @@ public:
 	trial executeSolver(
 		int simulationsPerTrial,
 		int generations,
+		int generationStreak,	// for stepwise mode, stop after the first is the same this many times. 0 to ignore
 		int maxCacheSize,
 		solverCallback callback
 	);

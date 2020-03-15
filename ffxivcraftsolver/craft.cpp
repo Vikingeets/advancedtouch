@@ -12,7 +12,17 @@ using actionResult = craft::actionResult;
 inline bool craft::rollPercent(int chance) const
 {
 	if (chance >= 100) return true;
-	else return rng.generateInt(99) < chance;
+
+	switch (over)
+	{
+	case rngOverride::success:
+		return true;
+	case rngOverride::failure:
+		return false;
+	case rngOverride::random:
+		assert(rng != nullptr);
+		return rng->generateInt(99) < chance;
+	}
 }
 
 void craft::increaseProgress(int efficiency, bool isBrand)
@@ -116,8 +126,6 @@ bool craft::changeCP(int amount)
 
 craft::condition craft::getNextCondition(condition current)
 {
-	if (normalLock) return condition::normal;
-	
 	switch (current)
 	{
 	case condition::poor:
@@ -128,6 +136,8 @@ craft::condition craft::getNextCondition(condition current)
 	case condition::excellent:
 		return condition::poor;
 	}
+
+	if (normalLock || over != rngOverride::random) return condition::normal;
 
 	bool qualityAssurance = crafter.level >= 63;
 	int excellentChance, goodChance;
@@ -178,7 +188,7 @@ craft::condition craft::getNextCondition(condition current)
 		goodChance = qualityAssurance ? 27 : 25;
 	}
 
-	int roll = rng.generateInt(99);
+	int roll = rng->generateInt(99);
 
 	if (roll >= 100 - excellentChance) return condition::excellent;
 	else if (roll >= 100 - excellentChance - goodChance) return condition::good;
@@ -268,7 +278,7 @@ string craft::getState() const
 
 	output += "Buffs: ";
 	bool anybuffs = false;
-	output += stateBuffList("Final Appraisal: ", finalAppraisalTime, &anybuffs);
+	output += stateBuffList("Muscle Memory: ", muscleMemoryTime, &anybuffs);
 	output += stateBuffList("Waste Not: ", wasteNotTime, &anybuffs);
 	output += stateBuffList("Waste Not 2: ", wasteNot2Time, &anybuffs);
 	output += stateBuffList("Manipulation: ", manipulationTime, &anybuffs);
@@ -276,7 +286,8 @@ string craft::getState() const
 	output += stateBuffList("Great Strides: ", greatStridesTime, &anybuffs);
 	output += stateBuffList("Veneration: ", venerationTime, &anybuffs);
 	output += stateBuffList("Innovation: ", innovationTime, &anybuffs);
-	output += stateBuffList("Name of Elements: ", nameOfTheElementsTime, &anybuffs);
+	output += stateBuffList("Final Appraisal: ", finalAppraisalTime, &anybuffs);
+	output += stateBuffList("Name of the Elements: ", nameOfTheElementsTime, &anybuffs);
 	if (observeCombo)
 	{
 		anybuffs = true;
@@ -593,8 +604,9 @@ void craft::observePost()
 	observeCombo = true;
 }
 
-actionResult craft::performOne(actions action)
+actionResult craft::performOne(actions action, rngOverride override)
 {
+	over = override;
 	switch (action)
 	{
 	case actions::basicSynth: return basicSynth();
@@ -634,6 +646,7 @@ actionResult craft::performOne(actions action)
 	case actions::finalAppraisal: return finalAppraisal();
 
 	case actions::observe: return observe();
+	case actions::invalid:
 	default:
 		assert(false);
 		return actionResult::failHardUnavailable;
@@ -656,6 +669,22 @@ void craft::performOnePost(actions action)
 	case actions::observe: return observePost();
 	default: return;
 	}
+}
+
+actionResult craft::performOneComplete(actions action, rngOverride override)
+{
+	actionResult output = performOne(action, override);
+
+	if (output != actionResult::success && output != actionResult::failRNG)
+		return output;
+
+	if (action == actions::finalAppraisal) return output;
+
+	endStep();
+
+	if(output == actionResult::success) performOnePost(action);
+
+	return output;
 }
 
 craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType goal, bool echoEach)
@@ -739,4 +768,52 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 	if (quality < recipe.quality) craftResult.invalidActions += softInvalids;
 
 	return craftResult;
+}
+
+void craft::setBuff(actions buff, int timeOrStacks)
+{
+	if (timeOrStacks < -1) timeOrStacks = -1;
+	switch (buff)
+	{
+	case actions::muscleMemory:
+		muscleMemoryTime = timeOrStacks;
+		return;
+	case actions::wasteNot:
+		wasteNotTime = timeOrStacks;
+		wasteNot2Time = 0;
+		return;
+	case actions::wasteNot2:
+		wasteNot2Time = timeOrStacks;
+		wasteNotTime = 0;
+		return;
+	case actions::manipulation:
+		manipulationTime = timeOrStacks;
+		return;
+	case actions::innerQuiet:
+		if (timeOrStacks < 0) timeOrStacks = 0;
+		else if (timeOrStacks > 11) timeOrStacks = 11;
+		innerQuietStacks = timeOrStacks;
+		return;
+	case actions::greatStrides:
+		greatStridesTime = timeOrStacks;
+		return;
+	case actions::veneration:
+		venerationTime = timeOrStacks;
+		return;
+	case actions::innovation:
+		innovationTime = timeOrStacks;
+		return;
+	case actions::nameOfTheElements:
+		nameOfTheElementsUsed = timeOrStacks >= 0;
+		nameOfTheElementsTime = timeOrStacks;
+		return;
+	case actions::finalAppraisal:
+		finalAppraisalTime = timeOrStacks;
+		return;
+	case actions::observe:
+		observeCombo = timeOrStacks > 0;
+		return;
+	default:
+		return;
+	}
 }

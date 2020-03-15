@@ -1,4 +1,7 @@
 #pragma once
+#include <algorithm>
+#include <vector>
+#include <string>
 
 struct crafterStats
 {
@@ -34,3 +37,25 @@ enum class goalType
 	maxQuality,		// Push quality as far as possible
 	collectability	// Hitting the goal is all that matters
 };
+
+inline std::vector<std::string> tokenSplit(const std::string& str, char token)
+{
+	std::vector<std::string> out;
+
+	size_t position = str.find_first_not_of(token);
+
+	while (position != str.npos)
+	{
+		size_t nextComma = str.find_first_of(token, position);
+		out.push_back(std::string(str, position, nextComma - position));
+		position = str.find_first_not_of(token, nextComma);
+	}
+
+	return out;
+}
+
+inline std::string lowercase(std::string makeLower)
+{
+	std::transform(makeLower.begin(), makeLower.end(), makeLower.begin(), tolower);
+	return makeLower;
+}

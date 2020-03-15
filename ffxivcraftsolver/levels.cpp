@@ -1,3 +1,4 @@
+#include "common.h"
 #include "levels.h"
 #include <array>
 #include <unordered_map>
@@ -8,22 +9,6 @@
 #include <cstdlib>
 
 using namespace std;
-
-inline vector<string> commaSplit(const string& str)
-{
-	vector<string> out;
-
-	size_t position = str.find_first_not_of(',');
-
-	while (position != str.npos)
-	{
-		size_t nextComma = str.find_first_of(',', position);
-		out.push_back(string(str, position, nextComma - position));
-		position = str.find_first_not_of(',', nextComma);
-	}
-
-	return out;
-}
 
 struct recipeData
 {
@@ -54,7 +39,7 @@ bool populateRecipeTable(const string& fileName)
 	char out[buffsize];
 	while (tableFile.getline(out, buffsize))
 	{
-		vector<string> split = commaSplit(string(out));
+		vector<string> split = tokenSplit(string(out), ',');
 		if (split.size() < 5) continue;
 
 		int32_t rLvl = atoi(split[0].c_str());
@@ -86,7 +71,7 @@ bool populateDifferenceTable(const string& fileName)
 	char out[buffsize];
 	while (tableFile.getline(out, buffsize))
 	{
-		vector<string> split = commaSplit(string(out));
+		vector<string> split = tokenSplit(string(out), ',');
 		if (split.size() < 4) continue;
 
 		int16_t difference = atoi(split[1].c_str());

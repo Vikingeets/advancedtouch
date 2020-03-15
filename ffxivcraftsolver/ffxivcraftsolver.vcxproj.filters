@@ -15,6 +15,9 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{964b4611-1e34-4216-a201-63341e40de5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Notes\Documentation">
+      <UniqueIdentifier>{8a70f225-4fde-4dde-a66c-b5ab92fba65b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="levels.cpp">
@@ -30,6 +33,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="capi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stepwise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -52,6 +58,9 @@
     <ClInclude Include="advancedtouch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stepwise.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="arguments.txt">
@@ -70,6 +79,15 @@
     </None>
     <None Include="CraftLevelDifference.csv">
       <Filter>Resources</Filter>
+    </None>
+    <None Include="..\LICENSE">
+      <Filter>Notes\Documentation</Filter>
+    </None>
+    <None Include="..\README.md">
+      <Filter>Notes\Documentation</Filter>
+    </None>
+    <None Include="..\STEPWISE.md">
+      <Filter>Notes\Documentation</Filter>
     </None>
   </ItemGroup>
 </Project>

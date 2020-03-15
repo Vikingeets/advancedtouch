@@ -14,6 +14,7 @@
 #include "levels.h"
 #include "craft.h"
 #include "solver.h"
+#include "stepwise.h"
 
 #ifndef RAPIDJSON_HAS_STDSTRING
 #define RAPIDJSON_HAS_STDSTRING 1
@@ -51,12 +52,6 @@ extern "C" void handler(int sig)
 {
 	if (sig == SIGINT)
 		termFlag = 1;
-}
-
-string lowercase(string makeLower)
-{
-	transform(makeLower.begin(), makeLower.end(), makeLower.begin(), tolower);
-	return makeLower;
 }
 
 int stringToInt(const string& str, char letter, int minimum = 1)
@@ -317,6 +312,7 @@ struct options
 {
 	int simsPerSequence;
 	int generations;
+	int stepwiseGenerations;
 	int population;
 	int maxCacheSize;
 
@@ -326,7 +322,7 @@ struct options
 	bool useConditionals;
 };
 
-void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
+void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode, bool stepwiseMode)
 {
 	if (d.HasParseError())
 	{
@@ -336,6 +332,7 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
 
 	opts->simsPerSequence = getIntIfExists(d, "/sims");
 	opts->generations = getIntIfExists(d, "/generations");
+	opts->stepwiseGenerations = getIntIfExists(d, "/stepwise generations");
 	opts->population = getIntIfExists(d, "/population");
 	opts->maxCacheSize = getIntIfExists(d, "/max cache size");
 	
@@ -343,16 +340,18 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode)
 	opts->threads = getIntIfExists(d, "/threads");
 	opts->useConditionals = getBoolIfExists(d, "/use conditionals");
 
-	bitset<3> missingStats;
+	bitset<4> missingStats;
 	missingStats[0] = opts->simsPerSequence <= 0;
 	missingStats[1] = solveMode && opts->generations <= 0;
-	missingStats[2] = solveMode && (opts->population <= 0 || opts->population % 2 == 1);
+	missingStats[2] = stepwiseMode && opts->stepwiseGenerations <= 0;
+	missingStats[3] = (solveMode || stepwiseMode) && (opts->population <= 0 || opts->population % 2 == 1);
 	if (missingStats.any())
 	{
-		cerr << "the options has missing or invalid stats:";
+		cerr << "the options file has missing or invalid stats:";
 		if (missingStats[0]) cerr << " sims";
 		if (missingStats[1]) cerr << " generations";
-		if (missingStats[2]) cerr << " population";
+		if (missingStats[2]) cerr << " stepwise generations";
+		if (missingStats[3]) cerr << " population";
 		cerr << endl;
 		exit(1);
 	}
@@ -405,7 +404,8 @@ int performSingle(const crafterStats& crafter, const recipeStats& recipe,
 	int initialQuality, bool normalLock)
 {
 	random rng;
-	craft synth(initialQuality, crafter, recipe, normalLock, rng);
+	craft synth(initialQuality, crafter, recipe, normalLock);
+	synth.setRNG(&rng);
 
 	craft::endResult result = synth.performAll(sequence, goal, true);
 
@@ -511,10 +511,12 @@ int performSolve(const crafterStats& crafter,
 	bool useConditionals,
 	bool gatherStats)
 {
+	signal(SIGINT, handler);
+
 	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock,
 		strat, population, useConditionals, gatherStats);
 	
-	solver::trial result = solve.executeSolver(simsPerSequence, generations, maxCacheSize, solveUpdate);
+	solver::trial result = solve.executeSolver(simsPerSequence, generations, 0, maxCacheSize, solveUpdate);
 	solver::netResult outcome = result.outcome;
 
 	cout << '\n' << outcome.successes << " completed (" << (outcome.successes * 100) / simsPerSequence << "%)\n";
@@ -586,7 +588,7 @@ int main(int argc, char* argv[])
 		usage();
 	}
 
-	enum class commands { single, multi, solve };
+	enum class commands { single, multi, solve, stepwise };
 	commands command;
 
 	crafterStats crafter;
@@ -621,6 +623,7 @@ int main(int argc, char* argv[])
 	if (currentArgv == "single" || currentArgv == "singlesim") command = commands::single;
 	else if (currentArgv == "multi" || currentArgv == "multisim") command = commands::multi;
 	else if (currentArgv == "solve" || currentArgv == "solver") command = commands::solve;
+	else if (currentArgv == "step" || currentArgv == "stepwise") command = commands::stepwise;
 	else
 	{
 		cerr << "unknown command '" << currentArgvOrig << "'\n";
@@ -821,7 +824,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	parseOptions(optionsStatsDocument, &opts, command == commands::solve);
+	parseOptions(optionsStatsDocument, &opts, command == commands::solve, command == commands::stepwise);
 
 	craft::sequenceType seed;
 	if (sequenceProvided)
@@ -850,8 +853,10 @@ int main(int argc, char* argv[])
 	case commands::multi:
 		return performMulti(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence);
 	case commands::solve:
-		signal(SIGINT, handler);
 		return performSolve(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence,
 			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useConditionals, gatherStatistics);
+	case commands::stepwise:
+		return performStepwise(crafter, recipe, seed, goal, initialQuality, opts.threads,
+			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat);
 	}
 }

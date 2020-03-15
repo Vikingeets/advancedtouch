@@ -48,7 +48,9 @@ enum class actions : char
 	nameOfTheElements,
 	finalAppraisal,
 
-	observe
+	observe,
+
+	invalid
 };
 
 const std::map<actions, std::string> simpleText = {
@@ -127,9 +129,16 @@ public:
 		failSoftUnavailable		// for things that might randomly proc
 	};
 
+	enum class rngOverride
+	{
+		success,
+		failure,
+		random
+	};
+
 private:
-	const crafterStats crafter;
-	const recipeStats recipe;
+	crafterStats crafter;
+	recipeStats recipe;
 
 	int step;
 	int durability; 
@@ -156,9 +165,10 @@ private:
 	int finalAppraisalTime = 0;
 	bool observeCombo = false;	// For Focused combo
 
-	const bool normalLock;
+	bool normalLock;
 
-	random& rng;
+	random* rng;
+	rngOverride over;
 
 	// chance == 70 means 70% success and so on
 	inline bool rollPercent(int chance) const;
@@ -188,7 +198,11 @@ private:
 
 public:
 	craft() = delete;
-	craft(int initialQuality, crafterStats cS, recipeStats rS, bool nLock, random& r) :
+	craft(const craft&) = default;
+	craft(craft&&) = default;
+	craft& operator=(const craft&) = default;
+
+	craft(int initialQuality, crafterStats cS, recipeStats rS, bool nLock) :
 		crafter(cS),
 		recipe(rS),
 		step(1),
@@ -200,10 +214,12 @@ public:
 		progressFactor(getProgressFactor(crafter.cLevel - recipe.rLevel)),
 		qualityFactor(getQualityFactor(crafter.cLevel - recipe.rLevel)),
 		normalLock(nLock),
-		rng(r)
+		rng(nullptr)
 	{}
 
 	std::string getState() const;
+
+	void setRNG(random* r) { rng = r; }
 
 private:
 	actionResult commonSynth(int cpChange, int efficiency, int successChance, bool doubleDurability = false);
@@ -262,8 +278,22 @@ private:
 	actionResult observe();
 	void observePost();
 
-public:
-	actionResult performOne(actions action);
+	actionResult performOne(actions action, rngOverride override = rngOverride::random);
 	void performOnePost(actions action);
+
+public:
+	// Also ends the step and does the post action
+	actionResult performOneComplete(actions action, rngOverride override);
 	endResult performAll(const sequenceType& sequence, goalType goal, bool echoEach = false);
+
+	void setStep(int s) { step = s; }
+	int getStep() const { return step; }
+	void setDurability(int d) { durability = std::min(d, recipe.durability); }
+	bool outOfDurability() const { return durability <= 0; }
+	void setProgress(int p) { progress = p; }
+	bool maxedProgress() const { return progress >= recipe.difficulty; }
+	void setQuality(int q) { quality = q; }
+	void setCondition(condition c) { cond = c; }
+	void setCP(int cp) { CP = std::min(cp, crafter.CP); }
+	void setBuff(actions buff, int timeOrStacks);
 };

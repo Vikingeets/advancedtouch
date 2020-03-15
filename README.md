@@ -7,6 +7,7 @@ The first argument to the program must be the mode: "single", "multi", or "solve
 The single mode will simulate a single craft of the given recipe and rotation, which can be useful for test runs of your rotation.
 The multi mode will simulate multiple crafts of the recipe and rotation, giving an overview of the results.
 The solve mode will produce a JSON rotation which can be imported into a Teamcraft or lokyst simulator.
+The stepwise mode will start an interactive mode which can simulate a manual crafting run and suggest actions. See STEPWISE.md for details.
 
 # Arguments
 -j class (required)
@@ -19,10 +20,10 @@ The solve mode will produce a JSON rotation which can be imported into a Teamcra
 	ignore the "food" and "medicine" section of the stats file
 
 -e (default)
-	In single and multi mode, simulate an empty rotation. In solve mode, use an empty rotation as the seed.
+	In single and multi mode, simulate an empty rotation. In solve and stepwise mode, use an empty rotation as the seed.
 
 -s sequence
-	In single and multi mode, the rotation to simulate. In solve mode, the initial seed
+	In single and multi mode, the rotation to simulate. In solve and stepwise mode, the initial seed. **Strongly** recommended for stepwise mode. Use solve mode to generate one if you need to.
 
 -r recipe (required)
 	The recipe file to simulate or solve
@@ -34,7 +35,7 @@ The solve mode will produce a JSON rotation which can be imported into a Teamcra
 	The initial quality of the synth. This should be set even in solve mode, as less quality to solve for can produce more consistent rotations
 
 -z
-	Display various statistics while solving and on the winning rotation. Useful for development, probably less so for normal users.
+	Display various statistics while solving and on the winning rotation. Useful for development, probably less so for normal users. Ignored in stepwise mode
 
 There are three quality options:
 
@@ -91,9 +92,11 @@ In multi mode, "sims" sets how many simulations to run, with their results avera
 
 In solve mode, "generations" sets how many generations should be processed.
 
+In stepwise mode, "stepwise generations" sets how many generations to process by default during a solving run.
+
 In solve mode, "population" sets how many rotations should be considered in each generation.
 
-I recommend setting each to at least a hundred, and starting with all three multiplied together to approximately ten million on a modern computer.
+I recommend setting each solve option to at least a hundred, and starting with all three multiplied together to approximately ten million on a modern computer. Stepwise generations can be safely set to less than 50 as long as you use a decent seed.
 
 Advanced Touch can cache the results of its simulations in memory to accelerate solving. Setting "max cache size" greater than zero will use about 40 to 50 megabytes of memory per hundred thousand entries. Please set "sims" to a large number to minimize the risk of a lucky (or unlucky) rotation being cached with a bad result.
 

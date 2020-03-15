@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2046
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "advancedtouch", "ffxivcraftsolver\ffxivcraftsolver.vcxproj", "{D79EE883-A729-47E7-94CA-F493AC09D67A}"
 EndProject
@@ -9,6 +9,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug - Solve|x64 = Debug - Solve|x64
 		Debug - Solve|x86 = Debug - Solve|x86
+		Debug - Stepwise|x64 = Debug - Stepwise|x64
+		Debug - Stepwise|x86 = Debug - Stepwise|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release - Multi|x64 = Release - Multi|x64
@@ -23,6 +25,10 @@ Global
 		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug - Solve|x64.Build.0 = Debug - Solve|x64
 		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug - Solve|x86.ActiveCfg = Debug - Solve|Win32
 		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug - Solve|x86.Build.0 = Debug - Solve|Win32
+		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug - Stepwise|x64.ActiveCfg = Debug - Stepwise|x64
+		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug - Stepwise|x64.Build.0 = Debug - Stepwise|x64
+		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug - Stepwise|x86.ActiveCfg = Debug - Stepwise|Win32
+		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug - Stepwise|x86.Build.0 = Debug - Stepwise|Win32
 		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug|x64.ActiveCfg = Debug|x64
 		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug|x64.Build.0 = Debug|x64
 		{D79EE883-A729-47E7-94CA-F493AC09D67A}.Debug|x86.ActiveCfg = Debug|Win32

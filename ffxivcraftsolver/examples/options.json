@@ -1,6 +1,7 @@
 {
     "sims": 200,
     "generations": 5000,
+    "stepwise generations": 20,
     "population": 5000,
     "max cache size": 100000,
 
