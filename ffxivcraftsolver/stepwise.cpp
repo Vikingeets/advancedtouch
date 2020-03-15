@@ -495,6 +495,7 @@ int performStepwise(
 		else if (command[0] == "reset")
 		{
 			currentStatus = craft(initialQuality, crafter, recipe, false);
+			currentStatus.setRNG(&rand);
 			craftHistory = stack<craft>();
 			craftHistory.push(currentStatus);
 			lastSuggested = actions::invalid;
