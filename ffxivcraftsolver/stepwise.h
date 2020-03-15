@@ -13,5 +13,6 @@ int performStepwise(
 	int simsPerSequence,
 	int stepwiseGenerations,
 	int population,
+	int maxCacheSize,
 	strategy strat
 );

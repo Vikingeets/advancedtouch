@@ -857,6 +857,6 @@ int main(int argc, char* argv[])
 			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useConditionals, gatherStatistics);
 	case commands::stepwise:
 		return performStepwise(crafter, recipe, seed, goal, initialQuality, opts.threads,
-			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, strat);
+			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat);
 	}
 }

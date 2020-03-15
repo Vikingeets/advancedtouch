@@ -217,7 +217,8 @@ actions doSolve(
 	strategy s,
 	int population,
 	int simsPerTrial,
-	int generations
+	int generations,
+	int maxCacheSize
 )
 {
 	if (iS.maxedProgress())
@@ -248,7 +249,7 @@ actions doSolve(
 
 	solver solve(c, r, partialSeed, g, iS, tCnt, s, population);
 
-	craft::sequenceType result = solve.executeSolver(simsPerTrial, generations * generationMultiplier, generations, 0, stepwiseUpdate).sequence;
+	craft::sequenceType result = solve.executeSolver(simsPerTrial, generations * generationMultiplier, generations, maxCacheSize, stepwiseUpdate).sequence;
 
 	termFlag = 0;
 	signal(SIGINT, SIG_DFL);
@@ -278,6 +279,7 @@ int performStepwise(
 	int simsPerSequence,
 	int stepwiseGenerations,
 	int population,
+	int maxCacheSize,
 	strategy strat
 	)
 {
@@ -439,8 +441,10 @@ int performStepwise(
 		}
 		else if (command[0] == "solve" || command[0] == "so")
 		{
-			lastSuggested = doSolve(commandOrig, crafter, recipe, &currentSeed, goal, currentStatus, threads, strat, population, simsPerSequence, stepwiseGenerations);
-			printStatus = lastSuggested != actions::invalid;
+
+			actions suggestion = doSolve(commandOrig, crafter, recipe, &currentSeed, goal, currentStatus, threads, strat, population, simsPerSequence, stepwiseGenerations, maxCacheSize);
+			if (suggestion != actions::invalid) lastSuggested = suggestion;
+			printStatus = suggestion != actions::invalid;
 			if (!printStatus) continue;
 		}
 		else if (command[0] == "suggested" || command[0] == "su")
