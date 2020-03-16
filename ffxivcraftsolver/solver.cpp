@@ -404,9 +404,12 @@ solver::solver(const crafterStats & c, const recipeStats & r, const craft::seque
 	gatherStatistics(false),	// but it makes the compiler happy
 	trials(1),
 	simResults(1),
+	cached(1, false),
 	sequenceCounters(1),
 	threadsDone(0)
 {
+	assert(numberOfThreads > 0);
+
 	order.command = threadCommand::terminate;	// "terminate" doubles as start
 
 	trials[0].sequence = seed;
@@ -487,10 +490,11 @@ solver::trial solver::executeMultisim(int simulationsPerTrial)
 	orders.command = threadCommand::simulate;
 	orders.trials = &trials;
 	orders.counters = &sequenceCounters;
+	orders.cached = &cached;
 	orders.crafter = &crafter;
 	orders.recipe = &recipe;
 	orders.numberOfSimulations = simulationsPerTrial;
-	order.initialState = &initialState;
+	orders.initialState = &initialState;
 	orders.goal = goal;
 
 	setOrder(orders);
