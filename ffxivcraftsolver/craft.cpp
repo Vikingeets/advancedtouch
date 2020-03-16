@@ -124,6 +124,11 @@ bool craft::changeCP(int amount)
 	return true;
 }
 
+bool inRange(int num, int high, int low)
+{
+	return low <= num && num <= high;
+}
+
 craft::condition craft::getNextCondition(condition current)
 {
 	switch (current)
@@ -142,47 +147,34 @@ craft::condition craft::getNextCondition(condition current)
 	bool qualityAssurance = crafter.level >= 63;
 	int excellentChance, goodChance;
 	
-	if (recipe.rLevel >= 430)		// 80*+: 89/10/1
+	if (
+		inRange(recipe.rLevel, 160, 254) ||	// 60*+
+		inRange(recipe.rLevel, 300, 384) ||	// 70*+
+		recipe.rLevel >= 430				// 80*+
+		)
 	{
 		excellentChance = 1;
 		goodChance = qualityAssurance ? 11 : 10;
 	}
-	else if (recipe.rLevel >= 406)	// 75+: 83/15/2
+	else if (
+		inRange(recipe.rLevel, 136, 159) ||	// 55+
+		inRange(recipe.rLevel, 276, 299) ||	// 65+
+		inRange(recipe.rLevel, 406, 429)	// 75+
+		)
 	{
 		excellentChance = 2;
 		goodChance = qualityAssurance ? 17 : 15;
 	}
-	else if (recipe.rLevel >= 385)	// 71+: 78/20/2
+	else if (
+		inRange(recipe.rLevel, 115, 135) ||	// 51+	
+		inRange(recipe.rLevel, 255, 275) ||	// 61+
+		inRange(recipe.rLevel, 385, 405)	// 71+
+		)
 	{
 		excellentChance = 2;
 		goodChance = qualityAssurance ? 22 : 20;
 	}
-	else if (recipe.rLevel >= 300)		// 70*+: 89/10/1
-	{
-		excellentChance = 1;
-		goodChance = qualityAssurance ? 11 : 10;
-	}
-	else if (recipe.rLevel >= 276)	// 65+: 83/15/2
-	{
-		excellentChance = 2;
-		goodChance = qualityAssurance ? 17 : 15;
-	}
-	else if (recipe.rLevel >= 255)	// 61+: 78/20/2
-	{
-		excellentChance = 2;
-		goodChance = qualityAssurance ? 22 : 20;
-	}
-	else if (recipe.rLevel >= 150)	// 60+: 89/10/1
-	{
-		excellentChance = 1;
-		goodChance = qualityAssurance ? 11 : 10;
-	}
-	else if (recipe.rLevel >= 136)	// 55+: 83/15/2
-	{
-		excellentChance = 2;
-		goodChance = qualityAssurance ? 17 : 15;
-	}
-	else							// 1+: 73/25/2
+	else									// 1+
 	{
 		excellentChance = 2;
 		goodChance = qualityAssurance ? 27 : 25;
