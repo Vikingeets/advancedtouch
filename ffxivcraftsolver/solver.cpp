@@ -187,6 +187,7 @@ int actionTime(actions act)
 	case actions::manipulation:
 	case actions::nameOfTheElements:
 	case actions::wasteNot:
+	case actions::wasteNot2:
 	case actions::finalAppraisal:
 		return 2;
 	default:
