@@ -179,15 +179,21 @@ private:
 	// Negative amount to deduct, positive to add. Returns false if not enough CP (will not deduct if so)
 	bool changeCP(int amount);
 
+	int getDurabilityCost(int base)
+	{
+		if (wasteNotTime > 0 || wasteNot2Time > 0) base /= 2;
+		return base;
+	}
+
 	// Negative to remove durability, positive to add.
-	void changeDurability(int amount)
+	void raiseDurability(int amount)
 	{
 		durability = std::min(durability + amount, recipe.durability);
 	}
 
-	void hitDurability(int amount = 10)
+	void lowerDurability(int amount = 10)
 	{
-		return changeDurability((wasteNotTime > 0 || wasteNot2Time > 0) ? -amount / 2 : -amount);
+		durability -= getDurabilityCost(amount);
 	}
 
 	condition getNextCondition(condition current);
@@ -222,8 +228,8 @@ public:
 	void setRNG(random* r) { rng = r; }
 
 private:
-	actionResult commonSynth(int cpChange, int efficiency, int successChance, bool doubleDurability = false);
-	actionResult commonTouch(int cpChange, int efficiency, int successChance, bool doubeDurability = false);
+	actionResult commonSynth(int cpChange, int efficiency, int successChance, int durabilityCost = 10);
+	actionResult commonTouch(int cpChange, int efficiency, int successChance, int durabilityCost = 10);
 
 	// Synthesis
 	actionResult basicSynth() { return commonSynth(0, crafter.level >= 31 ? 120 : 100, 100); }
@@ -231,7 +237,7 @@ private:
 	actionResult rapidSynthesis() { return commonSynth(0, crafter.level >= 63 ? 500 : 250, 50); }
 	actionResult focusedSynthesis() { return commonSynth(-5, 200, observeCombo ? 100 : 50); }
 	actionResult delicateSynthesis();
-	actionResult groundwork();
+	actionResult groundwork() { return commonSynth(-18, durability < getDurabilityCost(20) ? 150 : 300, 100, 20); }
 	actionResult intensiveSynthesis();
 	actionResult muscleMemory();
 	void muscleMemoryPost();

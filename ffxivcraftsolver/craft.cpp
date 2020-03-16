@@ -194,7 +194,7 @@ void craft::endStep()
 	wasteNot2Time--;
 	if(manipulationTime > 0)
 	{
-		changeDurability(5);
+		raiseDurability(5);
 		manipulationTime--;
 	}
 	greatStridesTime--;
@@ -295,7 +295,7 @@ string craft::getState() const
 	return output;
 }
 
-actionResult craft::commonSynth(int cpChange, int efficiency, int successChance, bool doubleDurability)
+actionResult craft::commonSynth(int cpChange, int efficiency, int successChance, int durabilityCost)
 {
 	if (!changeCP(cpChange)) return actionResult::failNoCP;
 	actionResult output;
@@ -307,12 +307,12 @@ actionResult craft::commonSynth(int cpChange, int efficiency, int successChance,
 	}
 	else output = actionResult::failRNG;
 
-	hitDurability(doubleDurability ? 20 : 10);
+	lowerDurability(durabilityCost);
 
 	return output;
 }
 
-actionResult craft::commonTouch(int cpChange, int efficiency, int successChance, bool doubleDurability)
+actionResult craft::commonTouch(int cpChange, int efficiency, int successChance, int durabilityCost)
 {
 	if (!changeCP(cpChange)) return actionResult::failNoCP;
 	actionResult output;
@@ -324,7 +324,7 @@ actionResult craft::commonTouch(int cpChange, int efficiency, int successChance,
 	}
 	else output = actionResult::failRNG;
 
-	hitDurability(doubleDurability ? 20 : 10);
+	lowerDurability(durabilityCost);
 
 	return output;
 }
@@ -340,15 +340,8 @@ actionResult craft::delicateSynthesis()
 	increaseProgress(100);
 	increaseQuality(100);
 
-	hitDurability();
+	lowerDurability();
 	return actionResult::success;
-}
-
-actionResult craft::groundwork()
-{
-	int durabilityCost = (wasteNotTime > 0 || wasteNot2Time > 0) ? 10 : 20;
-
-	return commonSynth(-18, durability < durabilityCost ? 150 : 300, 100, true);
 }
 
 actionResult craft::intensiveSynthesis()
@@ -376,7 +369,7 @@ actionResult craft::brandOfTheElements()
 
 	increaseProgress(100, true);
 
-	hitDurability();
+	lowerDurability();
 
 	return actionResult::success;
 }
@@ -415,16 +408,12 @@ actionResult craft::patientTouch()
 actionResult craft::prudentTouch()
 {
 	if (wasteNotTime > 0 || wasteNot2Time > 0) return actionResult::failHardUnavailable;
-	if (!changeCP(-25)) return actionResult::failNoCP;
-
-	increaseQuality(100);
-	changeDurability(-5);
-	return actionResult::success;
+	return commonTouch(-25, 100, 100, 5);
 }
 
 actionResult craft::preparatoryTouch()
 {
-	actionResult output = commonTouch(-40, 200, 100, true);
+	actionResult output = commonTouch(-40, 200, 100, 20);
 	if (output == actionResult::success && innerQuietStacks > 0 && innerQuietStacks < 11) innerQuietStacks++;
 	return output;
 }
@@ -459,7 +448,7 @@ actionResult craft::mastersMend()
 {
 	if (!changeCP(-88)) return actionResult::failNoCP;
 
-	changeDurability(30);
+	raiseDurability(30);
 
 	return actionResult::success;
 }
