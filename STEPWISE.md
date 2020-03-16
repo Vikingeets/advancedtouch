@@ -58,7 +58,7 @@ ac, action a s/f/?
 
 so, solve g
 
-	Executes the solver against the current crafting status. You may optionally specify a number of generations. The solver will run until that many generations in a row agree on the action to take next, or until 5 times that number have been tried. You may cancel the solve early by hitting Control-C
+	Executes the solver against the current crafting status. You may optionally specify a number of generations. The solver will run until it settles on an action to take next, or until 5 times that number have been tried. You may cancel the solve early by hitting Control-C
 
 su, suggested s/f/?
 

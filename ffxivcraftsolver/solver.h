@@ -163,7 +163,8 @@ public:
 	trial executeSolver(
 		int simulationsPerTrial,
 		int generations,
-		int generationStreak,	// for stepwise mode, stop after the first is the same this many times. 0 to ignore
+		int generationWindow,		// for stepwise mode
+		int generationEarly,
 		int maxCacheSize,
 		solverCallback callback
 	);

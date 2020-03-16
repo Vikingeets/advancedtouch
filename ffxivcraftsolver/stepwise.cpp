@@ -13,16 +13,13 @@
 using namespace std;
 
 constexpr int generationMultiplier = 5;
+constexpr int streakTolerance = 90;	// percent
 
 constexpr int invalidInt = numeric_limits<int>::min();
 
 extern volatile sig_atomic_t termFlag;
 
-extern "C" void stepwiseHandler(int sig)
-{
-	if (sig == SIGINT)
-		termFlag = 1;
-}
+extern "C" void handler(int sig);
 
 int stringToInt(const string& str, int minimum)
 {
@@ -199,6 +196,13 @@ bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, go
 			break;
 		}
 	}
+
+#ifdef _DEBUG
+	
+	cout << " " << simpleText.at(status.sequence.front());
+
+#endif
+
 	cout << endl;
 
 	stepwiseNextUpdate = chrono::steady_clock::now() + updateDelay;
@@ -245,11 +249,11 @@ actions doSolve(
 	if (partialIncrement > seed->size()) partialIncrement = seed->size();
 	craft::sequenceType partialSeed(next(seed->begin(), partialIncrement), seed->end());
 
-	signal(SIGINT, stepwiseHandler);
+	signal(SIGINT, handler);
 
 	solver solve(c, r, partialSeed, g, iS, tCnt, s, population);
 
-	craft::sequenceType result = solve.executeSolver(simsPerTrial, generations * generationMultiplier, generations, maxCacheSize, stepwiseUpdate).sequence;
+	craft::sequenceType result = solve.executeSolver(simsPerTrial, generations * generationMultiplier, generations, generations * streakTolerance / 100, maxCacheSize, stepwiseUpdate).sequence;
 
 	termFlag = 0;
 	signal(SIGINT, SIG_DFL);

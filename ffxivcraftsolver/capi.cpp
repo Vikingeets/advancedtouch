@@ -202,7 +202,7 @@ atSolverResult atExecuteSolve(atSolver* cSolver, int simulationsPerSequence, int
 
 	cCallback = callback;
 
-	solver::trial solveResult = solve->executeSolver(simulationsPerSequence, generations, 0, maxCacheSize, cSolverCallback);
+	solver::trial solveResult = solve->executeSolver(simulationsPerSequence, generations, 0, 0, maxCacheSize, cSolverCallback);
 
 	populateResultSequence(&result, solveResult.sequence);
 	

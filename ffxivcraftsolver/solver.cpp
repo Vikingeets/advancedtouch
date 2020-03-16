@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include <list>
+#include <deque>
 #include <set>
 #include <chrono>
 #include "common.h"
@@ -132,6 +133,63 @@ void resultCache::populateCache(const vector<solver::trial>& input)
 		addToCache(t);
 	}
 }
+
+class actionHistory
+{
+private:
+	unordered_map<actions, int> counts;
+	deque<actions> history;
+
+	const int capacity;
+
+public:
+	actionHistory() = delete;
+	actionHistory(int size) : capacity(size)
+	{
+	}
+
+	void addAction(actions action)
+	{
+		auto it = counts.find(action);
+		if (it != counts.end()) ++(it->second);
+		else counts.insert({ action, 1 });
+
+		history.push_back(action);
+		if (history.size() > capacity)
+		{
+			actions removed = history.front();
+			history.pop_front();
+			assert(counts.find(removed) != counts.end());
+			--counts[removed];
+		}
+	}
+
+	actions hasEnoughOfAction(int amount)
+	{
+		if (history.size() < capacity) return actions::invalid;
+		auto it = find_if(counts.cbegin(), counts.cend(),
+			[amount](const decltype(counts)::value_type& v) { return v.second >= amount; });
+		if (it != counts.cend()) return it->first;
+		else return actions::invalid;
+	}
+
+	actions getPlurality()
+	{
+		if (history.empty()) return actions::invalid;
+		auto it = max_element(counts.cbegin(), counts.cend(),
+			[](const decltype(counts)::value_type& p1, const decltype(counts)::value_type& p2)
+		{ return p1.second < p2.second; }
+			);
+		assert(it != counts.cend());
+		int maxAmount = it->second;
+		// There might be a tie, in which case the tiebreaker is the most recent
+		for (auto it2 = history.crbegin(); it2 != history.crend(); ++it)
+			if (counts[*it2] == maxAmount) return *it2;
+		// The max action wasn't found in the history. Shouldn't Happen
+		assert(false);
+		return actions::invalid;
+	}
+};
 
 void workerMain(solver* solve);
 
@@ -513,7 +571,7 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 	return sequenceTime(a.sequence) < sequenceTime(b.sequence);
 }
 
-solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int generationStreak, int maxCacheSize, solver::solverCallback callback)
+solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int generationWindow, int generationEarly, int maxCacheSize, solver::solverCallback callback)
 {
 	vector<thread> threads;
 	for (int i = 0; i < numberOfThreads; i++)
@@ -532,8 +590,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 	orders.initialState = &initialState;
 	orders.goal = goal;
 
-	actions lastStarter = actions::invalid;
-	int starterStreak = 0;
+	actionHistory hist(generationWindow);
 	for (int gen = 0; gen < generations; gen++)
 	{
 		mutated.clear();
@@ -596,24 +653,12 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, trials.front(), uniquePopulation, cacheHits))
 			break;
 
-		if (generationStreak > 0)
+		if (generationWindow > 0)
 		{
-			if (trials.front().sequence.empty())
-			{
-				lastStarter = actions::invalid;
-				starterStreak = 0;
-			}
-			actions currentStarter = trials.front().sequence.front();
-			if (currentStarter == lastStarter)
-			{
-				starterStreak++;
-				if (starterStreak >= generationStreak) break;
-			}
-			else
-			{
-				lastStarter = currentStarter;
-				starterStreak = 0;
-			}
+			hist.addAction(trials.front().sequence.front());
+			actions stop = hist.hasEnoughOfAction(generationEarly);
+			if (stop != actions::invalid)
+				break;
 		}
 
 		if(maxCacheSize > 0) cache.populateCache(trials);
@@ -623,6 +668,15 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 	setOrder(orders);
 	for (auto& t : threads)
 		t.join();
+	
+	if(generationWindow > 0)
+	{
+		// Find a trial that actually starts with the action
+		actions most = hist.getPlurality();
+		for (const auto& t : trials)
+			if (t.sequence.front() == most) return t;
+		// It's theoretically possible for no trial to have the right action. Just let it failover to the best trial
+	}
 	
 	return trials.front();
 }

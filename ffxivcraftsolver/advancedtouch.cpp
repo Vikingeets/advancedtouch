@@ -516,7 +516,7 @@ int performSolve(const crafterStats& crafter,
 	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock,
 		strat, population, useConditionals, gatherStats);
 	
-	solver::trial result = solve.executeSolver(simsPerSequence, generations, 0, maxCacheSize, solveUpdate);
+	solver::trial result = solve.executeSolver(simsPerSequence, generations, 0, 0, maxCacheSize, solveUpdate);
 	solver::netResult outcome = result.outcome;
 
 	cout << '\n' << outcome.successes << " completed (" << (outcome.successes * 100) / simsPerSequence << "%)\n";
