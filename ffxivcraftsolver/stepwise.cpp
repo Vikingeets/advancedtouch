@@ -212,14 +212,10 @@ bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, go
 
 actions doSolve(
 	const vector<string>& command,
-	const crafterStats& c,
-	const recipeStats& r,
+	solver* solve,
+	int* lastSolvedStep,
 	craft::sequenceType* seed,
-	goalType g,
 	const craft& iS,
-	int tCnt,
-	strategy s,
-	int population,
 	int simsPerTrial,
 	int generations,
 	int maxCacheSize
@@ -245,15 +241,12 @@ actions doSolve(
 		}
 	}
 
-	int partialIncrement = iS.getStep() - 1;
-	if (partialIncrement > seed->size()) partialIncrement = seed->size();
-	craft::sequenceType partialSeed(next(seed->begin(), partialIncrement), seed->end());
+	solve->setInitialState(iS);
+	solve->incrementSeeds(iS.getStep() - *lastSolvedStep);
 
 	signal(SIGINT, handler);
 
-	solver solve(c, r, partialSeed, g, iS, tCnt, s, population);
-
-	craft::sequenceType result = solve.executeSolver(simsPerTrial, generations * generationMultiplier, generations, generations * streakTolerance / 100, maxCacheSize, stepwiseUpdate).sequence;
+	craft::sequenceType result = solve->executeSolver(simsPerTrial, generations * generationMultiplier, generations, generations * streakTolerance / 100, maxCacheSize, stepwiseUpdate).sequence;
 
 	termFlag = 0;
 	signal(SIGINT, SIG_DFL);
@@ -264,11 +257,13 @@ actions doSolve(
 		cout << "The solver was unable to find an action.";
 		return actions::invalid;
 	}
-	seed->resize(min(static_cast<int>(seed->size()), partialIncrement));
+	seed->resize(min(static_cast<int>(seed->size()), iS.getStep() - 1));
 	seed->insert(seed->end(), result.cbegin(), result.cend());
 
 	actions suggestion = result.front();
 	cout << "Suggested action: " << simpleText.at(suggestion) << "\n\n";
+
+	*lastSolvedStep = iS.getStep();
 
 	return suggestion;
 }
@@ -293,6 +288,9 @@ int performStepwise(
 
 	stack<craft> craftHistory;
 	craftHistory.push(currentStatus);
+
+	solver solve(crafter, recipe, seed, goal, currentStatus, threads, strat, population);
+	int lastSolvedStep = 0;
 
 	bool printStatus = true;
 	actions lastSuggested = actions::invalid;
@@ -452,8 +450,7 @@ int performStepwise(
 		}
 		else if (command[0] == "solve" || command[0] == "so")
 		{
-
-			actions suggestion = doSolve(commandOrig, crafter, recipe, &currentSeed, goal, currentStatus, threads, strat, population, simsPerSequence, stepwiseGenerations, maxCacheSize);
+			actions suggestion = doSolve(commandOrig, &solve, &lastSolvedStep, &currentSeed, currentStatus, simsPerSequence, stepwiseGenerations, maxCacheSize);
 			if (suggestion != actions::invalid) lastSuggested = suggestion;
 			printStatus = suggestion != actions::invalid;
 			if (!printStatus) continue;

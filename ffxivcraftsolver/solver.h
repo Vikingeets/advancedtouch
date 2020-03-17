@@ -147,6 +147,10 @@ public:
 		int population
 	);
 
+	void setInitialState(craft iS) { initialState = iS; }
+
+	void incrementSeeds(int amount);
+
 	trial executeMultisim(int simulationsPerTrial);
 
 	using solverCallback = std::function<

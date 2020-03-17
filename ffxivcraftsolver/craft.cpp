@@ -703,6 +703,7 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 {
 	endResult craftResult;
 	craftResult.invalidActions = 0;
+	craftResult.firstInvalid = false;
 	int softInvalids = 0;
 
 	craft::sequenceType::const_iterator it;

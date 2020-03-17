@@ -479,6 +479,14 @@ solver::solver(const crafterStats& c,
 		[&seed](trial& t) {t.sequence = seed; });
 }
 
+void solver::incrementSeeds(int amount)
+{
+	for(int i = 0; i < amount; ++i)
+		for (auto& t : trials)
+			if(!t.sequence.empty())
+				t.sequence.erase(t.sequence.begin());
+}
+
 solver::trial solver::executeMultisim(int simulationsPerTrial)
 {
 	vector<thread> threads;
