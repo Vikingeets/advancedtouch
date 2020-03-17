@@ -270,6 +270,7 @@ void parseRecipe(const rapidjson::Document& d, recipeStats* recipe)
 	recipe->quality = getIntIfExists(d, "/quality");
 	recipe->nominalQuality = recipe->quality;
 	recipe->durability = getIntIfExists(d, "/durability");
+	recipe->expert = getBoolIfExists(d, "/expert");
 
 	bitset<4> missingStats;
 	missingStats[0] = recipe->rLevel <= 0;
