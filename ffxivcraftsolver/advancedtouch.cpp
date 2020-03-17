@@ -754,9 +754,9 @@ int main(int argc, char* argv[])
 		}
 		else if (currentArgv == "-t")
 		{
-			if (command != commands::solve)
+			if (command != commands::solve && command != commands::stepwise)
 			{
-				cerr << "-t only available in solve mode\n";
+				cerr << "-t only available in solve and stepwise mode\n";
 				usage();
 			}
 			currentArgc++;
