@@ -183,7 +183,7 @@ public:
 		assert(it != counts.cend());
 		int maxAmount = it->second;
 		// There might be a tie, in which case the tiebreaker is the most recent
-		for (auto it2 = history.crbegin(); it2 != history.crend(); ++it)
+		for (auto it2 = history.crbegin(); it2 != history.crend(); ++it2)
 			if (counts[*it2] == maxAmount) return *it2;
 		// The max action wasn't found in the history. Shouldn't Happen
 		assert(false);
