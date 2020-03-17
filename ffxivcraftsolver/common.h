@@ -22,6 +22,8 @@ struct recipeStats
 
 	int suggestedCraftsmanship;
 	int suggestedControl;
+
+	bool expert;
 };
 
 enum class strategy

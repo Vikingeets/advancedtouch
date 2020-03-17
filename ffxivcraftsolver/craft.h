@@ -117,7 +117,12 @@ public:
 		poor,
 		normal,
 		good,
-		excellent
+		excellent,
+
+		// expert
+		centered,
+		sturdy,
+		pliant
 	};
 
 	enum class actionResult
@@ -181,7 +186,8 @@ private:
 
 	int getDurabilityCost(int base)
 	{
-		if (wasteNotTime > 0 || wasteNot2Time > 0) base /= 2;
+		if (wasteNotTime > 0 || wasteNot2Time > 0) base -= base/ 2;
+		if (cond == condition::sturdy) base -= base / 2;
 		return base;
 	}
 

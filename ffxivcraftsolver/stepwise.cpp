@@ -400,17 +400,24 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
-			if (command[1] == "e")
+			if (command[1] == "e" && !recipe.expert)
 				currentStatus.setCondition(craft::condition::excellent);
 			else if (command[1] == "g")
 				currentStatus.setCondition(craft::condition::good);
 			else if (command[1] == "n")
 				currentStatus.setCondition(craft::condition::normal);
 			else if (command[1] == "p")
-				currentStatus.setCondition(craft::condition::poor);
+				currentStatus.setCondition(recipe.expert ? craft::condition::pliant : craft::condition::poor);
+			else if (command[1] == "c" && recipe.expert)
+				currentStatus.setCondition(craft::condition::centered);
+			else if (command[1] == "s" && recipe.expert)
+				currentStatus.setCondition(craft::condition::sturdy);
 			else
 			{
-				cout << "Condition required: e, g, n, or p\n";
+				if (recipe.expert)
+					cout << "Condition required: g, n, c, s, or p\n";
+				else
+					cout << "Condition required: e, g, n, or p\n";
 				printStatus = false;
 				continue;
 			}

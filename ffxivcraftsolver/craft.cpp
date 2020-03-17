@@ -11,6 +11,8 @@ using actionResult = craft::actionResult;
 // chance == 70 means 70% success and so on
 inline bool craft::rollPercent(int chance) const
 {
+	if (cond == condition::centered) chance += 25;
+
 	if (chance >= 100) return true;
 
 	switch (over)
@@ -90,6 +92,7 @@ void craft::increaseQuality(int efficiency)
 		conditionMod = 0.5f;
 		break;
 	case condition::normal:
+	default:
 		conditionMod = 1.0f;
 		break;
 	case condition::good:
@@ -118,6 +121,8 @@ bool craft::changeCP(int amount)
 		return true;
 	}
 
+	if (cond == condition::pliant) amount /= 2;
+
 	if (-amount > CP) return false;
 
 	CP += amount;
@@ -131,11 +136,30 @@ bool inRange(int num, int high, int low)
 
 craft::condition craft::getNextCondition(condition current)
 {
+
+	if (recipe.expert)
+	{
+		if (normalLock || over != rngOverride::random) return condition::normal;
+		int goodChance = 15;
+		int centeredChance = 10;
+		int sturdyChance = 10;
+		int pliantChance = 10;
+
+		int roll = rng->generateInt(99);
+
+		if (roll >= 100 - goodChance) return condition::good;
+		else if (roll >= 100 - goodChance - centeredChance) return condition::centered;
+		else if (roll >= 100 - goodChance - centeredChance - sturdyChance) return condition::sturdy;
+		else if (roll >= 100 - goodChance - centeredChance - sturdyChance - pliantChance) return condition::pliant;
+		else return condition::normal;
+	}
+
 	switch (current)
 	{
 	case condition::poor:
 	case condition::good:
 		return condition::normal;
+	default:
 	case condition::normal:
 		break;
 	case condition::excellent:
@@ -264,6 +288,16 @@ string craft::getState() const
 			break;
 		case condition::excellent:
 			output += "Excellent, ";
+			break;
+
+		case condition::centered:
+			output += "Centered, ";
+			break;
+		case condition::sturdy:
+			output += "Sturdy, ";
+			break;
+		case condition::pliant:
+			output += "Pliant, ";
 			break;
 		}
 	}
