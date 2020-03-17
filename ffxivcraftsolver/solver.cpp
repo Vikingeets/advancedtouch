@@ -511,7 +511,11 @@ solver::trial solver::executeMultisim(int simulationsPerTrial)
 // returns true if a is better than b, so sorting ends up best to worst
 bool solver::compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial, bool alwaysRejectInvalids) const
 {
-	// first reject sequences with invalid actions
+	// do not ever prefer a sequence with the first action being invalid
+	if (a.outcome.firstInvalid != b.outcome.firstInvalid)
+		return !a.outcome.firstInvalid;
+
+	// reject sequences with invalid actions
 	// but if one sequence is considerably better than the others, let the invalids stand
 	// its children/siblings with the same result and less invalids will end up getting preferred
 	if (a.outcome.invalidActions != b.outcome.invalidActions)
@@ -624,8 +628,8 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		mutationGroups mG = divideSequence(static_cast<int>(trials.size()));
 		auto comp = [this, simulationsPerTrial](const trial& a, const trial& b)
 			{return compareResult(a, b, simulationsPerTrial, false);};
-		auto compNoInvalids = [this, simulationsPerTrial](const trial& a, const trial& b)
-			{return compareResult(a, b, simulationsPerTrial, true); };
+		auto compNoInvalids = [this, simulationsPerTrial, generationWindow](const trial& a, const trial& b)
+			{return compareResult(a, b, simulationsPerTrial, generationWindow == 0); };
 
 		auto beginPos = trials.begin();
 		auto preserveStart = beginPos;
@@ -768,6 +772,7 @@ void solver::reportThreadSimResults(const vector<netResult>& threadResults)
 		}
 		simResults[i].invalidActions += threadResults[i].invalidActions;
 		simResults[i].steps += threadResults[i].steps;
+		if (threadResults[i].firstInvalid) simResults[i].firstInvalid = true;
 	}
 	threadsDone++;
 	lock.unlock();
@@ -952,6 +957,7 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 		}
 		localResults[trialNumber].steps += result.steps;
 		localResults[trialNumber].invalidActions += result.invalidActions;
+		if (result.firstInvalid) localResults[trialNumber].firstInvalid = true;
 	}
 
 	// Everything's done (or has been claimed by another thread), so time to report in and wait for the next order

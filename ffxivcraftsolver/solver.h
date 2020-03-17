@@ -30,6 +30,7 @@ public:
 		};
 		short steps;		// actions until the synth ends, not neccesarily the size of the sequence
 		short invalidActions;		// i.e. those that don't occur due to preconditions not met, insufficient CP, or occuring after the end of the synth
+		bool firstInvalid;		// doesn't need to be a sum. if it's true for any of them it's true for all of them
 	};
 
 	struct trial

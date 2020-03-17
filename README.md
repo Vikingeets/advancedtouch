@@ -84,6 +84,8 @@ The recipe file is required and is a JSON document. All values are case-sensitiv
 
 "quality" is the quality required to guarantee a 100% HQ chance. It should still be provided in max quality or collectability mode, as it is used internally.
 
+"expert" is either true or false to indicate whether the recipe is an expert recipe. However, even in stepwise mode, the solver struggles to reach the lowest turnin threshold.
+
 # Options
 
 The options file is a JSON document with several values. All are case-sensitive.

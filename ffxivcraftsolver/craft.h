@@ -110,6 +110,7 @@ public:
 		};
 		int steps;
 		int invalidActions;
+		bool firstInvalid;			// if the first action in the sequence was invalid
 	};
 
 	enum class condition
