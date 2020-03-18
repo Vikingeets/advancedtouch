@@ -102,7 +102,7 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 	case AT_GOAL_COLLECTABILITY:
 		solveGoal = goalType::collectability;
 		break;
-	default: terminate();
+	default: return nullptr;
 	}
 
 	strategy strat;
@@ -117,7 +117,7 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 	case AT_STRATEGY_NQONLY:
 		strat = strategy::nqOnly;
 		break;
-	default: terminate();
+	default: return nullptr;
 	}
 
 	bool nLock = normalLock != 0;
