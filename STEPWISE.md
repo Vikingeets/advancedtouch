@@ -1,6 +1,6 @@
 # What?
 
-Stepwise mode allows you to manually try crafting actions against a simulated crafting session. Alternatively, it can use Advanced Touch's solver to find the optimal next step in the craft.
+Stepwise mode allows you to manually try crafting actions against a simulated crafting session. Alternatively, it can use Advanced Touch's solver to suggest the next action in the craft.
 
 # Using stepwise mode
 
@@ -12,7 +12,7 @@ The current state of the craft, along with all active buffs, will be listed. Aft
 
 You may set the craft to any valid state, using the following commands:
 
-st, step s
+s, step s
 
 	Sets the current step. Useful to prevent the solver from suggesting MuMe or Reflect halfway into a craft. e.g. `s 15`
 
@@ -28,7 +28,7 @@ q, quality q
 
 	Sets the current quality.
 
-c, condition e/g/n/p
+c, condition e/g/n/p (expert: g/n/c/s/p)
 
 	Sets the current condition to excellent/good/normal/poor. e.g. `c g`
 
@@ -42,7 +42,7 @@ buff action time
 
 	For Inner Quiet, set to the number of stacks.
 
-	For Name of the Elements, set to 0 to indicate that it has been used this craft, or -1 to indicate that it has not.
+	For Name of the Elements, set to 0 to indicate that it has already been used this craft, or -1 to indicate that it has not.
 
 	Example: `buff wasteNot2 4`
 
@@ -50,15 +50,15 @@ buff action time
 
 ac, action a s/f/?
 
-	Perform the given crafting action. The action must be in the shortened format that Advanced Touch inputs and outputs. Afterwards, you may set s, f, or ? to indicate whether the action succeeded, failed, or to let the RNG decide (the default).
+	Perform the given crafting action. The action must be in the shortened format that Advanced Touch inputs and outputs. Afterwards, you may set s, f, or ? to indicate whether the action succeeded, failed, or to let AT's RNG decide (the default).
 
-	In s or f, the stepwise will never proc a good or excellent condition in the following step. Actions that are guaranteed to succeed ingame are guaranteed in stepwise, even if f is specified.
+	With s or f, the stepwise will always proc a normal (or poor) condition in the following step. Actions that are guaranteed to succeed ingame are guaranteed in stepwise, even if f is specified.
 
 	Example: `ac patientTouch s`
 
 so, solve g
 
-	Executes the solver against the current crafting status. You may optionally specify a number of generations. The solver will run until it settles on an action to take next, or until 5 times that number have been tried. You may cancel the solve early by hitting Control-C
+	Executes the solver against the current crafting status. You may optionally specify a number of generations. The solver will run until it settles on an action to take next, or until 5 times the generation count has been tried. You may cancel the solve early by hitting Control-C
 
 su, suggested s/f/?
 
