@@ -58,7 +58,7 @@ int stringToInt(const string& str, char letter, int minimum = 1)
 {
 	try
 	{
-		int i = static_cast<int>(stoul(str));
+		int i = stoi(str);
 		if (i < minimum)
 		{
 			cerr << "argument to -" << letter << " must be at least " << minimum << endl;

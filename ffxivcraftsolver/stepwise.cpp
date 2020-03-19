@@ -25,7 +25,7 @@ int stringToInt(const string& str, int minimum)
 {
 	try
 	{
-		int i = static_cast<int>(stoul(str));
+		int i = stoi(str);
 		if (i < minimum) return invalidInt;
 		else return i;
 	}
@@ -282,17 +282,16 @@ int performStepwise(
 	strategy strat
 	)
 {
-	craft currentStatus = craft(initialQuality, crafter, recipe, false);
 	random rand;
-	currentStatus.setRNG(&rand);
-
 	stack<craft> craftHistory;
-	craftHistory.push(currentStatus);
+	craftHistory.emplace(initialQuality, crafter, recipe, false);
+	
+	craftHistory.top().setRNG(&rand);
 
-	solver solve(crafter, recipe, seed, goal, currentStatus, threads, strat, population);
+	solver solve(crafter, recipe, seed, goal, craftHistory.top(), threads, strat, population);
 	int lastSolvedStep = 0;
 
-	bool printStatus = true;
+	bool printStatus = true;		// Generally doubles as a success/fail flag
 	actions lastSuggested = actions::invalid;
 
 	// Holds an entire sequence, start to end. Modified as actions happen.
@@ -300,10 +299,11 @@ int performStepwise(
 
 	while (true)
 	{
+		assert(!craftHistory.empty());
 		if (printStatus)
 		{
-			cout << "Step " << currentStatus.getStep() << '\n';
-			cout << currentStatus.getState();
+			cout << "Step " << craftHistory.top().getStep() << '\n';
+			cout << craftHistory.top().getState();
 		}
 		cout << endl;
 		printStatus = true;
@@ -337,7 +337,11 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
-			else currentStatus.setStep(step);
+			else
+			{
+				craftHistory.push(craftHistory.top());
+				craftHistory.top().setStep(step);
+			}
 		}
 		else if (command[0] == "progress" || command[0] == "p")
 		{
@@ -354,7 +358,11 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
-			else currentStatus.setProgress(progress);
+			else
+			{
+				craftHistory.push(craftHistory.top());
+				craftHistory.top().setProgress(progress);
+			}
 		}
 		else if (command[0] == "quality" || command[0] == "q")
 		{
@@ -371,7 +379,11 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
-			else currentStatus.setQuality(quality);
+			else
+			{
+				craftHistory.push(craftHistory.top());
+				craftHistory.top().setQuality(quality);
+			}
 		}
 		else if (command[0] == "durability" || command[0] == "d")
 		{
@@ -388,7 +400,11 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
-			else currentStatus.setDurability(durability);
+			else
+			{
+				craftHistory.push(craftHistory.top());
+				craftHistory.top().setDurability(durability);
+			}
 		}
 		else if (command[0] == "condition" || command[0] == "c")
 		{
@@ -398,18 +414,19 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
+			craftHistory.push(craftHistory.top());
 			if (command[1] == "e" && !recipe.expert)
-				currentStatus.setCondition(craft::condition::excellent);
+				craftHistory.top().setCondition(craft::condition::excellent);
 			else if (command[1] == "g")
-				currentStatus.setCondition(craft::condition::good);
+				craftHistory.top().setCondition(craft::condition::good);
 			else if (command[1] == "n")
-				currentStatus.setCondition(craft::condition::normal);
+				craftHistory.top().setCondition(craft::condition::normal);
 			else if (command[1] == "p")
-				currentStatus.setCondition(recipe.expert ? craft::condition::pliant : craft::condition::poor);
+				craftHistory.top().setCondition(recipe.expert ? craft::condition::pliant : craft::condition::poor);
 			else if (command[1] == "c" && recipe.expert)
-				currentStatus.setCondition(craft::condition::centered);
+				craftHistory.top().setCondition(craft::condition::centered);
 			else if (command[1] == "s" && recipe.expert)
-				currentStatus.setCondition(craft::condition::sturdy);
+				craftHistory.top().setCondition(craft::condition::sturdy);
 			else
 			{
 				if (recipe.expert)
@@ -417,6 +434,7 @@ int performStepwise(
 				else
 					cout << "Condition required: e, g, n, or p\n";
 				printStatus = false;
+				craftHistory.pop();
 				continue;
 			}
 		}
@@ -435,22 +453,36 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
-			else currentStatus.setCP(CP);
+			else
+			{
+				craftHistory.push(craftHistory.top());
+				craftHistory.top().setCP(CP);
+			}
 		}
 		else if (command[0] == "buff")
 		{
-			printStatus = applyBuff(commandOrig, &currentStatus);
-			if (!printStatus) continue;
+			craftHistory.push(craftHistory.top());
+			printStatus = applyBuff(commandOrig, &craftHistory.top());
+			if (!printStatus)
+			{
+				craftHistory.pop();
+				continue;
+			}
 		}
 		else if (command[0] == "action" || command[0] == "ac")
 		{
-			printStatus = doAction(commandOrig, &currentStatus, currentSeed);
-			if (!printStatus) continue;
+			craftHistory.push(craftHistory.top());
+			printStatus = doAction(commandOrig, &craftHistory.top(), currentSeed);
+			if (!printStatus)
+			{
+				craftHistory.pop();
+				continue;
+			}
 			lastSuggested = actions::invalid;
 		}
 		else if (command[0] == "solve" || command[0] == "so")
 		{
-			actions suggestion = doSolve(commandOrig, &solve, &lastSolvedStep, &currentSeed, currentStatus, simsPerSequence, stepwiseGenerations, maxCacheSize);
+			actions suggestion = doSolve(commandOrig, &solve, &lastSolvedStep, &currentSeed, craftHistory.top(), simsPerSequence, stepwiseGenerations, maxCacheSize);
 			if (suggestion != actions::invalid) lastSuggested = suggestion;
 			printStatus = suggestion != actions::invalid;
 			if (!printStatus) continue;
@@ -473,8 +505,13 @@ int performStepwise(
 				printStatus = false;
 				continue;
 			}
-			printStatus = doAction(lastSuggested, over, &currentStatus, currentSeed);
-			if (!printStatus) continue;
+			craftHistory.push(craftHistory.top());
+			printStatus = doAction(lastSuggested, over, &craftHistory.top(), currentSeed);
+			if (!printStatus)
+			{
+				craftHistory.pop();
+				continue;
+			}
 			lastSuggested = actions::invalid;
 		}
 		else if (command[0] == "undo" || command[0] == "u")
@@ -497,15 +534,12 @@ int performStepwise(
 				if (craftHistory.size() == 1) break;
 				craftHistory.pop();
 			}
-			currentStatus = craftHistory.top();
 			continue;
 		}
 		else if (command[0] == "reset")
 		{
-			currentStatus = craft(initialQuality, crafter, recipe, false);
-			currentStatus.setRNG(&rand);
-			craftHistory = stack<craft>();
-			craftHistory.push(currentStatus);
+			while (craftHistory.size() > 1)
+				craftHistory.pop();
 			lastSuggested = actions::invalid;
 			// Don't reset the seed; it can help prime future solutions
 			continue;
@@ -520,7 +554,5 @@ int performStepwise(
 			printStatus = false;
 			continue;
 		}
-
-		craftHistory.push(currentStatus);
 	}
 }
