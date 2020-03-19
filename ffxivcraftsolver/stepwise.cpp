@@ -335,7 +335,6 @@ int performStepwise(
 			{
 				cout << "Step must be at least 1";
 				printStatus = false;
-				continue;
 			}
 			else
 			{
@@ -356,7 +355,6 @@ int performStepwise(
 			{
 				cout << "Progress must be at least 0";
 				printStatus = false;
-				continue;
 			}
 			else
 			{
@@ -377,7 +375,6 @@ int performStepwise(
 			{
 				cout << "Quality must be at least 0";
 				printStatus = false;
-				continue;
 			}
 			else
 			{
@@ -398,7 +395,6 @@ int performStepwise(
 			{
 				cout << "Durability must be at least 1";
 				printStatus = false;
-				continue;
 			}
 			else
 			{
@@ -435,7 +431,6 @@ int performStepwise(
 					cout << "Condition required: e, g, n, or p\n";
 				printStatus = false;
 				craftHistory.pop();
-				continue;
 			}
 		}
 		else if (command[0] == "cp" || command[0] == "c")
@@ -451,7 +446,6 @@ int performStepwise(
 			{
 				cout << "CP must be at least 0";
 				printStatus = false;
-				continue;
 			}
 			else
 			{
@@ -463,29 +457,20 @@ int performStepwise(
 		{
 			craftHistory.push(craftHistory.top());
 			printStatus = applyBuff(commandOrig, &craftHistory.top());
-			if (!printStatus)
-			{
-				craftHistory.pop();
-				continue;
-			}
+			if (!printStatus) craftHistory.pop();
 		}
 		else if (command[0] == "action" || command[0] == "ac")
 		{
 			craftHistory.push(craftHistory.top());
 			printStatus = doAction(commandOrig, &craftHistory.top(), currentSeed);
-			if (!printStatus)
-			{
-				craftHistory.pop();
-				continue;
-			}
-			lastSuggested = actions::invalid;
+			if (!printStatus) craftHistory.pop();
+			else lastSuggested = actions::invalid;
 		}
 		else if (command[0] == "solve" || command[0] == "so")
 		{
 			actions suggestion = doSolve(commandOrig, &solve, &lastSolvedStep, &currentSeed, craftHistory.top(), simsPerSequence, stepwiseGenerations, maxCacheSize);
 			if (suggestion != actions::invalid) lastSuggested = suggestion;
 			printStatus = suggestion != actions::invalid;
-			if (!printStatus) continue;
 		}
 		else if (command[0] == "suggested" || command[0] == "su")
 		{
@@ -507,12 +492,8 @@ int performStepwise(
 			}
 			craftHistory.push(craftHistory.top());
 			printStatus = doAction(lastSuggested, over, &craftHistory.top(), currentSeed);
-			if (!printStatus)
-			{
-				craftHistory.pop();
-				continue;
-			}
-			lastSuggested = actions::invalid;
+			if (!printStatus) craftHistory.pop();
+			else lastSuggested = actions::invalid;
 		}
 		else if (command[0] == "undo" || command[0] == "u")
 		{
@@ -534,7 +515,6 @@ int performStepwise(
 				if (craftHistory.size() == 1) break;
 				craftHistory.pop();
 			}
-			continue;
 		}
 		else if (command[0] == "reset")
 		{
@@ -542,7 +522,6 @@ int performStepwise(
 				craftHistory.pop();
 			lastSuggested = actions::invalid;
 			// Don't reset the seed; it can help prime future solutions
-			continue;
 		}
 		else if (command[0] == "exit" || command[0] == "quit")
 		{
@@ -552,7 +531,6 @@ int performStepwise(
 		{
 			cout << "Unknown command " << command[0] << '\n';
 			printStatus = false;
-			continue;
 		}
 	}
 }
