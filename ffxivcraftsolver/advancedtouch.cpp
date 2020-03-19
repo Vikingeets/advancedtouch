@@ -463,7 +463,7 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 	static chrono::time_point<chrono::steady_clock> nextUpdate(chrono::steady_clock::now() + updateDelay);
 	if (chrono::steady_clock::now() < nextUpdate) return true;
 
-	cout << "Generation " << currentGeneration << "/" << generations << ", " <<
+	cout << "Generation " << currentGeneration + 1 << "/" << generations << ", " <<
 		status.outcome.successes * 100 / simsPerTrial <<
 		"% successes, ";
 	if (strat != strategy::nqOnly)
