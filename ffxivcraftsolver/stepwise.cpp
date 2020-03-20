@@ -497,7 +497,6 @@ int performStepwise(
 		}
 		else if (command[0] == "undo" || command[0] == "u")
 		{
-			if (craftHistory.empty()) continue;	// Shouldn't Happen
 			int amount;
 			if (command.size() == 1) amount = 1;
 			else
