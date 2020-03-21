@@ -140,10 +140,10 @@ craft::condition craft::getNextCondition(condition current)
 	if (recipe.expert)
 	{
 		if (normalLock || over != rngOverride::random) return condition::normal;
-		int goodChance = 15;
-		int centeredChance = 10;
-		int sturdyChance = 10;
-		int pliantChance = 10;
+		int goodChance = 12;
+		int centeredChance = 15;
+		int sturdyChance = 15;
+		int pliantChance = 12;
 
 		int roll = rng->generateInt(99);
 
