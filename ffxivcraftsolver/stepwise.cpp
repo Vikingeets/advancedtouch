@@ -92,7 +92,7 @@ bool applyBuff(const vector<string>& command, craft* crafting)
 	int duration = stringToInt(command[2], it->first == actions::nameOfTheElements ? -1 : 0);
 	if (duration == invalidInt)
 	{
-		cout << command[2] << " must be set to at least " << (it->first == actions::nameOfTheElements? "-1" : "0");
+		cout << command[1] << " must be set to at least " << (it->first == actions::nameOfTheElements? "-1" : "0");
 		return false;
 	}
 	crafting->setBuff(it->first, duration);
