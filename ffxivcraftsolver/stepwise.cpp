@@ -71,7 +71,7 @@ bool applyBuff(const vector<string>& command, craft* crafting)
 		[&buffName](const pair<actions, string>& p){return buffName == lowercase(p.second); });
 	if (it == simpleText.end())
 	{
-		cout << "Unknown action:" << command[1] << "\n";
+		cout << "Unknown action: " << command[1] << "\n";
 		return false;
 	}
 	if (!isBuff(it->first))
@@ -155,7 +155,7 @@ bool doAction(const vector<string>& command, craft* crafting, craft::sequenceTyp
 		[&actionName](const pair<actions, string>& p) {return actionName == lowercase(p.second); });
 	if (it == simpleText.end())
 	{
-		cout << "Unknown action:" << command[1] << "\n";
+		cout << "Unknown action: " << command[1] << "\n";
 		return false;
 	}
 	craft::rngOverride over;
@@ -406,7 +406,10 @@ int performStepwise(
 		{
 			if (command.size() == 1)
 			{
-				cout << "Condition required: e, g, n, or p\n";
+				if (recipe.expert)
+					cout << "Condition required: g, n, c, s, or p\n";
+				else
+					cout << "Condition required: e, g, n, or p\n";
 				printStatus = false;
 				continue;
 			}
