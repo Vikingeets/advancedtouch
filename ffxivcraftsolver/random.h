@@ -111,10 +111,7 @@ private:
 		{
 			uint64_t t = -high % high;
 			while (mLow < t)
-			{
-				x = engine();
 				mLow = _umul128(engine(), high, &mHigh);
-			}
 		}
 		return low + mHigh;
 #else
