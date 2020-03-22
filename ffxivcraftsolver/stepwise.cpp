@@ -180,7 +180,7 @@ bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, go
 	static chrono::time_point<chrono::steady_clock> stepwiseNextUpdate(chrono::steady_clock::now() + updateDelay);
 	if (chrono::steady_clock::now() < stepwiseNextUpdate) return true;
 
-	cout << currentGeneration + 1<< "/" << generations;
+	cout << currentGeneration + 1 << "/" << generations;
 	if (strat != strategy::nqOnly)
 	{
 		switch (goal)

@@ -481,10 +481,8 @@ solver::solver(const crafterStats& c,
 
 void solver::incrementSeeds(int amount)
 {
-	for(int i = 0; i < amount; ++i)
-		for (auto& t : trials)
-			if(!t.sequence.empty())
-				t.sequence.erase(t.sequence.begin());
+	for (auto& t : trials)
+		t.sequence.erase(t.sequence.begin(), t.sequence.begin() + (min(amount, static_cast<int>(t.sequence.size()))));
 }
 
 solver::trial solver::executeMultisim(int simulationsPerTrial)
