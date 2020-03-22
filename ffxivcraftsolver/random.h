@@ -85,7 +85,44 @@ private:
 	static std::mutex devicelock;
 	xorshift engine;
 
-public:
+	template<typename T> 
+	T uniformInt(T low, T high)
+	{
+		high -= low;
+		++high;
+		// From https://arxiv.org/abs/1805.10941
+#if defined(__SIZEOF_INT128__)
+		__uint128_t m = static_cast<__uint128_t>(engine()) * static_cast<__uint128_t>(high);
+		uint64_t l = static_cast<uint64_t>(m);
+		if (l < high)
+		{
+			uint64_t t = -high % high;
+			while (l < t)
+			{
+				m = static_cast<__uint128_t>(engine()) * static_cast<__uint128_t>(high);
+				l = static_cast<uint64_t>(m);
+			}
+		}
+		return low + (m >> 64);
+#elif defined(_M_X64)
+		uint64_t mHigh, mLow;
+		mLow = _umul128(engine(), high, &mHigh);
+		if (mLow < high)
+		{
+			uint64_t t = -high % high;
+			while (mLow < t)
+			{
+				x = engine();
+				mLow = _umul128(engine(), high, &mHigh);
+			}
+		}
+		return low + mHigh;
+#else
+		return low + std::uniform_int_distribution<T>(0, high - 1)(engine);
+#endif
+	}
+
+	public:
 	random(const random&) = delete;
 	random& operator=(const random&) = delete;
 
@@ -99,7 +136,7 @@ public:
 	inline T generateInt(T low, T high)
 	{
 		assert(high >= low);
-		T output = std::uniform_int_distribution<T>(low, high)(engine);
+		T output = uniformInt<T>(low, high);
 
 #if defined(_MSC_VER)
 		__assume(output >= low);
