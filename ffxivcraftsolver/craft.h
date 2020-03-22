@@ -152,6 +152,7 @@ private:
 	int quality;
 	int progress;
 
+	int goodChance, excellentChance;
 	condition cond;
 
 	int progressFactor;
@@ -203,6 +204,8 @@ private:
 		durability -= getDurabilityCost(amount);
 	}
 
+	void setProbabilities(int cLevel, int rLevel);
+
 	condition getNextCondition(condition current);
 	void endStep();
 
@@ -228,7 +231,10 @@ public:
 		qualityFactor(getQualityFactor(crafter.cLevel - recipe.rLevel)),
 		normalLock(nLock),
 		rng(nullptr)
-	{}
+	{
+		if(!recipe.expert)
+			setProbabilities(crafter.cLevel, recipe.rLevel);
+	}
 
 	std::string getState() const;
 

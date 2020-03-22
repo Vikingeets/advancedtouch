@@ -134,9 +134,47 @@ bool inRange(int num, int high, int low)
 	return low <= num && num <= high;
 }
 
+void craft::setProbabilities(int cLevel, int rLevel)
+{
+	bool qualityAssurance = crafter.level >= 63;
+
+	if (
+		inRange(recipe.rLevel, 160, 254) ||	// 60*+
+		inRange(recipe.rLevel, 300, 384) ||	// 70*+
+		recipe.rLevel >= 430				// 80*+
+		)
+	{
+		goodChance = qualityAssurance ? 11 : 10;
+		excellentChance = 1;
+	}
+	else if (
+		inRange(recipe.rLevel, 136, 159) ||	// 55+
+		inRange(recipe.rLevel, 276, 299) ||	// 65+
+		inRange(recipe.rLevel, 406, 429)	// 75+
+		)
+	{
+		goodChance = qualityAssurance ? 17 : 15;
+		excellentChance = 2;
+	}
+	else if (
+		inRange(recipe.rLevel, 115, 135) ||	// 51+	
+		inRange(recipe.rLevel, 255, 275) ||	// 61+
+		inRange(recipe.rLevel, 385, 405)	// 71+
+		)
+	{
+		goodChance = qualityAssurance ? 22 : 20;
+		excellentChance = 2;
+	}
+	else									// 1+
+	{
+		goodChance = qualityAssurance ? 27 : 25;
+		excellentChance = 2;
+	}
+}
+
 craft::condition craft::getNextCondition(condition current)
 {
-
+	// Unfortunately, std::discrete_distribution is far too slow to be usable.
 	if (recipe.expert)
 	{
 		if (normalLock || over != rngOverride::random) return condition::normal;
@@ -167,42 +205,6 @@ craft::condition craft::getNextCondition(condition current)
 	}
 
 	if (normalLock || over != rngOverride::random) return condition::normal;
-
-	bool qualityAssurance = crafter.level >= 63;
-	int excellentChance, goodChance;
-	
-	if (
-		inRange(recipe.rLevel, 160, 254) ||	// 60*+
-		inRange(recipe.rLevel, 300, 384) ||	// 70*+
-		recipe.rLevel >= 430				// 80*+
-		)
-	{
-		excellentChance = 1;
-		goodChance = qualityAssurance ? 11 : 10;
-	}
-	else if (
-		inRange(recipe.rLevel, 136, 159) ||	// 55+
-		inRange(recipe.rLevel, 276, 299) ||	// 65+
-		inRange(recipe.rLevel, 406, 429)	// 75+
-		)
-	{
-		excellentChance = 2;
-		goodChance = qualityAssurance ? 17 : 15;
-	}
-	else if (
-		inRange(recipe.rLevel, 115, 135) ||	// 51+	
-		inRange(recipe.rLevel, 255, 275) ||	// 61+
-		inRange(recipe.rLevel, 385, 405)	// 71+
-		)
-	{
-		excellentChance = 2;
-		goodChance = qualityAssurance ? 22 : 20;
-	}
-	else									// 1+
-	{
-		excellentChance = 2;
-		goodChance = qualityAssurance ? 27 : 25;
-	}
 
 	int roll = rng->generateInt(99);
 
