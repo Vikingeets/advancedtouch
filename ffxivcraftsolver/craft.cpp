@@ -716,6 +716,10 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 			cout << getState() << '\n';
 			cout << "Step " << step << ", ";
 		}
+
+		if (it == sequence.cbegin() && *it == actions::finalAppraisal && finalAppraisalTime == 5)
+			craftResult.firstInvalid = true;
+
 		actionResult result = performOne(*it);
 		if (echoEach)
 		{
