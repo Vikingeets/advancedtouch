@@ -121,7 +121,7 @@ bool craft::changeCP(int amount)
 		return true;
 	}
 
-	if (cond == condition::pliant) amount /= 2;
+	if (cond == condition::pliant) amount -= amount / 2;
 
 	if (-amount > CP) return false;
 
