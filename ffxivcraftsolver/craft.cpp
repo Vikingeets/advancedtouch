@@ -134,7 +134,7 @@ bool inRange(int num, int high, int low)
 	return low <= num && num <= high;
 }
 
-void craft::setProbabilities(int cLevel, int rLevel)
+void craft::setProbabilities()
 {
 	bool qualityAssurance = crafter.level >= 63;
 

@@ -204,7 +204,7 @@ private:
 		durability -= getDurabilityCost(amount);
 	}
 
-	void setProbabilities(int cLevel, int rLevel);
+	void setProbabilities();
 
 	condition getNextCondition(condition current);
 	void endStep();
@@ -233,7 +233,7 @@ public:
 		rng(nullptr)
 	{
 		if(!recipe.expert)
-			setProbabilities(crafter.cLevel, recipe.rLevel);
+			setProbabilities();
 	}
 
 	std::string getState() const;
