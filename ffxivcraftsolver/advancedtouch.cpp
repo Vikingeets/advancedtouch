@@ -569,7 +569,7 @@ int performSolve(const crafterStats& crafter,
 		"\t\t[-s sequencefile | -e] [-n]\n";
 	cerr << "\tsolve -j class -r recipefile [-f statsfile] [-o optionsfile] [-t strategy]\n"
 		"\t\t[-q | -m | -c collectability] [-s sequencefile | -e] [-n] [-z]\n";
-	cerr << "\tstepwise -j class -r recipefile [-f statsfile] [-o optionsfile] [-t strategy]\n"
+	cerr << "\tstep -j class -r recipefile [-f statsfile] [-o optionsfile] [-t strategy]\n"
 		"\t\t[-q | -m | -c collectability] [-s sequencefile | -e] [-n]\n";
 	cerr << endl;
 	exit(1);
