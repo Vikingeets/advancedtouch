@@ -193,7 +193,6 @@ private:
 		return base;
 	}
 
-	// Negative to remove durability, positive to add.
 	void raiseDurability(int amount)
 	{
 		durability = std::min(durability + amount, recipe.durability);
