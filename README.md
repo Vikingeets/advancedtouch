@@ -2,7 +2,7 @@
 Advanced Touch is a standalone crafting solver for Final Fantasy 14. It is executed from the command line, so you will have to be familiar with your command prompt.
 
 # Usage
-The first argument to the program must be the mode: "single", "multi", or "solve". The remaining arguments can be in any order.
+The first argument to the program must be the mode: "single", "multi", "solve", or "step". The remaining arguments can be in any order.
 
 The single mode will simulate a single craft of the given recipe and rotation, which can be useful for test runs of your rotation.
 The multi mode will simulate multiple crafts of the recipe and rotation, giving an overview of the results.
