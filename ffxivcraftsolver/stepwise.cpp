@@ -170,6 +170,41 @@ bool doAction(const vector<string>& command, craft* crafting, craft::sequenceTyp
 	return doAction(it->first, over, crafting, seed);
 }
 
+bool setCondition(const vector<string>& command, const recipeStats recipe, craft* crafting)
+{
+	if (command.size() == 1)
+	{
+		{
+			if (recipe.expert)
+				cout << "Condition required: g, n, c, s, or p\n";
+			else
+				cout << "Condition required: e, g, n, or p\n";
+			return false;
+		}
+	}
+	if (command[1] == "e" && !recipe.expert)
+		crafting->setCondition(craft::condition::excellent);
+	else if (command[1] == "g")
+		crafting->setCondition(craft::condition::good);
+	else if (command[1] == "n")
+		crafting->setCondition(craft::condition::normal);
+	else if (command[1] == "p")
+		crafting->setCondition(recipe.expert ? craft::condition::pliant : craft::condition::poor);
+	else if (command[1] == "c" && recipe.expert)
+		crafting->setCondition(craft::condition::centered);
+	else if (command[1] == "s" && recipe.expert)
+		crafting->setCondition(craft::condition::sturdy);
+	else
+	{
+		if (recipe.expert)
+			cout << "Condition required: g, n, c, s, or p\n";
+		else
+			cout << "Condition required: e, g, n, or p\n";
+		return false;
+	}
+	return true;
+}
+
 bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, goalType goal, strategy strat, solver::trial status, int uniquePopulation, int cacheHits)
 {
 	(void)uniquePopulation;
@@ -404,37 +439,9 @@ int performStepwise(
 		}
 		else if (command[0] == "condition" || command[0] == "c")
 		{
-			if (command.size() == 1)
-			{
-				if (recipe.expert)
-					cout << "Condition required: g, n, c, s, or p\n";
-				else
-					cout << "Condition required: e, g, n, or p\n";
-				printStatus = false;
-				continue;
-			}
 			craftHistory.push(craftHistory.top());
-			if (command[1] == "e" && !recipe.expert)
-				craftHistory.top().setCondition(craft::condition::excellent);
-			else if (command[1] == "g")
-				craftHistory.top().setCondition(craft::condition::good);
-			else if (command[1] == "n")
-				craftHistory.top().setCondition(craft::condition::normal);
-			else if (command[1] == "p")
-				craftHistory.top().setCondition(recipe.expert ? craft::condition::pliant : craft::condition::poor);
-			else if (command[1] == "c" && recipe.expert)
-				craftHistory.top().setCondition(craft::condition::centered);
-			else if (command[1] == "s" && recipe.expert)
-				craftHistory.top().setCondition(craft::condition::sturdy);
-			else
-			{
-				if (recipe.expert)
-					cout << "Condition required: g, n, c, s, or p\n";
-				else
-					cout << "Condition required: e, g, n, or p\n";
-				printStatus = false;
-				craftHistory.pop();
-			}
+			printStatus = setCondition(command, recipe, &craftHistory.top());
+			if (!printStatus) craftHistory.pop();
 		}
 		else if (command[0] == "cp" || command[0] == "c")
 		{
@@ -497,6 +504,30 @@ int performStepwise(
 			printStatus = doAction(lastSuggested, over, &craftHistory.top(), currentSeed);
 			if (!printStatus) craftHistory.pop();
 			else lastSuggested = actions::invalid;
+		}
+		else if (command[0] == "next" || command[0] == "n")
+		{
+			if (lastSuggested == actions::invalid)
+			{
+				cout << "No action has been suggested for this step. Please execute the solver.\n";
+				printStatus = false;
+				continue;
+			}
+			craftHistory.push(craftHistory.top());
+			printStatus = doAction(lastSuggested, craft::rngOverride::success, &craftHistory.top(), currentSeed);
+			if (!printStatus)
+			{
+				craftHistory.pop();
+				continue;
+			}
+
+			if (command.size() == 1) command.push_back("n");
+			setCondition(command, recipe, &craftHistory.top());
+			
+			cout << "Step " << craftHistory.top().getStep() << '\n';
+			cout << craftHistory.top().getState() << endl;
+
+			lastSuggested = doSolve(vector<string>(), &solve, &lastSolvedStep, &currentSeed, craftHistory.top(), simsPerSequence, stepwiseGenerations, maxCacheSize);
 		}
 		else if (command[0] == "undo" || command[0] == "u")
 		{

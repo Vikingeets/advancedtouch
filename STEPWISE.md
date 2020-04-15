@@ -64,6 +64,10 @@ su, suggested s/f/?
 
 	Equivalent to using `ac` on the action that the solver suggests.
 
+n, next c
+
+	Equivalent to using `su s`, then optionally `c` for a condition, then `so`
+
 u, undo u
 
 	Undoes the last action. You may set a number of times to undo.
