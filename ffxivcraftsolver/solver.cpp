@@ -444,9 +444,8 @@ solver::solver(const crafterStats& c,
 	assert(numberOfThreads > 0);
 
 	order.command = threadCommand::terminate;
-
-	for_each(trials.begin(), trials.end(),
-		[&seed](trial& t) {t.sequence = seed; });
+	
+	resetSeeds(seed);
 }
 
 // Constructor for solve mode with initial state
@@ -475,8 +474,13 @@ solver::solver(const crafterStats& c,
 
 	order.command = threadCommand::terminate;
 
+	resetSeeds(seed);
+}
+
+void solver::resetSeeds(const craft::sequenceType& seed)
+{
 	for_each(trials.begin(), trials.end(),
-		[&seed](trial& t) {t.sequence = seed; });
+		[&seed](trial& t) { t.sequence = seed;  });
 }
 
 void solver::incrementSeeds(int amount)

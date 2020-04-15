@@ -554,7 +554,6 @@ int performStepwise(
 			while (craftHistory.size() > 1)
 				craftHistory.pop();
 			lastSuggested = actions::invalid;
-			// Don't reset the seed; it can help prime future solutions
 		}
 		else if (command[0] == "exit" || command[0] == "quit")
 		{

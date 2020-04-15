@@ -149,6 +149,8 @@ public:
 
 	void setInitialState(craft iS) { initialState = iS; }
 
+	void resetSeeds(const craft::sequenceType& seed);
+
 	void incrementSeeds(int amount);
 
 	trial executeMultisim(int simulationsPerTrial);
