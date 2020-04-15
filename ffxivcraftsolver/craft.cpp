@@ -227,6 +227,7 @@ void craft::endStep()
 	venerationTime--;
 	innovationTime--;
 	nameOfTheElementsTime--;
+	if (nameOfTheElementsTime == 0) nameless = true;
 	finalAppraisalTime--;
 	observeCombo = false;
 	cond = getNextCondition(cond);
@@ -316,6 +317,11 @@ string craft::getState() const
 	output += stateBuffList("Innovation: ", innovationTime, &anybuffs);
 	output += stateBuffList("Final Appraisal: ", finalAppraisalTime, &anybuffs);
 	output += stateBuffList("Name of the Elements: ", nameOfTheElementsTime, &anybuffs);
+	if (nameless)
+	{
+		anybuffs = true;
+		output += "Nameless; ";
+	}
 	if (observeCombo)
 	{
 		anybuffs = true;
@@ -587,16 +593,16 @@ void craft::innovationPost()
 
 actionResult craft::nameOfTheElements()
 {
-	if (nameOfTheElementsUsed) return actionResult::failHardUnavailable;
+	if (nameOfTheElementsTime > 0) return actionResult::failHardUnavailable;
+	// The game lets you use Name while the nameless debuff is active. It succeeds with no effect.
 	if (!changeCP(-30)) return actionResult::failNoCP;
 
-	nameOfTheElementsUsed = true;
 	return actionResult::success;
 }
 
 void craft::nameOfTheElementsPost()
 {
-	nameOfTheElementsTime = 3;
+	if(!nameless) nameOfTheElementsTime = 3;
 }
 
 actionResult craft::finalAppraisal()
@@ -825,7 +831,7 @@ void craft::setBuff(actions buff, int timeOrStacks)
 		innovationTime = timeOrStacks;
 		return;
 	case actions::nameOfTheElements:
-		nameOfTheElementsUsed = timeOrStacks >= 0;
+		nameless = timeOrStacks == 0;
 		nameOfTheElementsTime = timeOrStacks;
 		return;
 	case actions::finalAppraisal:

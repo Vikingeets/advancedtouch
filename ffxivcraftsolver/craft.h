@@ -168,7 +168,7 @@ private:
 	int greatStridesTime = 0;
 	int innovationTime = 0;
 	int nameOfTheElementsTime = 0;
-	bool nameOfTheElementsUsed = false;
+	bool nameless = false;
 	int finalAppraisalTime = 0;
 	bool observeCombo = false;	// For Focused combo
 
