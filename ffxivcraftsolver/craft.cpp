@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <cmath>
 #include "craft.h"
 #include "levels.h"
 
@@ -29,22 +30,22 @@ inline bool craft::rollPercent(int chance) const
 
 void craft::increaseProgress(int efficiency, bool isBrand)
 {
-	int buffedEfficiency = efficiency;
+	float bonus = 1.f;
+
+	if (isBrand && nameOfTheElementsTime > 0)
+	{
+		bonus += (2 * ceil((1.f - static_cast<float>(progress) / static_cast<float>(recipe.difficulty)) * 100.f)) / 100.f;
+	}
 
 	if (muscleMemoryTime > 0)
 	{
-		buffedEfficiency += efficiency;
+		bonus += 1.f;
 		muscleMemoryTime = 0;
 	}
 
 	if (venerationTime > 0)
 	{
-		buffedEfficiency += efficiency / 2;
-	}
-
-	if (isBrand && nameOfTheElementsTime > 0)
-	{
-		buffedEfficiency += min(2 * (100 - 100 * progress / recipe.difficulty), 200);
+		bonus += 0.5f;
 	}
 
 	float baseProgress = (crafter.craftsmanship * 21.f) / 100.f + 2.f;
@@ -53,7 +54,7 @@ void craft::increaseProgress(int efficiency, bool isBrand)
 
 	int progressIncrease = static_cast<int>(baseProgress * suggestionMod * differenceMod);
 
-	progress += (progressIncrease * buffedEfficiency) / 100;
+	progress += (progressIncrease * efficiency * bonus) / 100;
 
 	if (finalAppraisalTime > 0 && progress >= recipe.difficulty)
 	{
@@ -66,17 +67,17 @@ void craft::increaseProgress(int efficiency, bool isBrand)
 
 void craft::increaseQuality(int efficiency)
 {
-	int buffedEfficiency = efficiency;
+	float bonus = 1.f;
 
 	if (greatStridesTime > 0)
 	{
-		buffedEfficiency += efficiency;
+		bonus += 1.f;
 		greatStridesTime = 0;
 	}
 
 	if (innovationTime > 0)
 	{
-		buffedEfficiency += efficiency / 2;
+		bonus += 0.5f;
 	}
 
 	int control = crafter.control + (max(0, innerQuietStacks - 1) * crafter.control) / 5;
@@ -105,7 +106,7 @@ void craft::increaseQuality(int efficiency)
 
 	int qualityIncrease = static_cast<int>(baseQuality * suggestionMod * differenceMod * conditionMod);
 
-	quality += (qualityIncrease * buffedEfficiency) / 100;
+	quality += (qualityIncrease * efficiency * bonus) / 100;
 
 	if (innerQuietStacks > 0 && innerQuietStacks < 11) innerQuietStacks++;
 
