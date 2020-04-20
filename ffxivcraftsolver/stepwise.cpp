@@ -288,7 +288,6 @@ actions doSolve(
 
 	if (result.empty())
 	{
-		// Shouldn't Happen
 		cout << "The solver was unable to find an action.";
 		return actions::invalid;
 	}

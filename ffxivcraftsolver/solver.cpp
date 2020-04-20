@@ -630,7 +630,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 			}
 		}
 
-		order.trials = &trials;
+		orders.trials = &trials;
 		orders.command = threadCommand::simulate;
 		setOrder(orders);
 		waitOnSimsDone();
@@ -661,7 +661,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, *elite, uniquePopulation, cacheHits))
 			break;
 
-		if (generationWindow > 0)
+		if (generationWindow > 0 && !elite->sequence.empty())
 		{
 			hist.addAction(elite->sequence.front());
 			actions stop = hist.hasEnoughOfAction(generationEarly);
