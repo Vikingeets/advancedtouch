@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <deque>
 #include <map>
 #include <thread>
 #include <atomic>
@@ -50,8 +51,6 @@ public:
 			short shifts;
 			short swaps;
 
-			std::map<short,short> mutations;
-
 			statistics() :
 				additions(0),
 				replacements(0),
@@ -66,7 +65,7 @@ public:
 	struct threadOrder
 	{
 		threadCommand command;
-		std::vector<trial> const * trials;
+		std::deque<trial> const * trials;
 		std::vector<std::atomic<int>>* counters;
 		std::vector<bool> const * cached;
 		// used in sim mode
@@ -90,7 +89,7 @@ private:
 
 	bool gatherStatistics;
 	
-	std::vector<trial> trials;	// protected by threadCompleteLock, sorted from best to worst
+	std::deque<trial> trials;	// protected by threadCompleteLock, newest to oldest
 	std::vector<netResult> simResults;
 	std::vector<bool> cached;
 	// mutated is cleared at the start of each run, then appended to by the thread reporters under lock
@@ -110,6 +109,10 @@ private:
 	int threadsDone;	// not atomic: protected with threadCompleteLock. reset in setOrder
 
 	bool compareResult(const solver::trial& a, const solver::trial& b, int simulationsPerTrial, bool alwaysRejectInvalids) const;
+
+	std::vector<double> populationSelections;
+
+	void setSelections(int population);
 
 public:
 	static std::vector<actions> getAvailable(const crafterStats& crafter, const recipeStats& recipe, bool useConditionals, bool includeFirst);
@@ -191,5 +194,5 @@ public:
 	threadOrder waitOnCommandChange(threadCommand previous);
 	void reportThreadSimResults(const std::vector<netResult>& threadResults);	// after calling this, thread returns to waiting on command
 	void reportThreadMutationResults(const std::vector<trial>& children);
-	trial mutateSequence(trial input, int numberOfMutations, random& rng);
+	trial mutateSequence(trial input, random& rng);
 };

@@ -548,10 +548,6 @@ int performSolve(const crafterStats& crafter,
 		cout << "Shifts: " << result.stats.shifts << '\n';
 		cout << "Swaps: " << result.stats.swaps << "\n\n";
 		
-		cout << "Mutations:\n";
-		for (auto it = result.stats.mutations.begin(); it != result.stats.mutations.end(); ++it)
-			cout << it->first << ": " << it->second << '\n';
-
 		cout << endl;
 	}
 
