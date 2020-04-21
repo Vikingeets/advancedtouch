@@ -234,7 +234,8 @@ bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, go
 
 #ifdef _DEBUG
 	
-	cout << " " << simpleText.at(status.sequence.front());
+	if(!status.sequence.empty())
+		cout << " " << simpleText.at(status.sequence.front());
 
 #endif
 

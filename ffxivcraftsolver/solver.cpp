@@ -581,8 +581,11 @@ void solver::setSelections(int population)
 	populationSelections.clear();
 	populationSelections.reserve(population);
 	for (int i = population - 1; i >= 0; --i)	// Go backwards since sorting was best-to-worst
+	// linear
 		populationSelections.push_back((2 - offspringOfFittest) / population +
 			2 * i * (offspringOfFittest - 1) / (population * (population - 1)));
+	// exponential
+//		populationSelections.push_back((1 - exp(-1 * i)));
 }
 
 solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int generationWindow, int generationEarly, int maxCacheSize, solver::solverCallback callback)
@@ -669,14 +672,12 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 				break;
 		}
 
-		// Randomly select best-ish 20% for mutation
-
 		vector<trial> sortedTrials(trials.begin(), trials.end());
 
 		auto comp = [this, simulationsPerTrial](const trial& a, const trial& b)
 			{ return compareResult(a, b, simulationsPerTrial, false); };
 
-		sort(sortedTrials.begin(), sortedTrials.end(), comp);
+		sort(sortedTrials.begin(), sortedTrials.end(), compNoInvalids);
 
 		deque<trial> selected;
 
