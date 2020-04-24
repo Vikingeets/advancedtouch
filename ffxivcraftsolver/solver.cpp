@@ -682,6 +682,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		partial_sort(next(trials.begin()), next(trials.begin(), trials.size() / generationRatio) + 1, trials.end(), comp);
 
 		vector<trial> selected;
+		selected.reserve(trials.size());
 
 		for (int i = 1; i < trials.size(); ++i)	// Start at 1 to make space for elite
 			selected.push_back(trials[d(rng)]);
