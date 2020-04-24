@@ -485,6 +485,10 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 	}
 
 	cout << status.sequence.size() << " step" << (status.sequence.size() != 1 ? "s" : "");
+
+	if (status.outcome.invalidActions / simsPerTrial > 0)
+		cout << " (" << status.outcome.invalidActions / simsPerTrial << " invalid)";
+
 	if (uniquePopulation > 0)
 		cout << ", " << uniquePopulation << " unique";
 	if (cacheHits > 0)
