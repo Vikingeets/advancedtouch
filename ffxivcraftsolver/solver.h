@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <deque>
 #include <map>
 #include <thread>
 #include <atomic>
@@ -65,7 +64,7 @@ public:
 	struct threadOrder
 	{
 		threadCommand command;
-		std::deque<trial> const * trials;
+		std::vector<trial> const * trials;
 		std::vector<std::atomic<int>>* counters;
 		std::vector<bool> const * cached;
 		// used in sim mode
@@ -89,7 +88,7 @@ private:
 
 	bool gatherStatistics;
 	
-	std::deque<trial> trials;	// protected by threadCompleteLock, newest to oldest
+	std::vector<trial> trials;	// protected by threadCompleteLock, newest to oldest
 	std::vector<netResult> simResults;
 	std::vector<bool> cached;
 	// mutated is cleared at the start of each run, then appended to by the thread reporters under lock

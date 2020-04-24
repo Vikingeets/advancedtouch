@@ -22,6 +22,7 @@ using namespace std;
 
 // Expected offspring of fittest individual
 constexpr double offspringOfFittest = 2.;
+constexpr int generationRatio = 7;	// 1/n of trials will be used as the next generation's seeds
 
 template <typename T>
 class vectorHash
@@ -73,7 +74,7 @@ public:
 
 	// returns empty on a miss
 	solver::trial getCached(craft::sequenceType sequence, bool gatherStatistics);
-	void populateCache(const deque<solver::trial>& input);
+	void populateCache(const vector<solver::trial>& input);
 
 	int getHits() const
 	{
@@ -121,7 +122,7 @@ solver::trial resultCache::getCached(craft::sequenceType sequence, bool gatherSt
 	}
 }
 
-void resultCache::populateCache(const deque<solver::trial>& input)
+void resultCache::populateCache(const vector<solver::trial>& input)
 {
 	if (maxCacheSize <= 0) return;
 	for (const auto& t : input)
@@ -576,11 +577,12 @@ void solver::setSelections(int population)
 {
 	static_assert(offspringOfFittest > 1, "offspringOfFittest must be greater than 1");
 	static_assert(offspringOfFittest <= 2, "offspringOfFittest must be no greater than 2");
+	static_assert(generationRatio > 0, "generationRatio must be positive");
 
 	assert(population > 1);
 	populationSelections.clear();
-	populationSelections.reserve(population);
-	for (int i = population - 1; i >= 0; --i)	// Go backwards since sorting was best-to-worst
+	populationSelections.reserve(population / generationRatio);
+	for (int i = population / generationRatio - 1; i >= 0; --i)	// Go backwards since sorting was best-to-worst
 	// linear
 		populationSelections.push_back((2 - offspringOfFittest) / population +
 			2 * i * (offspringOfFittest - 1) / (population * (population - 1)));
@@ -611,8 +613,6 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 
 	discrete_distribution<int> d(populationSelections.begin(), populationSelections.end());
 
-	decltype(trials)::iterator elite = trials.begin();
-
 	actionHistory hist(generationWindow);
 
 	for (int gen = 0; gen < generations; gen++)
@@ -639,12 +639,10 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		waitOnSimsDone();
 
 		auto compNoInvalids = [this, simulationsPerTrial, generationWindow](const trial& a, const trial& b)
-		{ return compareResult(a, b, simulationsPerTrial, generationWindow == 0); };
+			{ return compareResult(a, b, simulationsPerTrial, generationWindow == 0); };
 
 		// Yes, min. compareResult is a reverse
-		elite = min_element(trials.begin(), trials.end(), compNoInvalids);
-
-		if (gen == generations - 1) break;
+		decltype(trials)::iterator elite = min_element(trials.begin(), trials.end(), compNoInvalids);
 
 		if (maxCacheSize > 0) cache.populateCache(trials);
 
@@ -662,7 +660,10 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		}
 
 		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, *elite, uniquePopulation, cacheHits))
+		{
+			iter_swap(elite, trials.begin());
 			break;
+		}
 
 		if (generationWindow > 0 && !elite->sequence.empty())
 		{
@@ -672,36 +673,29 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 				break;
 		}
 
-		vector<trial> sortedTrials(trials.begin(), trials.end());
-
 		auto comp = [this, simulationsPerTrial](const trial& a, const trial& b)
 			{ return compareResult(a, b, simulationsPerTrial, false); };
 
-		sort(sortedTrials.begin(), sortedTrials.end(), compNoInvalids);
+		iter_swap(elite, trials.begin());
+		elite = trials.begin();
 
-		deque<trial> selected;
+		partial_sort(next(trials.begin()), next(trials.begin(), trials.size() / generationRatio) + 1, trials.end(), comp);
 
-		// It's possible the same trial will get selected multiple times. Let it go for now.
-		for (int i = 0; i < sortedTrials.size() / 5; ++i)
-			selected.push_back(sortedTrials[d(rng)]);
+		vector<trial> selected;
+
+		for (int i = 1; i < trials.size(); ++i)	// Start at 1 to make space for elite
+			selected.push_back(trials[d(rng)]);
 
 		mutated.clear();
 		mutated.reserve(selected.size());
+		mutated.push_back(*elite);	// elite goes across unmodified
 		orders.trials = &selected;
 		orders.command = threadCommand::mutate;
 		setOrder(orders);
 		waitOnMutationsDone();
-		assert(mutated.size() == selected.size());
+		assert(mutated.size() == selected.size() + 1);
 
-		decltype(trials)::iterator cutoff = prev(trials.end(), mutated.size());
-		assert(cutoff > trials.begin());
-		// Make sure that elite doesn't get cut
-		if (elite >= cutoff)
-			iter_swap(elite, prev(cutoff));
-		trials.erase(cutoff, trials.end());
-
-		// Prepend mutated results to trials
-		trials.insert(trials.begin(), mutated.begin(), mutated.end());
+		trials = move(mutated);
 	}
 
 	orders.command = threadCommand::terminate;
@@ -717,8 +711,8 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 			if (t.sequence.front() == most) return t;
 		// It's theoretically possible for no trial to have the right action. Just let it failover to the best trial
 	}
-		
-	return *elite;
+
+	return trials.front();
 }
 
 
@@ -840,11 +834,11 @@ mutationType getRandomMutation(size_t elements, random& rng)
 	if (elements == 1) return rng.generateInt(0, 2) == 0 ? mutationType::replace : mutationType::add;	// add/replace ratio
 
 	// approximate ratio of mutations appearing in best outcomes
-	const int addChance = 2;
+	const int addChance = 4;
 	const int replaceChance = addChance + 1;
 	const int removeChance = replaceChance + 1;
 	const int shiftChance = removeChance + 2;
-	const int swapChance = shiftChance + 2;
+	const int swapChance = shiftChance + 1;
 	const int totalChance = swapChance;
 	int selected = rng.generateInt(totalChance - 1);
 
