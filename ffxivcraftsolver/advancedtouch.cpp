@@ -345,7 +345,7 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode, b
 	missingStats[0] = opts->simsPerSequence <= 0;
 	missingStats[1] = solveMode && opts->generations <= 0;
 	missingStats[2] = stepwiseMode && opts->stepwiseGenerations <= 0;
-	missingStats[3] = (solveMode || stepwiseMode) && (opts->population <= 0 || opts->population % 2 == 1);
+	missingStats[3] = (solveMode || stepwiseMode) && (opts->population <= 0);
 	if (missingStats.any())
 	{
 		cerr << "the options file has missing or invalid stats:";

@@ -109,7 +109,7 @@ atSolver* atInitSolver(
 	int threads,				/* Number of threads to solve using. Must be > 0 */
 	int normalLock,				/* 0 to account for conditions. Non-0 to only consider normal (faster but less accurate) */
 	int strategy,
-	int population,				/* Number of rotations to consider at a time. Must be > 0 and even. */
+	int population,				/* Number of rotations to consider at a time. Must be > 0 */
 	int useConditionals			/* 0 to disable using actions that need a condition. Non-0 to consider using them. */
 );
 	
