@@ -22,7 +22,7 @@ inline bool craft::rollPercent(int chance) const
 		return true;
 	case rngOverride::failure:
 		return false;
-	case rngOverride::random:
+	case rngOverride::useRNG:
 		assert(rng != nullptr);
 		return rng->generateInt(99) < chance;
 	}
@@ -178,7 +178,7 @@ craft::condition craft::getNextCondition(condition current)
 	// Unfortunately, std::discrete_distribution is far too slow to be usable.
 	if (recipe.expert)
 	{
-		if (normalLock || over != rngOverride::random) return condition::normal;
+		if (normalLock || over != rngOverride::useRNG) return condition::normal;
 		int goodChance = 12;
 		int centeredChance = 15;
 		int sturdyChance = 15;
@@ -205,7 +205,7 @@ craft::condition craft::getNextCondition(condition current)
 		return condition::poor;
 	}
 
-	if (normalLock || over != rngOverride::random) return condition::normal;
+	if (normalLock || over != rngOverride::useRNG) return condition::normal;
 
 	int roll = rng->generateInt(99);
 

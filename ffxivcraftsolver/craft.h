@@ -139,7 +139,7 @@ public:
 	{
 		success,
 		failure,
-		random
+		useRNG
 	};
 
 private:
@@ -296,7 +296,7 @@ private:
 	actionResult observe();
 	void observePost();
 
-	actionResult performOne(actions action, rngOverride override = rngOverride::random);
+	actionResult performOne(actions action, rngOverride override = rngOverride::useRNG);
 	void performOnePost(actions action);
 
 public:

@@ -159,7 +159,7 @@ bool doAction(const vector<string>& command, craft* crafting, craft::sequenceTyp
 		return false;
 	}
 	craft::rngOverride over;
-	if (command.size() == 2 || command[2] == "?") over = craft::rngOverride::random;
+	if (command.size() == 2 || command[2] == "?") over = craft::rngOverride::useRNG;
 	else if (command[2] == "s") over = craft::rngOverride::success;
 	else if (command[2] == "f") over = craft::rngOverride::failure;
 	else
@@ -491,7 +491,7 @@ int performStepwise(
 				continue;
 			}
 			craft::rngOverride over;
-			if (command.size() == 1 || command[1] == "?") over = craft::rngOverride::random;
+			if (command.size() == 1 || command[1] == "?") over = craft::rngOverride::useRNG;
 			else if (command[1] == "s") over = craft::rngOverride::success;
 			else if (command[1] == "f") over = craft::rngOverride::failure;
 			else
