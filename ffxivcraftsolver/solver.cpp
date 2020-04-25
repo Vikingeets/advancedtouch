@@ -683,7 +683,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		vector<trial> selected;
 		selected.reserve(trials.size());
 
-		for (int i = 1; i < trials.size(); ++i)	// Start at 1 to make space for elite
+		for (size_t i = 1; i < trials.size(); ++i)	// Start at 1 to make space for elite
 			selected.push_back(trials[d(rng)]);
 
 		mutated.clear();
@@ -983,7 +983,7 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, randomGe
 void workerPerformMutations(solver* solve, solver::threadOrder order, randomGenerator& rng)
 {
 	vector<solver::trial> localMutated;
-	for (int trialNumber = 0; trialNumber < order.trials->size(); trialNumber++)
+	for (size_t trialNumber = 0; trialNumber < order.trials->size(); trialNumber++)
 	{
 		if ((*order.counters)[trialNumber].fetch_add(1, memory_order_relaxed) > 0)
 		{
