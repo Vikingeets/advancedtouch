@@ -306,6 +306,12 @@ void parseRecipe(const rapidjson::Document& d, recipeStats* recipe)
 	recipe->suggestedCraftsmanship = getSuggestedCraftsmanship(recipe->rLevel);
 	recipe->suggestedControl = getSuggestedControl(recipe->rLevel);
 
+	if (recipe->suggestedCraftsmanship == 0 || recipe->suggestedControl == 0)
+	{
+		cerr << "Recipe statistics not found in " << recipeTableFilename << ". Please ensure it is up to date." << endl;
+		exit(1);
+	}
+
 	return;
 }
 

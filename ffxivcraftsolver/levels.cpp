@@ -144,7 +144,7 @@ int getSuggestedCraftsmanship(int rLvl)
 
 	if (rLvl < 1) rLvl = 1;
 	auto it = recipeDataTable.find(rLvl);
-	if (it == recipeDataTable.end()) --it;
+	if (it == recipeDataTable.end()) return 0;
 
 	return it->second.suggestedCraftsmanship;
 }
@@ -155,7 +155,7 @@ int getSuggestedControl(int rLvl)
 
 	if (rLvl < 1) rLvl = 1;
 	auto it = recipeDataTable.find(rLvl);
-	if (it == recipeDataTable.end()) --it;
+	if (it == recipeDataTable.end()) return 0;
 
 	return it->second.suggestedControl;
 }
@@ -168,7 +168,11 @@ int getProgressFactor(int difference)
 	else if (difference > 49) difference = 49;
 
 	auto it = differenceDataTable.find(difference);
-	if (it == differenceDataTable.end()) --it;
+	if (it == differenceDataTable.end())
+	{
+		assert(false);
+		return 100;
+	}
 
 	return it->second.progressFactor;
 }
@@ -181,7 +185,11 @@ int getQualityFactor(int difference)
 	else if (difference > 49) difference = 49;
 
 	auto it = differenceDataTable.find(difference);
-	if (it == differenceDataTable.end()) --it;
+	if (it == differenceDataTable.end())
+	{
+		assert(false);
+		return 100;
+	}
 
 	return it->second.qualityFactor;
 }
