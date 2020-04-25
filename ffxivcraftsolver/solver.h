@@ -193,5 +193,5 @@ public:
 	threadOrder waitOnCommandChange(threadCommand previous);
 	void reportThreadSimResults(const std::vector<netResult>& threadResults);	// after calling this, thread returns to waiting on command
 	void reportThreadMutationResults(const std::vector<trial>& children);
-	trial mutateSequence(trial input, random& rng);
+	trial mutateSequence(trial input, randomGenerator& rng);
 };

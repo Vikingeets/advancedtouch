@@ -849,7 +849,7 @@ mutationType getRandomMutation(size_t elements, randomGenerator& rng)
 	else return mutationType::swap;
 }
 
-solver::trial solver::mutateSequence(trial input, random& rng)
+solver::trial solver::mutateSequence(trial input, randomGenerator& rng)
 {
 	mutationType mutation = getRandomMutation(input.sequence.size(), rng);
 
