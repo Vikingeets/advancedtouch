@@ -10,7 +10,7 @@
 #include <csignal>
 #include <thread>
 
-#if (defined(__unix__) || defined(__unix))
+#if (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
 #include <unistd.h>
 #endif
 
@@ -83,7 +83,7 @@ bool openAndParseJSON(const string& filename, rapidjson::Document* d)
 {
 //	*d = rapidjson::Document();
 	FILE* fp;
-#ifdef _POSIX_VERSION
+#if defined(_POSIX_VERSION) || defined(__STDC_LIB_EXT1__)
 	fp = fopen(filename.c_str(), "rb");
 #else
 	errno_t error = fopen_s(&fp, filename.c_str(), "rb");
@@ -93,7 +93,7 @@ bool openAndParseJSON(const string& filename, rapidjson::Document* d)
 	{
 		constexpr size_t bufsize = 95;
 		array<char, bufsize> buffer;
-#ifdef _POSIX_VERSION
+#if defined(_POSIX_VERSION) || defined(__STDC_LIB_EXT1__)
 		strerror_r(errno, buffer.data(), bufsize);
 #else
 		strerror_s(buffer.data(), bufsize, error);
