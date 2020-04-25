@@ -79,17 +79,16 @@ public:
 	}
 };
 
-class random
+class randomGenerator
 {
 private:
 	static std::mutex devicelock;
 	xorshift engine;
 
 	template<typename T> 
-	T uniformInt(T low, T high)
+	T uniformInt(T upper, T lower)
 	{
-		high -= low;
-		++high;
+		uint64_t high = upper - lower + 1;
 		// From https://arxiv.org/abs/1805.10941
 #if defined(__SIZEOF_INT128__)
 		__uint128_t m = static_cast<__uint128_t>(engine()) * static_cast<__uint128_t>(high);
@@ -103,7 +102,7 @@ private:
 				l = static_cast<uint64_t>(m);
 			}
 		}
-		return low + (m >> 64);
+		return lower + (m >> 64);
 #elif defined(_M_X64)
 		uint64_t mHigh, mLow;
 		mLow = _umul128(engine(), high, &mHigh);
@@ -113,17 +112,17 @@ private:
 			while (mLow < t)
 				mLow = _umul128(engine(), high, &mHigh);
 		}
-		return low + mHigh;
+		return lower + mHigh;
 #else
-		return low + std::uniform_int_distribution<T>(0, high - 1)(engine);
+		return lower + std::uniform_int_distribution<T>(0, high - 1)(engine);
 #endif
 	}
 
 	public:
-	random(const random&) = delete;
-	random& operator=(const random&) = delete;
+	randomGenerator(const randomGenerator&) = delete;
+	randomGenerator& operator=(const randomGenerator&) = delete;
 
-	random()
+	randomGenerator()
 	{
 		std::lock_guard<std::mutex> lock(devicelock);
 		engine.seed(std::random_device()());

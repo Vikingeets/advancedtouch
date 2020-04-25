@@ -122,7 +122,7 @@ bool doAction(actions action, craft::rngOverride over, craft* crafting, craft::s
 	bool output = result == craft::actionResult::success || result == craft::actionResult::failRNG;
 	if (output && action != actions::finalAppraisal)
 	{
-		if (seed.size() >= crafting->getStep() - 1) seed[crafting->getStep() - 2] = action;
+		if (static_cast<int>(seed.size()) >= crafting->getStep() - 1) seed[crafting->getStep() - 2] = action;
 		else seed.push_back(action);
 	}
 
@@ -159,7 +159,7 @@ bool doAction(const vector<string>& command, craft* crafting, craft::sequenceTyp
 		return false;
 	}
 	craft::rngOverride over;
-	if (command.size() == 2 || command[2] == "?") over = craft::rngOverride::useRNG;
+	if (command.size() == 2 || command[2] == "?") over = craft::rngOverride::random;
 	else if (command[2] == "s") over = craft::rngOverride::success;
 	else if (command[2] == "f") over = craft::rngOverride::failure;
 	else
@@ -317,7 +317,7 @@ int performStepwise(
 	strategy strat
 	)
 {
-	random rand;
+	randomGenerator rand;
 	stack<craft> craftHistory;
 	craftHistory.emplace(initialQuality, crafter, recipe, false);
 	
@@ -491,7 +491,7 @@ int performStepwise(
 				continue;
 			}
 			craft::rngOverride over;
-			if (command.size() == 1 || command[1] == "?") over = craft::rngOverride::useRNG;
+			if (command.size() == 1 || command[1] == "?") over = craft::rngOverride::random;
 			else if (command[1] == "s") over = craft::rngOverride::success;
 			else if (command[1] == "f") over = craft::rngOverride::failure;
 			else

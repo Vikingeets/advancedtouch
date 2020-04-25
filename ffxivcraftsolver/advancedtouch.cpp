@@ -10,11 +10,17 @@
 #include <csignal>
 #include <thread>
 
+#if (defined(__unix__) || defined(__unix))
+#include <unistd.h>
+#endif
+
 #include "common.h"
 #include "levels.h"
 #include "craft.h"
 #include "solver.h"
 #include "stepwise.h"
+
+
 
 #ifndef RAPIDJSON_HAS_STDSTRING
 #define RAPIDJSON_HAS_STDSTRING 1
@@ -30,7 +36,7 @@ using namespace std;
 
 string programName;
 
-std::mutex random::devicelock;
+std::mutex randomGenerator::devicelock;
 
 [[noreturn]] void usage();
 
@@ -77,14 +83,21 @@ bool openAndParseJSON(const string& filename, rapidjson::Document* d)
 {
 //	*d = rapidjson::Document();
 	FILE* fp;
+#ifdef _POSIX_VERSION
+	fp = fopen(filename.c_str(), "rb");
+#else
 	errno_t error = fopen_s(&fp, filename.c_str(), "rb");
+#endif
 
 	if (fp == nullptr)
 	{
 		constexpr size_t bufsize = 95;
 		array<char, bufsize> buffer;
-
+#ifdef _POSIX_VERSION
+		strerror_r(errno, buffer.data(), bufsize);
+#else
 		strerror_s(buffer.data(), bufsize, error);
+#endif
 		cerr << "Failed to open " << filename << ": " << buffer.data();
 		exit(1);
 	}
@@ -410,7 +423,7 @@ int performSingle(const crafterStats& crafter, const recipeStats& recipe,
 	const craft::sequenceType& sequence, goalType goal,
 	int initialQuality, bool normalLock)
 {
-	random rng;
+	randomGenerator rng;
 	craft synth(initialQuality, crafter, recipe, normalLock);
 	synth.setRNG(&rng);
 
