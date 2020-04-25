@@ -579,15 +579,14 @@ void solver::setSelections(int population)
 	static_assert(offspringOfFittest <= 2, "offspringOfFittest must be no greater than 2");
 	static_assert(generationRatio > 0, "generationRatio must be positive");
 
+	population /= generationRatio;
+
 	assert(population > 1);
 	populationSelections.clear();
-	populationSelections.reserve(population / generationRatio);
-	for (int i = population / generationRatio - 1; i >= 0; --i)	// Go backwards since sorting was best-to-worst
-	// linear
+	populationSelections.reserve(population);
+	for (int i = population - 1; i >= 0; --i)	// Go backwards since sorting was best-to-worst
 		populationSelections.push_back((2 - offspringOfFittest) / population +
 			2 * i * (offspringOfFittest - 1) / (population * (population - 1)));
-	// exponential
-//		populationSelections.push_back((1 - exp(-1 * i)));
 }
 
 solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int generationWindow, int generationEarly, int maxCacheSize, solver::solverCallback callback)
