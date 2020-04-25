@@ -54,7 +54,7 @@ void populateResultSequence(atSolverResult* result, craft::sequenceType sequence
 {
 	result->sequenceLength = sequence.size();
 	if (sequence.size() > 100) sequence.resize(100);
-	for (int i = 0; i < sequence.size(); ++i)
+	for (size_t i = 0; i < sequence.size(); ++i)
 		result->sequence[i] = atActionToCAction(sequence[i]);
 }
 

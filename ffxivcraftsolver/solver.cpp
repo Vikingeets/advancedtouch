@@ -39,7 +39,7 @@ public:
 class resultCache
 {
 private:
-	int maxCacheSize;
+	size_t maxCacheSize;
 	list<solver::trial> cacheData;
 	unordered_map <craft::sequenceType, list<solver::trial>::iterator, vectorHash<actions>> cacheHash;
 
@@ -140,7 +140,7 @@ private:
 	unordered_map<actions, int> counts;
 	deque<actions> history;
 
-	const int capacity;
+	const size_t capacity;
 
 public:
 	actionHistory() = delete;
@@ -621,7 +621,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 		// See if any of our prospective sequences already have their results already in the cache
 		if (maxCacheSize > 0)
 		{
-			for (int i = 0; i < trials.size(); ++i)
+			for (size_t i = 0; i < trials.size(); ++i)
 			{
 				trial current = cache.getCached(trials[i].sequence, gatherStatistics);
 				bool currentCached = !current.sequence.empty();	// An empty sequence is never cached, so this test is okay
@@ -724,7 +724,7 @@ void solver::waitOnSimsDone()
 	int* totalThreads = &numberOfThreads;
 	threadComplete.wait(lock, [&tDone, &totalThreads]() { return *tDone >= *totalThreads;});
 	assert(trials.size() == simResults.size());
-	for (int i = 0; i < trials.size(); ++i)
+	for (size_t i = 0; i < trials.size(); ++i)
 	{
 		if (cached[i]) continue;
 		trials[i].outcome = simResults[i];
@@ -741,7 +741,7 @@ void solver::waitOnMutationsDone()
 	int* totalThreads = &numberOfThreads;
 	threadComplete.wait(lock, [&tDone, &totalThreads]() {return *tDone >= *totalThreads;});
 	assert(trials.size() == mutated.size());
-	for (int i = 0; i < mutated.size(); ++i)
+	for (size_t i = 0; i < mutated.size(); ++i)
 	{
 		trials[i] = move(mutated[i]);
 		trials[i].outcome = {};
@@ -765,7 +765,7 @@ void solver::reportThreadSimResults(const vector<netResult>& threadResults)
 	unique_lock<mutex> lock(threadCompleteLock);
 	assert(simResults.size() == threadResults.size());
 
-	for (int i = 0; i < trials.size(); ++i)
+	for (size_t i = 0; i < trials.size(); ++i)
 	{
 		simResults[i].successes += threadResults[i].successes;
 		simResults[i].progress += threadResults[i].progress;
@@ -819,7 +819,7 @@ enum class mutationType
 	swap
 };
 
-mutationType getRandomMutation(size_t elements, random& rng)
+mutationType getRandomMutation(size_t elements, randomGenerator& rng)
 {
 	if (elements == 0) return mutationType::add;
 	if (elements == 1) return rng.generateInt(0, 2) == 0 ? mutationType::replace : mutationType::add;	// add/replace ratio
@@ -840,7 +840,7 @@ mutationType getRandomMutation(size_t elements, random& rng)
 	else return mutationType::swap;
 }
 
-solver::trial solver::mutateSequence(trial input, int numberOfMutations, random& rng)
+solver::trial solver::mutateSequence(trial input, int numberOfMutations, randomGenerator& rng)
 {
 	for (int i = 0; i < numberOfMutations; i++)
 	{
@@ -922,9 +922,9 @@ solver::trial solver::mutateSequence(trial input, int numberOfMutations, random&
 THREAD FUNCTIONS
 */
 
-void workerPerformSimulations(solver* solve, solver::threadOrder order, random& rng)
+void workerPerformSimulations(solver* solve, solver::threadOrder order, randomGenerator& rng)
 {
-	int trialNumber = 0;
+	size_t trialNumber = 0;
 
 	vector<solver::netResult> localResults;
 
@@ -977,7 +977,7 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, random& 
 	return;
 }
 
-void workerPerformMutations(solver* solve, solver::threadOrder order, random& rng)
+void workerPerformMutations(solver* solve, solver::threadOrder order, randomGenerator& rng)
 {
 	vector<solver::trial> localMutated;
 	mutationGroups groups = divideSequence(static_cast<int>(order.trials->size()));
@@ -1019,7 +1019,7 @@ void workerMain(solver* solve)
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_LOWEST);
 #endif // defined _WIN32
 
-	random rng;
+	randomGenerator rng;
 	solver::threadOrder order;
 	order.command = solver::threadCommand::terminate;
 	while (true)

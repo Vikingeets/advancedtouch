@@ -139,7 +139,7 @@ public:
 	{
 		success,
 		failure,
-		useRNG
+		random
 	};
 
 private:
@@ -174,7 +174,7 @@ private:
 
 	bool normalLock;
 
-	random* rng;
+	randomGenerator* rng;
 	rngOverride over;
 
 	// chance == 70 means 70% success and so on
@@ -237,7 +237,7 @@ public:
 
 	std::string getState() const;
 
-	void setRNG(random* r) { rng = r; }
+	void setRNG(randomGenerator* r) { rng = r; }
 
 private:
 	actionResult commonSynth(int cpChange, int efficiency, int successChance, int durabilityCost = 10);
@@ -296,7 +296,7 @@ private:
 	actionResult observe();
 	void observePost();
 
-	actionResult performOne(actions action, rngOverride override = rngOverride::useRNG);
+	actionResult performOne(actions action, rngOverride override = rngOverride::random);
 	void performOnePost(actions action);
 
 public:
