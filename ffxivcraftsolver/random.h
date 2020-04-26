@@ -86,7 +86,7 @@ private:
 	xorshift engine;
 
 	template<typename T> 
-	T uniformInt(T upper, T lower)
+	T uniformInt(T lower, T upper)
 	{
 		uint64_t high = upper - lower + 1;
 		// From https://arxiv.org/abs/1805.10941
