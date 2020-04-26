@@ -234,7 +234,8 @@ bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, go
 
 #ifdef _DEBUG
 	
-	cout << " " << simpleText.at(status.sequence.front());
+	if(!status.sequence.empty())
+		cout << " " << simpleText.at(status.sequence.front());
 
 #endif
 
@@ -288,7 +289,6 @@ actions doSolve(
 
 	if (result.empty())
 	{
-		// Shouldn't Happen
 		cout << "The solver was unable to find an action.";
 		return actions::invalid;
 	}

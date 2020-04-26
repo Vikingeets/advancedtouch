@@ -100,7 +100,7 @@ In solve mode, "population" sets how many rotations should be considered in each
 
 I recommend setting each solve option to at least a hundred, and starting with all three multiplied together to approximately ten million on a modern computer. Stepwise generations can be safely set to less than 50 as long as you use a decent seed.
 
-Advanced Touch can cache the results of its simulations in memory to accelerate solving. Setting "max cache size" greater than zero will use about 40 to 50 megabytes of memory per hundred thousand entries. Please set "sims" to a large number to minimize the risk of a lucky (or unlucky) rotation being cached with a bad result.
+Advanced Touch can cache the results of its simulations in memory to accelerate solving. Setting "max cache size" greater than zero will use about 25 megabytes of memory per hundred thousand entries. Please set "sims" to a large number to minimize the risk of a lucky (or unlucky) rotation being cached with a bad result.
 
 Setting "normal lock" to true will disable the simulation of conditions. This will run faster and more consistently, but the solution might not be as good as the solver thinks it is, due to not accounting for the whims of the game's RNG.
 

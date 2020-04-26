@@ -364,7 +364,7 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode, b
 	missingStats[0] = opts->simsPerSequence <= 0;
 	missingStats[1] = solveMode && opts->generations <= 0;
 	missingStats[2] = stepwiseMode && opts->stepwiseGenerations <= 0;
-	missingStats[3] = (solveMode || stepwiseMode) && (opts->population <= 0 || opts->population % 2 == 1);
+	missingStats[3] = (solveMode || stepwiseMode) && (opts->population <= 0);
 	if (missingStats.any())
 	{
 		cerr << "the options file has missing or invalid stats:";
@@ -504,6 +504,10 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 	}
 
 	cout << status.sequence.size() << " step" << (status.sequence.size() != 1 ? "s" : "");
+
+	if (status.outcome.invalidActions / simsPerTrial > 0)
+		cout << " (" << status.outcome.invalidActions / simsPerTrial << " invalid)";
+
 	if (uniquePopulation > 0)
 		cout << ", " << uniquePopulation << " unique";
 	if (cacheHits > 0)
@@ -567,10 +571,6 @@ int performSolve(const crafterStats& crafter,
 		cout << "Shifts: " << result.stats.shifts << '\n';
 		cout << "Swaps: " << result.stats.swaps << "\n\n";
 		
-		cout << "Mutations:\n";
-		for (auto it = result.stats.mutations.begin(); it != result.stats.mutations.end(); ++it)
-			cout << it->first << ": " << it->second << '\n';
-
 		cout << endl;
 	}
 

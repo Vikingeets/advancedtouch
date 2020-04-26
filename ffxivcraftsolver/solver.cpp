@@ -20,6 +20,10 @@
 
 using namespace std;
 
+// Expected offspring of fittest individual
+constexpr double offspringOfFittest = 2.;
+constexpr int generationRatio = 7;	// 1/n of trials will be used as the next generation's seeds
+
 template <typename T>
 class vectorHash
 {
@@ -270,31 +274,6 @@ int sequenceTime(const craft::sequenceType& sequence)
 	return output;
 }
 
-struct mutationGroups
-{
-	// the one-two ratio and lack of three+ derived from stats gathering
-	int preserve;		// top 5%		both children 0 mutations
-	int oneMutation;	// next 40%		" 1 mutation
-	int twoMutations;	// next 5%		" 2 mutations
-	int eliminate;		// bottom 50%
-};
-
-mutationGroups divideSequence(int amount)
-{
-	assert(amount >= 2 && amount % 2 == 0);
-	mutationGroups output;
-
-	output.eliminate = amount / 2;	// a lot breaks if this changes
-
-	// preserve gets first dibs, two gets last, the remaining go into one
-	output.preserve = (amount + 19) / 20;
-	output.twoMutations = amount / 20;
-	output.oneMutation = output.eliminate - (output.preserve + output.twoMutations);
-
-	assert(output.preserve + output.oneMutation + output.twoMutations + output.eliminate == amount);
-	return output;
-}
-
 bool isFirstAction(actions action)
 {
 	switch (action)
@@ -443,6 +422,8 @@ solver::solver(const crafterStats& c,
 {
 	assert(numberOfThreads > 0);
 
+	setSelections(population);
+
 	order.command = threadCommand::terminate;
 	
 	resetSeeds(seed);
@@ -471,6 +452,8 @@ solver::solver(const crafterStats& c,
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);
+
+	setSelections(population);
 
 	order.command = threadCommand::terminate;
 
@@ -590,17 +573,35 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 	return sequenceTime(a.sequence) < sequenceTime(b.sequence);
 }
 
+void solver::setSelections(int population)
+{
+	static_assert(offspringOfFittest > 1, "offspringOfFittest must be greater than 1");
+	static_assert(offspringOfFittest <= 2, "offspringOfFittest must be no greater than 2");
+	static_assert(generationRatio > 0, "generationRatio must be positive");
+
+	population /= generationRatio;
+
+	assert(population > 1);
+	populationSelections.clear();
+	populationSelections.reserve(population);
+	for (int i = population - 1; i >= 0; --i)	// Go backwards since sorting was best-to-worst
+		populationSelections.push_back((2 - offspringOfFittest) / population +
+			2 * i * (offspringOfFittest - 1) / (population * (population - 1)));
+}
+
 solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int generationWindow, int generationEarly, int maxCacheSize, solver::solverCallback callback)
 {
 	vector<thread> threads;
 	for (int i = 0; i < numberOfThreads; i++)
 		threads.emplace_back(workerMain, this);
 
+	xorshift rng;
+	rng.seed(random_device()());
+
 	resultCache cache(maxCacheSize);
 
 	threadOrder orders = {};
 	orders.command = threadCommand::terminate;
-	orders.trials = &trials;
 	orders.counters = &sequenceCounters;
 	orders.cached = &cached;
 	orders.crafter = &crafter;
@@ -609,15 +610,15 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 	orders.initialState = &initialState;
 	orders.goal = goal;
 
+	discrete_distribution<int> d(populationSelections.begin(), populationSelections.end());
+
 	actionHistory hist(generationWindow);
+
 	for (int gen = 0; gen < generations; gen++)
 	{
-		mutated.clear();
-		mutated.reserve(trials.size());
-		orders.command = threadCommand::mutate;
-		setOrder(orders);
-		waitOnMutationsDone();
-
+		for (auto& t : trials)
+			t.outcome = {};	
+		
 		// See if any of our prospective sequences already have their results already in the cache
 		if (maxCacheSize > 0)
 		{
@@ -631,30 +632,18 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 			}
 		}
 
+		orders.trials = &trials;
 		orders.command = threadCommand::simulate;
 		setOrder(orders);
 		waitOnSimsDone();
 
-		// We don't need to sort the whole population, just enough so each group ends up in the right section
-		mutationGroups mG = divideSequence(static_cast<int>(trials.size()));
-		auto comp = [this, simulationsPerTrial](const trial& a, const trial& b)
-			{return compareResult(a, b, simulationsPerTrial, false);};
 		auto compNoInvalids = [this, simulationsPerTrial, generationWindow](const trial& a, const trial& b)
-			{return compareResult(a, b, simulationsPerTrial, generationWindow == 0); };
+			{ return compareResult(a, b, simulationsPerTrial, generationWindow == 0); };
 
-		auto beginPos = trials.begin();
-		auto preserveStart = beginPos;
-		auto oneStart = preserveStart + mG.preserve;
-		auto twoStart = oneStart + mG.oneMutation;
-		auto eliminateStart = twoStart + mG.twoMutations;
-		auto eliminateEnd = eliminateStart + mG.eliminate;
-		assert(eliminateEnd == trials.end());
+		// Yes, min. compareResult is a reverse
+		decltype(trials)::iterator elite = min_element(trials.begin(), trials.end(), compNoInvalids);
 
-		nth_element(beginPos, eliminateStart, eliminateEnd, comp);
-		nth_element(beginPos, twoStart, eliminateStart, comp);
-		nth_element(beginPos, oneStart, twoStart, comp);
-		nth_element(beginPos, preserveStart, oneStart, compNoInvalids);
-		nth_element(beginPos, beginPos, preserveStart, compNoInvalids);
+		if (maxCacheSize > 0) cache.populateCache(trials);
 
 		int uniquePopulation = 0;
 		int cacheHits = 0;
@@ -669,25 +658,51 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 			cacheHits = count(cached.begin(), cached.end(), true);
 		}
 
-		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, trials.front(), uniquePopulation, cacheHits))
-			break;
-
-		if (generationWindow > 0)
+		if (callback && !callback(generations, gen, simulationsPerTrial, goal, strat, *elite, uniquePopulation, cacheHits))
 		{
-			hist.addAction(trials.front().sequence.front());
+			iter_swap(elite, trials.begin());
+			break;
+		}
+
+		if (generationWindow > 0 && !elite->sequence.empty())
+		{
+			hist.addAction(elite->sequence.front());
 			actions stop = hist.hasEnoughOfAction(generationEarly);
 			if (stop != actions::invalid)
 				break;
 		}
 
-		if(maxCacheSize > 0) cache.populateCache(trials);
+		auto comp = [this, simulationsPerTrial](const trial& a, const trial& b)
+			{ return compareResult(a, b, simulationsPerTrial, false); };
+
+		iter_swap(elite, trials.begin());
+		elite = trials.begin();
+
+		partial_sort(next(trials.begin()), next(trials.begin(), trials.size() / generationRatio) + 1, trials.end(), comp);
+
+		vector<trial> selected;
+		selected.reserve(trials.size());
+
+		for (size_t i = 1; i < trials.size(); ++i)	// Start at 1 to make space for elite
+			selected.push_back(trials[d(rng)]);
+
+		mutated.clear();
+		mutated.reserve(selected.size());
+		mutated.push_back(move(*elite));	// elite goes across unmodified
+		orders.trials = &selected;
+		orders.command = threadCommand::mutate;
+		setOrder(orders);
+		waitOnMutationsDone();
+		assert(mutated.size() == selected.size() + 1);
+
+		trials = move(mutated);
 	}
 
 	orders.command = threadCommand::terminate;
 	setOrder(orders);
 	for (auto& t : threads)
 		t.join();
-	
+
 	if(generationWindow > 0)
 	{
 		// Find a trial that actually starts with the action
@@ -696,7 +711,7 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 			if (t.sequence.front() == most) return t;
 		// It's theoretically possible for no trial to have the right action. Just let it failover to the best trial
 	}
-	
+
 	return trials.front();
 }
 
@@ -740,12 +755,6 @@ void solver::waitOnMutationsDone()
 	int* tDone = &threadsDone;
 	int* totalThreads = &numberOfThreads;
 	threadComplete.wait(lock, [&tDone, &totalThreads]() {return *tDone >= *totalThreads;});
-	assert(trials.size() == mutated.size());
-	for (size_t i = 0; i < mutated.size(); ++i)
-	{
-		trials[i] = move(mutated[i]);
-		trials[i].outcome = {};
-	}
 	return;
 }
 
@@ -825,11 +834,11 @@ mutationType getRandomMutation(size_t elements, randomGenerator& rng)
 	if (elements == 1) return rng.generateInt(0, 2) == 0 ? mutationType::replace : mutationType::add;	// add/replace ratio
 
 	// approximate ratio of mutations appearing in best outcomes
-	const int addChance = 2;
+	const int addChance = 4;
 	const int replaceChance = addChance + 1;
 	const int removeChance = replaceChance + 1;
 	const int shiftChance = removeChance + 2;
-	const int swapChance = shiftChance + 2;
+	const int swapChance = shiftChance + 1;
 	const int totalChance = swapChance;
 	int selected = rng.generateInt(totalChance - 1);
 
@@ -840,79 +849,73 @@ mutationType getRandomMutation(size_t elements, randomGenerator& rng)
 	else return mutationType::swap;
 }
 
-solver::trial solver::mutateSequence(trial input, int numberOfMutations, randomGenerator& rng)
+solver::trial solver::mutateSequence(trial input, randomGenerator& rng)
 {
-	for (int i = 0; i < numberOfMutations; i++)
+	mutationType mutation = getRandomMutation(input.sequence.size(), rng);
+
+	switch (mutation)
 	{
-		mutationType mutation = getRandomMutation(input.sequence.size(), rng);
-
-		switch (mutation)
-		{
-		case mutationType::add:
-		{
-			auto where = input.sequence.begin();
-			bool sequenceHasFirst = !input.sequence.empty() && isFirstAction(input.sequence.front());
-			advance(where, rng.generateInt(sequenceHasFirst ? 1 : 0, static_cast<int>(input.sequence.size())));	// not "- 1"; it can advance to the end iterator
-			actions which = (where == input.sequence.begin()) ?
-				availableActions[rng.generateInt(availableActions.size() - 1)] :
-				availableWithoutFirst[rng.generateInt(availableWithoutFirst.size() - 1)];
-			input.sequence.insert(where, which);
-			if (gatherStatistics) input.stats.additions++;
-			break;
-		}
-		case mutationType::replace:
-		{
-			assert(!input.sequence.empty());
-			auto where = input.sequence.begin();
-			advance(where, rng.generateInt(input.sequence.size() - 1));
-			actions which = (where == input.sequence.begin()) ?
-				availableActions[rng.generateInt(availableActions.size() - 1)] :
-				availableWithoutFirst[rng.generateInt(availableWithoutFirst.size() - 1)];
-			*where = which;
-			if (gatherStatistics) input.stats.replacements++;
-			break;
-		}
-		case mutationType::remove:
-		{
-			assert(!input.sequence.empty());
-			auto where = input.sequence.begin();
-			advance(where, rng.generateInt(input.sequence.size() - 1));
-			input.sequence.erase(where);
-			if (gatherStatistics) input.stats.removals++;
-			break;
-		}
-		case mutationType::shift:
-		{
-			assert(input.sequence.size() > 1);
-			auto low = input.sequence.begin();
-			auto high = input.sequence.begin();
-			advance(low, rng.generateInt(isFirstAction(*low) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
-			advance(high, rng.generateInt(isFirstAction(*high) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
-			if (high < low) swap(low, high);
-
-			// To grab the first and put it on the end, move first+1 to first
-			// To grab the last and put it at the beginning, move last to first
-			decltype(low) grabbed = rng.generateInt(1) == 0 ? low + 1 : high;
-			rotate(low, grabbed, high + 1);
-			if (gatherStatistics) input.stats.shifts++;
-			break;
-		}
-		case mutationType::swap:
-		{
-			assert(input.sequence.size() > 1);
-			auto first = input.sequence.begin();
-			auto second = input.sequence.begin();
-			advance(first, rng.generateInt(isFirstAction(*first) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
-			advance(second, rng.generateInt(isFirstAction(*second) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
-			iter_swap(first, second);
-			if (gatherStatistics) input.stats.swaps++;
-			break;
-		}
-		}
+	case mutationType::add:
+	{
+		auto where = input.sequence.begin();
+		bool sequenceHasFirst = !input.sequence.empty() && isFirstAction(input.sequence.front());
+		advance(where, rng.generateInt(sequenceHasFirst ? 1 : 0, static_cast<int>(input.sequence.size())));	// not "- 1"; it can advance to the end iterator
+		actions which = (where == input.sequence.begin()) ?
+			availableActions[rng.generateInt(availableActions.size() - 1)] :
+			availableWithoutFirst[rng.generateInt(availableWithoutFirst.size() - 1)];
+		input.sequence.insert(where, which);
+		if (gatherStatistics) input.stats.additions++;
+		break;
 	}
+	case mutationType::replace:
+	{
+		assert(!input.sequence.empty());
+		auto where = input.sequence.begin();
+		advance(where, rng.generateInt(input.sequence.size() - 1));
+		actions which = (where == input.sequence.begin()) ?
+			availableActions[rng.generateInt(availableActions.size() - 1)] :
+			availableWithoutFirst[rng.generateInt(availableWithoutFirst.size() - 1)];
+		*where = which;
+		if (gatherStatistics) input.stats.replacements++;
+		break;
+	}
+	case mutationType::remove:
+	{
+		assert(!input.sequence.empty());
+		auto where = input.sequence.begin();
+		advance(where, rng.generateInt(input.sequence.size() - 1));
+		input.sequence.erase(where);
+		if (gatherStatistics) input.stats.removals++;
+		break;
+	}
+	case mutationType::shift:
+	{
+		assert(input.sequence.size() > 1);
+		auto low = input.sequence.begin();
+		auto high = input.sequence.begin();
+		advance(low, rng.generateInt(isFirstAction(*low) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+		advance(high, rng.generateInt(isFirstAction(*high) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+		if (high < low) swap(low, high);
 
-	if (gatherStatistics)
-		input.stats.mutations[numberOfMutations]++;
+		// To grab the first and put it on the end, move first+1 to first
+		// To grab the last and put it at the beginning, move last to first
+		decltype(low) grabbed = rng.generateInt(1) == 0 ? low + 1 : high;
+		rotate(low, grabbed, high + 1);
+		if (gatherStatistics) input.stats.shifts++;
+		break;
+	}
+	case mutationType::swap:
+	{
+		assert(input.sequence.size() > 1);
+		auto first = input.sequence.begin();
+		auto second = input.sequence.begin();
+		advance(first, rng.generateInt(isFirstAction(*first) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+		advance(second, rng.generateInt(isFirstAction(*second) ? 1 : 0, static_cast<int>(input.sequence.size() - 1)));
+		iter_swap(first, second);
+		if (gatherStatistics) input.stats.swaps++;
+		break;
+	}
+	}
 
 	return input;
 }
@@ -980,10 +983,7 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, randomGe
 void workerPerformMutations(solver* solve, solver::threadOrder order, randomGenerator& rng)
 {
 	vector<solver::trial> localMutated;
-	mutationGroups groups = divideSequence(static_cast<int>(order.trials->size()));
-	// a for loop instead of while here since we'll never use the same trial twice
-	// ending at size / 2 since the second half are rejects
-	for (int trialNumber = 0; trialNumber < groups.eliminate; trialNumber++)
+	for (size_t trialNumber = 0; trialNumber < order.trials->size(); trialNumber++)
 	{
 		if ((*order.counters)[trialNumber].fetch_add(1, memory_order_relaxed) > 0)
 		{
@@ -991,21 +991,7 @@ void workerPerformMutations(solver* solve, solver::threadOrder order, randomGene
 			continue;
 		}
 		const solver::trial& parentTrial = (*order.trials)[trialNumber];
-		if (trialNumber < groups.preserve)
-		{
-			localMutated.push_back(solve->mutateSequence(parentTrial, 0, rng));
-			localMutated.push_back(solve->mutateSequence(parentTrial, 0, rng));
-		}
-		else if (trialNumber < groups.preserve + groups.oneMutation)
-		{
-			localMutated.push_back(solve->mutateSequence(parentTrial, 1, rng));
-			localMutated.push_back(solve->mutateSequence(parentTrial, 1, rng));
-		}
-		else
-		{
-			localMutated.push_back(solve->mutateSequence(parentTrial, 2, rng));
-			localMutated.push_back(solve->mutateSequence(parentTrial, 2, rng));
-		}
+		localMutated.push_back(solve->mutateSequence(parentTrial, rng));
 	}
 
 	solve->reportThreadMutationResults(localMutated);
