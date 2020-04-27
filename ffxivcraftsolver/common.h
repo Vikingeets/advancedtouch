@@ -23,6 +23,8 @@ struct recipeStats
 	int suggestedCraftsmanship;
 	int suggestedControl;
 
+	std::vector<std::pair<int, int>> points;	// must be in order low to high
+	
 	bool expert;
 };
 
@@ -37,7 +39,8 @@ enum class goalType
 {
 	hq,				// Maximize average HQ%
 	maxQuality,		// Push quality as far as possible
-	collectability	// Hitting the goal is all that matters
+	collectability,	// Hitting the goal is all that matters
+	points			// Get the best average point outcome
 };
 
 inline std::vector<std::string> tokenSplit(const std::string& str, char token)

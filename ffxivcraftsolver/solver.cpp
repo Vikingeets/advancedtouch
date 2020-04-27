@@ -558,6 +558,12 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 			if (a.outcome.quality != b.outcome.quality)
 				return a.outcome.quality > b.outcome.quality;
 			else break;
+		case goalType::points:
+			if (a.outcome.points == recipe.points.back().second * simulationsPerTrial && b.outcome.points == recipe.points.back().second * simulationsPerTrial)
+				break;
+			else if (a.outcome.points != b.outcome.points)
+				return a.outcome.points > b.outcome.points;
+			else return a.outcome.quality > b.outcome.quality;
 		}
 //		[[fallthrough]]		// quality is tied
 	case strategy::nqOnly:
@@ -789,6 +795,9 @@ void solver::reportThreadSimResults(const vector<netResult>& threadResults)
 		case goalType::collectability:
 			simResults[i].collectableGoalsHit += threadResults[i].collectableGoalsHit;
 			break;
+		case goalType::points:
+			simResults[i].points += threadResults[i].points;
+			break;
 		}
 		simResults[i].invalidActions += threadResults[i].invalidActions;
 		simResults[i].steps += threadResults[i].steps;
@@ -965,7 +974,8 @@ void workerPerformSimulations(solver* solve, solver::threadOrder order, randomGe
 			case goalType::collectability:
 				if (result.collectableHit) localResults[trialNumber].collectableGoalsHit++;
 				break;
-			default:
+			case goalType::points:
+				localResults[trialNumber].points += result.points;
 				break;
 			}
 		}

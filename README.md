@@ -48,6 +48,9 @@ There are three quality options:
 -c collectability
 	In single or multi mode, will output whether the given collectability was reached. In solve mode, will try to maximize the number of synths that reach it
 
+-p points
+	In single or multi mode, will output how many collectable turnin points the rotation produced. In solve mode, will try to maximize the average points reached. The recipe must have a valid "points" section.
+
 There are three solver strategies:
 
 -t standard (the default)
@@ -85,6 +88,8 @@ The recipe file is required and is a JSON document. All values are case-sensitiv
 "quality" is the quality required to guarantee a 100% HQ chance. It should still be provided in max quality or collectability mode, as it is used internally.
 
 "expert" is either true or false to indicate whether the recipe is an expert recipe. However, even in stepwise mode, the solver struggles to reach the lowest turnin threshold.
+
+"points" is an array of possible turnins, used in -p mode. There must be an even number of them, and they are in order of collectability, then points (or scrip, etc), repeated for each possible tier.
 
 # Options
 

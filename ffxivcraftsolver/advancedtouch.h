@@ -19,6 +19,7 @@ extern "C"
 #define AT_GOAL_HQ 0				/* Maximize HQ% chance */
 #define AT_GOAL_MAXQUALITY 1		/* Maximize raw quality, even beyond the recipe's maximum */
 #define AT_GOAL_COLLECTABILITY 2	/* Maximize number of crafts that reach the goal */
+#define AT_GOAL_POINTS 3			/* Maximize the average number of turnin points */
 
 
 #define AT_SYNTH_BASICSYNTH 100
@@ -80,6 +81,9 @@ struct atRecipe
 
 	int suggestedCraftsmanship;
 	int suggestedControl;
+
+	int* points;			/* An array of integers for the points structure, as pairs of collectability then value */
+	unsigned int pointsSize;	/* The number of integers in the array, e.g. 3 entries will be pointsSize == 6 */
 };
 
 struct atSolverResult		/* The collective result */
@@ -96,6 +100,7 @@ struct atSolverResult		/* The collective result */
 		int hqPercent;		/* With the hq goal. Goes from 0 to 100 (times simulationsPerSequence) */
 		int quality;		/* With the max quality goal. */
 		int collectableHit; /* With the collectability goal. +0 on a miss, +1 on a hit */
+		int points;			/* With the points goal. */
 	};
 };
 
