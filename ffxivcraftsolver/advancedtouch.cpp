@@ -169,8 +169,8 @@ vector<pair<int, int>> getPoints(const rapidjson::Document& d, const char* key)
 
 	for (rapidjson::SizeType i = 0; i + 1 < ptr->Size(); i += 2)
 	{
-		if (!ptr[i].IsInt() || !ptr[i + 1].IsInt()) continue;
-		output.emplace_back(ptr[i].GetInt(), ptr[i + 1].GetInt());
+		if (!(*ptr)[i].IsInt() || !(*ptr)[i + 1].IsInt()) continue;
+		output.emplace_back((*ptr)[i].GetInt(), (*ptr)[i + 1].GetInt());
 	}
 
 	sort(output.begin(), output.end(), [](const pair<int, int>& a, const pair<int, int>& b)
