@@ -51,9 +51,9 @@ inline std::vector<std::string> tokenSplit(const std::string& str, char token)
 
 	while (position != str.npos)
 	{
-		size_t nextComma = str.find_first_of(token, position);
-		out.push_back(std::string(str, position, nextComma - position));
-		position = str.find_first_not_of(token, nextComma);
+		size_t nextToken = str.find_first_of(token, position);
+		out.push_back(std::string(str, position, nextToken - position));
+		position = str.find_first_not_of(token, nextToken);
 	}
 
 	return out;
