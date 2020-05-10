@@ -161,6 +161,24 @@ bool getBoolIfExists(const rapidjson::Document& d, const char* key, bool def = f
 	else return def;
 }
 
+vector<pair<int, int>> getPoints(const rapidjson::Document& d, const char* key)
+{
+	vector<pair<int, int>> output;
+	const rapidjson::Value* ptr = rapidjson::Pointer(key).Get(d);
+	if (!ptr || !ptr->IsArray()) return output;
+
+	for (rapidjson::SizeType i = 0; i + 1 < ptr->Size(); i += 2)
+	{
+		if (!(*ptr)[i].IsInt() || !(*ptr)[i + 1].IsInt()) continue;
+		output.emplace_back((*ptr)[i].GetInt(), (*ptr)[i + 1].GetInt());
+	}
+
+	sort(output.begin(), output.end(), [](const pair<int, int>& a, const pair<int, int>& b)
+		{ return a.second < b.second; });
+
+	return output;
+}
+
 void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFood, bool useMedicine, classes classKind)
 {
 	if (d.HasParseError())
@@ -284,6 +302,7 @@ void parseRecipe(const rapidjson::Document& d, recipeStats* recipe)
 	recipe->nominalQuality = recipe->quality;
 	recipe->durability = getIntIfExists(d, "/durability");
 	recipe->expert = getBoolIfExists(d, "/expert");
+	recipe->points = getPoints(d, "/points");
 
 	bitset<4> missingStats;
 	missingStats[0] = recipe->rLevel <= 0;
@@ -441,6 +460,9 @@ int performSingle(const crafterStats& crafter, const recipeStats& recipe,
 	case goalType::collectability:
 		cout << "Collectability goal " << (result.collectableHit ? "hit" : "missed") << '\n';
 		break;
+	case goalType::points:
+		cout << result.points << " points\n";
+		break;
 	}
 	cout << result.steps << " steps taken, " << result.invalidActions << " action" << (result.invalidActions == 1 ? "" : "s") << " invalid" << endl;
 
@@ -467,6 +489,9 @@ int performMulti(const crafterStats& crafter, const recipeStats& recipe,
 		break;
 	case goalType::collectability:
 		cout << result.collectableGoalsHit << " collectables reached goal (" << (result.collectableGoalsHit * 100) / simsPerSequence << "%)\n";
+		break;
+	case goalType::points:
+		cout << "Average points: " << result.points / simsPerSequence << '\n';
 		break;
 	}
 	cout << result.steps / simsPerSequence << " average step" << (result.steps == 1 ? "" : "s") << ", " << result.invalidActions / simsPerSequence << " average invalid actions\n";
@@ -498,7 +523,8 @@ bool solveUpdate(int generations, int currentGeneration, int simsPerTrial, goalT
 		case goalType::collectability:
 			cout << status.outcome.collectableGoalsHit * 100 / simsPerTrial << "% hit goal, ";
 			break;
-		default:
+		case goalType::points:
+			cout << status.outcome.points / simsPerTrial << " points, ";
 			break;
 		}
 	}
@@ -555,6 +581,9 @@ int performSolve(const crafterStats& crafter,
 	case goalType::collectability:
 		cout << outcome.collectableGoalsHit << " collectables reached goal (" << (outcome.collectableGoalsHit * 100) / simsPerSequence << "%)\n";
 		break;
+	case goalType::points:
+		cout << "Average points: " << outcome.points / simsPerSequence << '\n';
+		break;
 	}
 	cout << outcome.steps / simsPerSequence << " average step" << (outcome.steps == 1 ? "" : "s") << ", " << outcome.invalidActions / simsPerSequence << " average invalid actions\n\n";
 
@@ -582,14 +611,14 @@ int performSolve(const crafterStats& crafter,
 	cerr << "\nusage:\n";
 	cerr << programName << " command arguments ...\n";
 	cerr << "where 'command' is one of the following:\n";
-	cerr << "\tsingle -j class -r recipefile [-f statsfile] [-o optionsfile] [-q | -m | -c collectability]\n"
+	cerr << "\tsingle -j class -r recipefile [-f statsfile] [-o optionsfile] [-q | -m | -c collectability | -p]\n"
 		"\t\t[-s sequencefile | -e] [-n]\n";
-	cerr << "\tmulti -j class -r recipefile [-f statsfile] [-o optionsfile] [-q | -m | -c collectability]\n"
+	cerr << "\tmulti -j class -r recipefile [-f statsfile] [-o optionsfile] [-q | -m | -c collectability | -p]\n"
 		"\t\t[-s sequencefile | -e] [-n]\n";
 	cerr << "\tsolve -j class -r recipefile [-f statsfile] [-o optionsfile] [-t strategy]\n"
-		"\t\t[-q | -m | -c collectability] [-s sequencefile | -e] [-n] [-z]\n";
+		"\t\t[-q | -m | -c collectability | -p] [-s sequencefile | -e] [-n] [-z]\n";
 	cerr << "\tstep -j class -r recipefile [-f statsfile] [-o optionsfile] [-t strategy]\n"
-		"\t\t[-q | -m | -c collectability] [-s sequencefile | -e] [-n]\n";
+		"\t\t[-q | -m | -c collectability | -p] [-s sequencefile | -e] [-n]\n";
 	cerr << endl;
 	exit(1);
 }
@@ -740,6 +769,10 @@ int main(int argc, char* argv[])
 			}
 			optionsStatsProvided = true;
 		}
+		else if (currentArgv == "-p")
+		{
+			goal = goalType::points;
+		}
 		else if (currentArgv == "-q")
 		{
 			goal = goalType::hq;
@@ -834,6 +867,11 @@ int main(int argc, char* argv[])
 
 	if (goal == goalType::collectability)
 		recipe.quality = collectableGoal * 10;
+	else if (goal == goalType::points && recipe.points.empty())
+	{
+		cerr << "-p goal set, but no points specified in recipe file" << endl;
+		exit(1);
+	}
 
 	if (!optionsStatsProvided)
 	{

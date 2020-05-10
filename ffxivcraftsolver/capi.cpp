@@ -90,6 +90,12 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 	rec.suggestedCraftsmanship = recipe.suggestedCraftsmanship;
 	rec.suggestedControl = recipe.suggestedControl;
 
+	for (unsigned int i = 0; i + 1 < recipe.pointsSize; i += 2)
+		rec.points.emplace_back(recipe.points[i], recipe.points[i + 1]);
+
+	sort(rec.points.begin(), rec.points.end(), [](const pair<int, int>& a, const pair<int, int>& b)
+		{ return a.second < b.second; });
+
 	goalType solveGoal;
 	switch (cGoal)
 	{
@@ -101,6 +107,9 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 		break;
 	case AT_GOAL_COLLECTABILITY:
 		solveGoal = goalType::collectability;
+		break;
+	case AT_GOAL_POINTS:
+		solveGoal = goalType::points;
 		break;
 	default: return nullptr;
 	}
@@ -164,6 +173,9 @@ bool cSolverCallback(int generations, int currentGeneration, int simsPerTrial, g
 	case goalType::collectability:
 		result.collectableHit = status.outcome.collectableGoalsHit;
 		break;
+	case goalType::points:
+		result.points = status.outcome.points;
+		break;
 	}
 
 	return cCallback(currentGeneration, result) == 0;
@@ -189,6 +201,9 @@ atSolverResult atExecuteSimulations(atSolver* cSolver, int numberOfSimulations)
 		break;
 	case goalType::collectability:
 		result.collectableHit = simResult.outcome.collectableGoalsHit;
+		break;
+	case goalType::points:
+		result.points = simResult.outcome.points;
 		break;
 	}
 
@@ -217,6 +232,9 @@ atSolverResult atExecuteSolve(atSolver* cSolver, int simulationsPerSequence, int
 		break;
 	case goalType::collectability:
 		result.collectableHit = solveResult.outcome.collectableGoalsHit;
+		break;
+	case goalType::points:
+		result.points = solveResult.outcome.points;
 		break;
 	}
 

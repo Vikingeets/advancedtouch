@@ -229,6 +229,9 @@ bool stepwiseUpdate(int generations, int currentGeneration, int simsPerTrial, go
 		case goalType::collectability:
 			cout << ", " << status.outcome.collectableGoalsHit * 100 / simsPerTrial << "% hit goal";
 			break;
+		case goalType::points:
+			cout << ", " << status.outcome.points / simsPerTrial << " average points";
+			break;
 		}
 	}
 

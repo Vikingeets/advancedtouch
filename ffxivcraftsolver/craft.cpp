@@ -786,6 +786,13 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 	case goalType::collectability:
 		craftResult.collectableHit = quality >= recipe.quality;
 		break;
+	case goalType::points:
+		craftResult.points = 0;
+		for (auto p : recipe.points)
+		{
+			if (quality / 10 >= p.first)
+				craftResult.points = p.second;
+		}
 	}
 	craftResult.steps = step;
 	if (it != sequence.cend()) ++it;	// the iterator needs to sit on the one after the last craft in order for the next calculation to work

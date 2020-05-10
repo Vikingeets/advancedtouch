@@ -107,6 +107,7 @@ public:
 		{
 			int hqPercent;			// normal and hqOrBust mode
 			bool collectableHit;	// collectable mode
+			int points;				// points mode
 		};
 		int steps;
 		int invalidActions;

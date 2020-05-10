@@ -27,6 +27,7 @@ public:
 		{
 			int hqPercent;
 			int collectableGoalsHit;	// an individual run would only add 0 or 1 to this
+			int points;
 		};
 		short steps;		// actions until the synth ends, not neccesarily the size of the sequence
 		short invalidActions;		// i.e. those that don't occur due to preconditions not met, insufficient CP, or occuring after the end of the synth
