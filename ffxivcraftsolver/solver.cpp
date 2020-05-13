@@ -21,8 +21,8 @@
 using namespace std;
 
 // Expected offspring of fittest individual
-constexpr double offspringOfFittest = 2.;
-constexpr int generationRatio = 7;	// 1/n of trials will be used as the next generation's seeds
+constexpr double offspringOfFittest = 1.5;
+constexpr int generationRatio = 4;	// 1/n of trials will be used as the next generation's seeds
 
 template <typename T>
 class vectorHash
