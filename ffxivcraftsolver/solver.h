@@ -77,7 +77,7 @@ public:
 	};
 
 private:
-	threadOrder order;	// not atomic: protected with orderSetLock
+	threadOrder activeOrder;	// not atomic: protected with orderSetLock
 
 	const crafterStats crafter;
 	const recipeStats recipe;

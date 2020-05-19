@@ -389,7 +389,7 @@ solver::solver(const crafterStats & c, const recipeStats & r, const craft::seque
 {
 	assert(numberOfThreads > 0);
 
-	order.command = threadCommand::terminate;	// "terminate" doubles as start
+	activeOrder.command = threadCommand::terminate;	// "terminate" doubles as start
 
 	trials[0].sequence = seed;
 	trials[0].outcome = netResult();
@@ -424,7 +424,7 @@ solver::solver(const crafterStats& c,
 
 	setSelections(population);
 
-	order.command = threadCommand::terminate;
+	activeOrder.command = threadCommand::terminate;
 	
 	resetSeeds(seed);
 }
@@ -455,7 +455,7 @@ solver::solver(const crafterStats& c,
 
 	setSelections(population);
 
-	order.command = threadCommand::terminate;
+	activeOrder.command = threadCommand::terminate;
 
 	resetSeeds(seed);
 }
@@ -729,7 +729,7 @@ void solver::setOrder(threadOrder odr)
 	for_each(sequenceCounters.begin(), sequenceCounters.end(),
 		[](atomic<int>& a) {a.store(0, memory_order_relaxed);});
 	threadsDone = 0;
-	order = odr;
+	activeOrder = odr;
 
 	lock.unlock();
 	orderSet.notify_all();
@@ -769,10 +769,10 @@ solver::threadOrder solver::waitOnCommandChange(threadCommand previous)
 {
 	unique_lock<mutex> lock(orderSetLock);
 
-	threadOrder* odr = &order;
+	threadOrder* odr = &activeOrder;
 	orderSet.wait(lock, [odr, &previous]() { return odr->command != previous; });
 
-	return order;
+	return activeOrder;
 }
 
 void solver::reportThreadSimResults(const vector<netResult>& threadResults)
