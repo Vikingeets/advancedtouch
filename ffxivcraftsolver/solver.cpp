@@ -598,8 +598,9 @@ void solver::setSelections(int population)
 solver::trial solver::executeSolver(int simulationsPerTrial, int generations, int generationWindow, int generationEarly, int maxCacheSize, solver::solverCallback callback)
 {
 	vector<thread> threads;
-	for (int i = 0; i < numberOfThreads; i++)
-		threads.emplace_back(workerMain, this);
+	if(generations > 0)
+		for (int i = 0; i < numberOfThreads; i++)
+			threads.emplace_back(workerMain, this);
 
 	xorshift rng;
 	rng.seed(random_device()());
