@@ -37,7 +37,7 @@ The stepwise mode will start an interactive mode which can simulate a manual cra
 -z
 	Display various statistics while solving and on the winning rotation. Useful for development, probably less so for normal users. Ignored in stepwise mode
 
-There are three quality options:
+There are four quality options:
 
 -q	(the default)
 	In single or multi mode, will show the chance of an HQ synth. In solve mode, will try to maximize the HQ percentage chance
