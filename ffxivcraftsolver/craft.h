@@ -313,6 +313,7 @@ public:
 	bool maxedProgress() const { return progress >= recipe.difficulty; }
 	void setQuality(int q) { quality = q; }
 	void setCondition(condition c) { cond = c; }
+	condition getCondition() const { return cond; }
 	void setCP(int cp) { CP = std::min(cp, crafter.CP); }
 	void setBuff(actions buff, int timeOrStacks);
 };

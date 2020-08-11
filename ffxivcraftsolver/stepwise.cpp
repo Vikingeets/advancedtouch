@@ -524,7 +524,7 @@ int performStepwise(
 				continue;
 			}
 
-			if (command.size() == 1) command.push_back("n");
+			if (command.size() == 1 && craftHistory.top().getCondition() != craft::condition::poor) command.push_back("n");
 			setCondition(command, recipe, &craftHistory.top());
 			
 			cout << "Step " << craftHistory.top().getStep() << '\n';
