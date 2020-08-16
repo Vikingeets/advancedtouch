@@ -316,4 +316,7 @@ public:
 	condition getCondition() const { return cond; }
 	void setCP(int cp) { CP = std::min(cp, crafter.CP); }
 	void setBuff(actions buff, int timeOrStacks);
+
+	// Won't contain invalid stats
+	endResult getResult(goalType goal) const;
 };

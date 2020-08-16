@@ -852,3 +852,35 @@ void craft::setBuff(actions buff, int timeOrStacks)
 		return;
 	}
 }
+
+craft::endResult craft::getResult(goalType goal) const
+{
+	endResult craftResult;
+	craftResult.invalidActions = 0;
+	craftResult.firstInvalid = false;
+	craftResult.progress = progress;
+	craftResult.quality = quality;
+	craftResult.steps = step;
+
+	switch (goal)
+	{
+	case goalType::hq:
+		craftResult.hqPercent = hqPercentFromQuality((quality * 100) / recipe.nominalQuality);
+		break;
+	case goalType::maxQuality:
+		break;
+	case goalType::collectability:
+		craftResult.collectableHit = quality >= recipe.quality;
+		break;
+	case goalType::points:
+		craftResult.points = 0;
+		for (auto p : recipe.points)
+		{
+			if (quality / 10 >= p.first)
+				craftResult.points = p.second;
+		}
+		break;
+	}
+
+	return craftResult;
+}

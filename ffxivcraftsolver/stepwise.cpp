@@ -569,3 +569,74 @@ int performStepwise(
 		}
 	}
 }
+
+int performAutoStepwise(
+	const crafterStats& crafter,
+	const recipeStats& recipe,
+	const craft::sequenceType& seed,
+	goalType goal,
+	int initialQuality,
+	int threads,
+	int simsPerSequence,
+	int stepwiseGenerations,
+	int population,
+	int maxCacheSize,
+	strategy strat
+)
+{
+	randomGenerator rand;
+
+	craft startingCraft(initialQuality, crafter, recipe, false);
+
+	while (true)
+	{
+		craft currentCraft(startingCraft);
+		currentCraft.setRNG(&rand);
+		solver solve(crafter, recipe, seed, goal, currentCraft, threads, strat, population);
+		while (!currentCraft.maxedProgress() && !currentCraft.outOfDurability())
+		{
+			craft::sequenceType result = solve.executeSolver(simsPerSequence, stepwiseGenerations * generationMultiplier, stepwiseGenerations, stepwiseGenerations * streakTolerance / 100, maxCacheSize, nullptr).sequence;
+			if (result.empty())
+			{
+				cout << " Error" << endl;
+				break;
+			}
+			currentCraft.performOneComplete(result.front(), craft::rngOverride::random);
+			solve.setInitialState(currentCraft);
+			solve.incrementSeeds(1);			
+			cout << "." << flush;
+		}
+		cout << "\n";
+
+		if (!currentCraft.maxedProgress())
+		{
+			cout << "Failure" << endl;
+			continue;
+		}
+
+		craft::endResult result = currentCraft.getResult(goal);
+		cout << "Success";
+		if (strat != strategy::nqOnly)
+		{
+			cout << ", ";
+			switch (goal)
+			{
+			case goalType::hq:
+				cout << result.hqPercent << "% HQ";
+				break;
+			case goalType::maxQuality:
+				cout << result.quality << " Quality";
+				break;
+			case goalType::collectability:
+				cout << "goal " << (result.collectableHit ? "hit" : "missed");
+				break;
+			case goalType::points:
+				cout << result.points << " points";
+				break;
+			}
+		}
+		cout << endl;
+	}
+
+	return 0;
+}

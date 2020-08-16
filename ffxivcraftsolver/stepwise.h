@@ -16,3 +16,17 @@ int performStepwise(
 	int maxCacheSize,
 	strategy strat
 );
+
+int performAutoStepwise(
+	const crafterStats& crafter,
+	const recipeStats& recipe,
+	const craft::sequenceType& seed,
+	goalType goal,
+	int initialQuality,
+	int threads,
+	int simsPerSequence,
+	int stepwiseGenerations,
+	int population,
+	int maxCacheSize,
+	strategy strat
+);

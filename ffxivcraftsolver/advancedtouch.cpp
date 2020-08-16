@@ -639,7 +639,7 @@ int main(int argc, char* argv[])
 		usage();
 	}
 
-	enum class commands { single, multi, solve, stepwise };
+	enum class commands { single, multi, solve, stepwise, autostepwise };
 	commands command;
 
 	crafterStats crafter;
@@ -675,6 +675,7 @@ int main(int argc, char* argv[])
 	else if (currentArgv == "multi" || currentArgv == "multisim") command = commands::multi;
 	else if (currentArgv == "solve" || currentArgv == "solver") command = commands::solve;
 	else if (currentArgv == "step" || currentArgv == "stepwise") command = commands::stepwise;
+	else if (currentArgv == "autostep" || currentArgv == "autostepwise") command = commands::autostepwise;
 	else
 	{
 		cerr << "unknown command '" << currentArgvOrig << "'\n";
@@ -808,7 +809,7 @@ int main(int argc, char* argv[])
 		}
 		else if (currentArgv == "-t")
 		{
-			if (command != commands::solve && command != commands::stepwise)
+			if (command != commands::solve && command != commands::stepwise && command != commands::autostepwise)
 			{
 				cerr << "-t only available in solve and stepwise mode\n";
 				usage();
@@ -884,7 +885,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	parseOptions(optionsStatsDocument, &opts, command == commands::solve, command == commands::stepwise);
+	parseOptions(optionsStatsDocument, &opts, command == commands::solve, command == commands::stepwise || command == commands::autostepwise);
 
 	craft::sequenceType seed;
 	if (sequenceProvided)
@@ -917,6 +918,9 @@ int main(int argc, char* argv[])
 			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useConditionals, gatherStatistics);
 	case commands::stepwise:
 		return performStepwise(crafter, recipe, seed, goal, initialQuality, opts.threads,
+			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat);
+	case commands::autostepwise:
+		return performAutoStepwise(crafter, recipe, seed, goal, initialQuality, opts.threads,
 			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat);
 	}
 }
