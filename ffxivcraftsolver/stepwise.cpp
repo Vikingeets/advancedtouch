@@ -524,9 +524,17 @@ int performStepwise(
 				continue;
 			}
 
-			if (command.size() == 1 && craftHistory.top().getCondition() != craft::condition::poor) command.push_back("n");
-			setCondition(command, recipe, &craftHistory.top());
-			
+
+			if (command.size() == 1)
+			{
+				if (craftHistory.top().getCondition() != craft::condition::poor)
+					craftHistory.top().setCondition(craft::condition::normal);
+			}
+			else if (!setCondition(command, recipe, &craftHistory.top()))
+			{
+				cout << "Using normal condition" << endl;
+			}
+
 			cout << "Step " << craftHistory.top().getStep() << '\n';
 			cout << craftHistory.top().getState() << endl;
 
