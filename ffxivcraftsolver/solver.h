@@ -88,6 +88,9 @@ private:
 	strategy strat;
 
 	bool gatherStatistics;
+
+	// Expected offspring of fittest individual
+	double offspringOfFittest;
 	
 	std::vector<trial> trials;	// protected by threadCompleteLock, newest to oldest
 	std::vector<netResult> simResults;
@@ -136,7 +139,8 @@ public:
 		strategy s,		// the strategy
 		int population,	// the population. must be here to properly allocate counter vector
 		bool uC,		// use conditionals?
-		bool gS			// gather statistics?
+		bool gS,		// gather statistics?
+		double selectionPressure	// Higher solves faster, but can yield a worse final result. Must be 1.0 < selectionPressure <= 2.0
 	);
 
 	// Constructor for solve mode with initial state
@@ -147,7 +151,8 @@ public:
 		const craft& iS,
 		int tCnt,
 		strategy s,
-		int population
+		int population,
+		double selectionPressure
 	);
 
 	void setInitialState(craft iS) { initialState = iS; }

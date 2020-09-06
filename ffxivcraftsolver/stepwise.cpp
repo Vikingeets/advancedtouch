@@ -317,7 +317,8 @@ int performStepwise(
 	int stepwiseGenerations,
 	int population,
 	int maxCacheSize,
-	strategy strat
+	strategy strat,
+	double selectionPressure
 	)
 {
 	randomGenerator rand;
@@ -326,7 +327,7 @@ int performStepwise(
 	
 	craftHistory.top().setRNG(&rand);
 
-	solver solve(crafter, recipe, seed, goal, craftHistory.top(), threads, strat, population);
+	solver solve(crafter, recipe, seed, goal, craftHistory.top(), threads, strat, population, selectionPressure);
 	int lastSolvedStep = 0;
 
 	bool printStatus = true;		// Generally doubles as a success/fail flag
@@ -589,7 +590,8 @@ int performAutoStepwise(
 	int stepwiseGenerations,
 	int population,
 	int maxCacheSize,
-	strategy strat
+	strategy strat,
+	double selectionPressure
 )
 {
 	randomGenerator rand;
@@ -600,7 +602,7 @@ int performAutoStepwise(
 	{
 		craft currentCraft(startingCraft);
 		currentCraft.setRNG(&rand);
-		solver solve(crafter, recipe, seed, goal, currentCraft, threads, strat, population);
+		solver solve(crafter, recipe, seed, goal, currentCraft, threads, strat, population, selectionPressure);
 		while (!currentCraft.maxedProgress() && !currentCraft.outOfDurability())
 		{
 			craft::sequenceType result = solve.executeSolver(simsPerSequence, stepwiseGenerations * generationMultiplier, stepwiseGenerations, stepwiseGenerations * streakTolerance / 100, maxCacheSize, nullptr).sequence;

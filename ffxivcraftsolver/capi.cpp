@@ -66,7 +66,7 @@ actions cActionToATAction(int action)
 	else return it->first;
 }
 
-atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence, int initialSequenceSize, int cGoal, int initialQuality, int threads, int normalLock, int cStrat, int population, int useConditionals)
+atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence, int initialSequenceSize, int cGoal, int initialQuality, int threads, int normalLock, int cStrat, int population, int useConditionals, double selectionPressure)
 {
 	craft::sequenceType seed;
 	seed.reserve(initialSequenceSize);
@@ -132,7 +132,7 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 	bool nLock = normalLock != 0;
 	bool uC = useConditionals != 0;
 
-	return reinterpret_cast<atSolver*>(new solver(craft, rec, seed, solveGoal, initialQuality, threads, nLock, strat, population, uC, false));
+	return reinterpret_cast<atSolver*>(new solver(craft, rec, seed, solveGoal, initialQuality, threads, nLock, strat, population, uC, false, selectionPressure));
 }
 
 int atLoadRecipeTable(const char* filename)

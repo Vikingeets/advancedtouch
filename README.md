@@ -114,6 +114,8 @@ Setting "normal lock" to true will disable the simulation of conditions. This wi
 
 "use conditionals" instructs the solver to try actions that require a condition (i.e. Intensive Synthesis, Precise Touch, and Tricks of the Trade) in generated rotations. It might come up with something clever with conditions, it might not.
 
+"selection pressure" adjusts how quickly the solver will settle on a solution. A higher value will narrow on one quicker, but may miss a more optimal one. It must be greater than 1.0, and less than or equal to the default of 2.0.
+
 # Examples
 `advancedtouch single -j crp -f examples/9crp50cul.json -r examples/ashlumberrecipe.json -s examples/ashlumbersequence.json`
 

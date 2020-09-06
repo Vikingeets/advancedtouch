@@ -20,8 +20,6 @@
 
 using namespace std;
 
-// Expected offspring of fittest individual
-constexpr double offspringOfFittest = 1.5;
 constexpr int generationRatio = 4;	// 1/n of trials will be used as the next generation's seeds
 
 template <typename T>
@@ -404,7 +402,8 @@ solver::solver(const crafterStats& c,
 	goalType g, int iQ,
 	int tCnt, bool nLock, strategy s,
 	int population,
-	bool uC, bool gS) :
+	bool uC, bool gS,
+	double selectionPressure) :
 	crafter(c),
 	recipe(r),
 	goal(g),
@@ -412,6 +411,7 @@ solver::solver(const crafterStats& c,
 	numberOfThreads(tCnt),
 	strat(s),
 	gatherStatistics(gS),
+	offspringOfFittest(selectionPressure),
 	trials(population),
 	simResults(population),
 	cached(population, false),
@@ -421,6 +421,7 @@ solver::solver(const crafterStats& c,
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);
+	assert(offspringOfFittest > 1.0 && offspringOfFittest <= 2.0);
 
 	setSelections(population);
 
@@ -435,7 +436,8 @@ solver::solver(const crafterStats& c,
 	const craft::sequenceType& seed,
 	goalType g, const craft& iS,
 	int tCnt, strategy s,
-	int population) :
+	int population,
+	double selectionPressure) :
 	crafter(c),
 	recipe(r),
 	goal(g),
@@ -443,6 +445,7 @@ solver::solver(const crafterStats& c,
 	numberOfThreads(tCnt),
 	strat(s),
 	gatherStatistics(false),
+	offspringOfFittest(selectionPressure),
 	trials(population),
 	simResults(population),
 	cached(population, false),
@@ -452,6 +455,7 @@ solver::solver(const crafterStats& c,
 	threadsDone(0)
 {
 	assert(numberOfThreads > 0);
+	assert(offspringOfFittest > 1.0 && offspringOfFittest <= 2.0);
 
 	setSelections(population);
 
@@ -581,8 +585,6 @@ bool solver::compareResult(const solver::trial& a, const solver::trial& b, int s
 
 void solver::setSelections(int population)
 {
-	static_assert(offspringOfFittest > 1, "offspringOfFittest must be greater than 1");
-	static_assert(offspringOfFittest <= 2, "offspringOfFittest must be no greater than 2");
 	static_assert(generationRatio > 0, "generationRatio must be positive");
 
 	population /= generationRatio;

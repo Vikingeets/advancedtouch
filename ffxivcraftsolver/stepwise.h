@@ -14,7 +14,8 @@ int performStepwise(
 	int stepwiseGenerations,
 	int population,
 	int maxCacheSize,
-	strategy strat
+	strategy strat,
+	double selectionPressure
 );
 
 int performAutoStepwise(
@@ -28,5 +29,6 @@ int performAutoStepwise(
 	int stepwiseGenerations,
 	int population,
 	int maxCacheSize,
-	strategy strat
+	strategy strat,
+	double selectionPressure
 );

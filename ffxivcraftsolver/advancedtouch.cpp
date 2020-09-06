@@ -154,6 +154,13 @@ int getIntIfExists(const rapidjson::Document& d, const char* key, int def = 0)
 	else return def;
 }
 
+double getDoubleIfExists(const rapidjson::Document& d, const char* key, int def = 0)
+{
+	const rapidjson::Value* ptr = rapidjson::Pointer(key).Get(d);
+	if (ptr && ptr->IsDouble()) return ptr->GetDouble();
+	else return def;
+}
+
 bool getBoolIfExists(const rapidjson::Document& d, const char* key, bool def = false)
 {
 	const rapidjson::Value* ptr = rapidjson::Pointer(key).Get(d);
@@ -359,6 +366,8 @@ struct options
 	int threads;
 
 	bool useConditionals;
+
+	double selectionPressure;
 };
 
 void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode, bool stepwiseMode)
@@ -379,18 +388,22 @@ void parseOptions(const rapidjson::Document& d, options* opts, bool solveMode, b
 	opts->threads = getIntIfExists(d, "/threads");
 	opts->useConditionals = getBoolIfExists(d, "/use conditionals");
 
-	bitset<4> missingStats;
+	opts->selectionPressure = getDoubleIfExists(d, "/selection pressure", 2.0);
+
+	bitset<5> missingStats;
 	missingStats[0] = opts->simsPerSequence <= 0;
 	missingStats[1] = solveMode && opts->generations <= 0;
 	missingStats[2] = stepwiseMode && opts->stepwiseGenerations <= 0;
 	missingStats[3] = (solveMode || stepwiseMode) && (opts->population <= 0);
+	missingStats[4] = opts->selectionPressure <= 1.0 || opts->selectionPressure > 2.0;
 	if (missingStats.any())
 	{
 		cerr << "the options file has missing or invalid stats:";
-		if (missingStats[0]) cerr << " sims";
-		if (missingStats[1]) cerr << " generations";
-		if (missingStats[2]) cerr << " stepwise generations";
-		if (missingStats[3]) cerr << " population";
+		if (missingStats[0]) cerr << "sims\n";
+		if (missingStats[1]) cerr << "generations\n";
+		if (missingStats[2]) cerr << "stepwise generations\n";
+		if (missingStats[3]) cerr << "population\n";
+		if (missingStats[4]) cerr << "selection pressure\n";
 		cerr << endl;
 		exit(1);
 	}
@@ -559,12 +572,13 @@ int performSolve(const crafterStats& crafter,
 	int maxCacheSize,
 	strategy strat,
 	bool useConditionals,
-	bool gatherStats)
+	bool gatherStats,
+	double selectionPressure)
 {
 	signal(SIGINT, handler);
 
 	solver solve(crafter, recipe, sequence, goal, initialQuality, threads, normalLock,
-		strat, population, useConditionals, gatherStats);
+		strat, population, useConditionals, gatherStats, selectionPressure);
 	
 	solver::trial result = solve.executeSolver(simsPerSequence, generations, 0, 0, maxCacheSize, solveUpdate);
 	solver::netResult outcome = result.outcome;
@@ -915,12 +929,12 @@ int main(int argc, char* argv[])
 		return performMulti(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence);
 	case commands::solve:
 		return performSolve(crafter, recipe, seed, goal, initialQuality, opts.normalLock, opts.threads, opts.simsPerSequence,
-			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useConditionals, gatherStatistics);
+			opts.generations, opts.population, opts.maxCacheSize, strat, opts.useConditionals, gatherStatistics, opts.selectionPressure);
 	case commands::stepwise:
 		return performStepwise(crafter, recipe, seed, goal, initialQuality, opts.threads,
-			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat);
+			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat, opts.selectionPressure);
 	case commands::autostepwise:
 		return performAutoStepwise(crafter, recipe, seed, goal, initialQuality, opts.threads,
-			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat);
+			opts.simsPerSequence, opts.stepwiseGenerations, opts.population, opts.maxCacheSize, strat, opts.selectionPressure);
 	}
 }
