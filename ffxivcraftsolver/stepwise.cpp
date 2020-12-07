@@ -39,6 +39,7 @@ bool isBuff(actions action)
 {
 	switch (action)
 	{
+	case actions::basicTouch:
 	case actions::muscleMemory:
 	case actions::wasteNot:
 	case actions::wasteNot2:
@@ -83,7 +84,7 @@ bool applyBuff(const vector<string>& command, craft* crafting)
 	{
 		if (it->first == actions::innerQuiet)
 			cout << command[1] << " requires a stack amount\n";
-		else if (it->first == actions::observe)
+		else if (it->first == actions::observe || it->first == actions::basicTouch)
 			cout << command[1] << " requires 0 to disable or 1 to enable\n";
 		else
 			cout << command[1] << " requires a duration\n";

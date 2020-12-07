@@ -171,6 +171,7 @@ private:
 	int nameOfTheElementsTime = 0;
 	bool nameless = false;
 	int finalAppraisalTime = 0;
+	bool basicTouchCombo = false;	// For BT->ST combo
 	bool observeCombo = false;	// For Focused combo
 
 	bool normalLock;
@@ -258,7 +259,8 @@ private:
 
 	// Touches
 	actionResult basicTouch() { return commonTouch(-18, 100, 100); }
-	actionResult standardTouch() { return commonTouch(-32, 125, 100); }
+	void basicTouchPost() { basicTouchCombo = true; }
+	actionResult standardTouch() { return commonTouch(basicTouchCombo ? -18 : -32, 125, 100); }
 	actionResult hastyTouch() { return commonTouch(0, 100, 60); }
 	actionResult byregotsBlessing();
 	actionResult preciseTouch();

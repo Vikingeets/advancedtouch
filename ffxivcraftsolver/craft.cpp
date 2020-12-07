@@ -231,6 +231,7 @@ void craft::endStep()
 	if (nameOfTheElementsTime == 0) nameless = true;
 	finalAppraisalTime--;
 	observeCombo = false;
+	basicTouchCombo = false;
 	cond = getNextCondition(cond);
 
 	step++;
@@ -323,6 +324,11 @@ string craft::getState() const
 		anybuffs = true;
 		output += "Nameless; ";
 	}
+	if (basicTouchCombo)
+	{
+		anybuffs = true;
+		output += "Basic Touch; ";
+	}
 	if (observeCombo)
 	{
 		anybuffs = true;
@@ -390,7 +396,7 @@ actionResult craft::delicateSynthesis()
 actionResult craft::intensiveSynthesis()
 {
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
-	return commonSynth(-6, 300, 100);
+	return commonSynth(-6, 400, 100);
 }
 
 actionResult craft::muscleMemory()
@@ -678,6 +684,7 @@ void craft::performOnePost(actions action)
 {
 	switch (action)
 	{
+	case actions::basicTouch: return basicTouchPost();
 	case actions::muscleMemory: return muscleMemoryPost();
 	case actions::wasteNot: return wasteNotPost();
 	case actions::wasteNot2: return wasteNot2Post();
@@ -844,6 +851,9 @@ void craft::setBuff(actions buff, int timeOrStacks)
 		return;
 	case actions::finalAppraisal:
 		finalAppraisalTime = timeOrStacks;
+		return;
+	case actions::basicTouch:
+		basicTouchCombo = timeOrStacks > 0;
 		return;
 	case actions::observe:
 		observeCombo = timeOrStacks > 0;
