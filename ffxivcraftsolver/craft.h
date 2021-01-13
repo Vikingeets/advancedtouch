@@ -124,7 +124,9 @@ public:
 		// expert
 		centered,
 		sturdy,
-		pliant
+		pliant,
+		malleable,
+		primed
 	};
 
 	enum class actionResult
@@ -153,7 +155,8 @@ private:
 	int quality;
 	int progress;
 
-	int goodChance, excellentChance;
+	// Each entry as integer percentage. Normal not included
+	std::map<condition, int> conditionChances;
 	condition cond;
 
 	int progressFactor;
@@ -259,7 +262,7 @@ private:
 
 	// Touches
 	actionResult basicTouch() { return commonTouch(-18, 100, 100); }
-	void basicTouchPost() { basicTouchCombo = true; }
+	void basicTouchPost();
 	actionResult standardTouch() { return commonTouch(basicTouchCombo ? -18 : -32, 125, 100); }
 	actionResult hastyTouch() { return commonTouch(0, 100, 60); }
 	actionResult byregotsBlessing();

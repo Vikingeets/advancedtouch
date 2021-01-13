@@ -51,10 +51,22 @@ void craft::increaseProgress(int efficiency, bool isBrand)
 	float baseProgress = (crafter.craftsmanship * 21.f) / 100.f + 2.f;
 	float suggestionMod = (crafter.craftsmanship + 10000.f) / (recipe.suggestedCraftsmanship + 10000.f);
 	float differenceMod = progressFactor / 100.f;
+	float conditionMod;
+
+	switch (cond)
+	{
+	case condition::malleable:
+		conditionMod = 1.5f;
+		break;
+	case condition::normal:
+	default:
+		conditionMod = 1.0f;
+		break;
+	}
 
 	int progressIncrease = static_cast<int>(baseProgress * suggestionMod * differenceMod);
-
-	progress += (progressIncrease * efficiency * bonus) / 100;
+	
+	progress += (progressIncrease * conditionMod * efficiency * bonus) / 100;
 
 	if (finalAppraisalTime > 0 && progress >= recipe.difficulty)
 	{
@@ -137,81 +149,93 @@ bool inRange(int num, int high, int low)
 
 void craft::setProbabilities()
 {
-	bool qualityAssurance = crafter.level >= 63;
+	conditionChances.clear();
+	if (recipe.expert)
+	{
+		if (recipe.rLevel >= 513)
+		{
+			conditionChances.insert({ condition::good, 11 });
+			conditionChances.insert({ condition::sturdy, 11 });
+			conditionChances.insert({ condition::pliant, 11 });
+			conditionChances.insert({ condition::malleable, 11 });
+			conditionChances.insert({ condition::primed, 11 });
+		}
+		else
+		{
+			conditionChances.insert({ condition::good, 12 });
+			conditionChances.insert({ condition::centered, 15 });
+			conditionChances.insert({ condition::sturdy, 15 });
+			conditionChances.insert({ condition::pliant, 12 });
+		}
+	}
+	else
+	{
+		bool qualityAssurance = crafter.level >= 63;
 
-	if (
-		inRange(recipe.rLevel, 160, 254) ||	// 60*+
-		inRange(recipe.rLevel, 300, 384) ||	// 70*+
-		recipe.rLevel >= 430				// 80*+
-		)
-	{
-		goodChance = qualityAssurance ? 11 : 10;
-		excellentChance = 1;
-	}
-	else if (
-		inRange(recipe.rLevel, 136, 159) ||	// 55+
-		inRange(recipe.rLevel, 276, 299) ||	// 65+
-		inRange(recipe.rLevel, 406, 429)	// 75+
-		)
-	{
-		goodChance = qualityAssurance ? 17 : 15;
-		excellentChance = 2;
-	}
-	else if (
-		inRange(recipe.rLevel, 115, 135) ||	// 51+	
-		inRange(recipe.rLevel, 255, 275) ||	// 61+
-		inRange(recipe.rLevel, 385, 405)	// 71+
-		)
-	{
-		goodChance = qualityAssurance ? 22 : 20;
-		excellentChance = 2;
-	}
-	else									// 1+
-	{
-		goodChance = qualityAssurance ? 27 : 25;
-		excellentChance = 2;
+		if (
+			inRange(recipe.rLevel, 160, 254) ||	// 60*+
+			inRange(recipe.rLevel, 300, 384) ||	// 70*+
+			recipe.rLevel >= 430				// 80*+
+			)
+		{
+			conditionChances.insert({ condition::good, qualityAssurance ? 11 : 10 });
+			conditionChances.insert({ condition::excellent, 1 });
+		}
+		else if (
+			inRange(recipe.rLevel, 136, 159) ||	// 55+
+			inRange(recipe.rLevel, 276, 299) ||	// 65+
+			inRange(recipe.rLevel, 406, 429)	// 75+
+			)
+		{
+			conditionChances.insert({ condition::good, qualityAssurance ? 17 : 15 });
+			conditionChances.insert({ condition::excellent, 2 });
+		}
+		else if (
+			inRange(recipe.rLevel, 115, 135) ||	// 51+	
+			inRange(recipe.rLevel, 255, 275) ||	// 61+
+			inRange(recipe.rLevel, 385, 405)	// 71+
+			)
+		{
+			conditionChances.insert({ condition::good, qualityAssurance ? 22 : 20 });
+			conditionChances.insert({ condition::excellent, 2 });
+		}
+		else									// 1+
+		{
+			conditionChances.insert({ condition::good, qualityAssurance ? 27 : 25 });
+			conditionChances.insert({ condition::excellent, 2 });
+		}
 	}
 }
 
 craft::condition craft::getNextCondition(condition current)
 {
 	// Unfortunately, std::discrete_distribution is far too slow to be usable.
-	if (recipe.expert)
+	if (!recipe.expert)
 	{
-		if (normalLock || over != rngOverride::random) return condition::normal;
-		int goodChance = 12;
-		int centeredChance = 15;
-		int sturdyChance = 15;
-		int pliantChance = 12;
-
-		int roll = rng->generateInt(99);
-
-		if (roll >= 100 - goodChance) return condition::good;
-		else if (roll >= 100 - goodChance - centeredChance) return condition::centered;
-		else if (roll >= 100 - goodChance - centeredChance - sturdyChance) return condition::sturdy;
-		else if (roll >= 100 - goodChance - centeredChance - sturdyChance - pliantChance) return condition::pliant;
-		else return condition::normal;
-	}
-
-	switch (current)
-	{
-	case condition::poor:
-	case condition::good:
-		return condition::normal;
-	default:
-	case condition::normal:
-		break;
-	case condition::excellent:
-		return condition::poor;
+		switch (current)
+		{
+		case condition::poor:
+		case condition::good:
+			return condition::normal;
+		default:
+		case condition::normal:
+			break;
+		case condition::excellent:
+			return condition::poor;
+		}
 	}
 
 	if (normalLock || over != rngOverride::random) return condition::normal;
 
 	int roll = rng->generateInt(99);
+	
+	for (const auto& c : conditionChances)
+	{
+		if (roll < c.second) return c.first;
+		else roll -= c.second;
+	}
 
-	if (roll >= 100 - excellentChance) return condition::excellent;
-	else if (roll >= 100 - excellentChance - goodChance) return condition::good;
-	else return condition::normal;
+	return condition::normal;
 }
 
 void craft::endStep()
@@ -303,6 +327,12 @@ string craft::getState() const
 			break;
 		case condition::pliant:
 			output += "Pliant, ";
+			break;
+		case condition::malleable:
+			output += "Malleable, ";
+			break;
+		case condition::primed:
+			output += "Primed, ";
 			break;
 		}
 	}
@@ -409,6 +439,8 @@ actionResult craft::muscleMemory()
 void craft::muscleMemoryPost()
 {
 	muscleMemoryTime = 5;
+	if (cond == condition::primed)
+		muscleMemoryTime += 2;
 }
 
 actionResult craft::brandOfTheElements()
@@ -425,6 +457,11 @@ actionResult craft::brandOfTheElements()
 /***
 TOUCH ACTIONS
 ***/
+
+void craft::basicTouchPost()
+{
+	basicTouchCombo = true;
+}
 
 actionResult craft::byregotsBlessing()
 {
@@ -510,6 +547,8 @@ void craft::wasteNotPost()
 {
 	wasteNotTime = 4;
 	wasteNot2Time = 0;
+	if (cond == condition::primed)
+		wasteNotTime += 2;
 }
 
 actionResult craft::wasteNot2()
@@ -523,6 +562,8 @@ void craft::wasteNot2Post()
 {
 	wasteNotTime = 0;
 	wasteNot2Time = 8;
+	if (cond == condition::primed)
+		wasteNot2Time += 2;
 }
 
 actionResult craft::manipulation()
@@ -537,6 +578,8 @@ actionResult craft::manipulation()
 void craft::manipulationPost()
 {
 	manipulationTime = 8;
+	if (cond == condition::primed)
+		manipulationTime += 2;
 }
 
 /***
@@ -572,6 +615,8 @@ actionResult craft::greatStrides()
 void craft::greatStridesPost()
 {
 	greatStridesTime = 3;
+	if (cond == condition::primed)
+		greatStridesTime += 2;
 }
 
 actionResult craft::veneration()
@@ -584,6 +629,8 @@ actionResult craft::veneration()
 void craft::venerationPost()
 {
 	venerationTime = 4;
+	if (cond == condition::primed)
+		venerationTime += 2;
 }
 
 actionResult craft::innovation()
@@ -596,6 +643,8 @@ actionResult craft::innovation()
 void craft::innovationPost()
 {
 	innovationTime = 4;
+	if (cond == condition::primed)
+		innovationTime += 2;
 }
 
 actionResult craft::nameOfTheElements()
@@ -609,7 +658,12 @@ actionResult craft::nameOfTheElements()
 
 void craft::nameOfTheElementsPost()
 {
-	if(!nameless) nameOfTheElementsTime = 3;
+	if (!nameless)
+	{
+		nameOfTheElementsTime = 3;
+		if (cond == condition::primed)
+			nameOfTheElementsTime += 2;
+	}
 }
 
 actionResult craft::finalAppraisal()

@@ -177,7 +177,7 @@ bool setCondition(const vector<string>& command, const recipeStats recipe, craft
 	{
 		{
 			if (recipe.expert)
-				cout << "Condition required: g, n, c, s, or p\n";
+				cout << "Condition required: g, n, c, s, pl, pr, or m\n";
 			else
 				cout << "Condition required: e, g, n, or p\n";
 			return false;
@@ -189,16 +189,22 @@ bool setCondition(const vector<string>& command, const recipeStats recipe, craft
 		crafting->setCondition(craft::condition::good);
 	else if (command[1] == "n")
 		crafting->setCondition(craft::condition::normal);
-	else if (command[1] == "p")
-		crafting->setCondition(recipe.expert ? craft::condition::pliant : craft::condition::poor);
+	else if (command[1] == "p" && !recipe.expert)
+		crafting->setCondition(craft::condition::poor);
+	else if (command[1] == "pl" && recipe.expert)
+		crafting->setCondition(craft::condition::pliant);
+	else if (command[1] == "pr" && recipe.expert)
+		crafting->setCondition(craft::condition::primed);
 	else if (command[1] == "c" && recipe.expert)
 		crafting->setCondition(craft::condition::centered);
 	else if (command[1] == "s" && recipe.expert)
 		crafting->setCondition(craft::condition::sturdy);
+	else if (command[1] == "m" && recipe.expert)
+		crafting->setCondition(craft::condition::malleable);
 	else
 	{
 		if (recipe.expert)
-			cout << "Condition required: g, n, c, s, or p\n";
+			cout << "Condition required: g, n, c, s, pl, pr, or m\n";
 		else
 			cout << "Condition required: e, g, n, or p\n";
 		return false;
