@@ -154,11 +154,11 @@ void craft::setProbabilities()
 	{
 		if (recipe.rLevel >= 513)
 		{
-			conditionChances.insert({ condition::good, 11 });
-			conditionChances.insert({ condition::sturdy, 11 });
-			conditionChances.insert({ condition::pliant, 11 });
-			conditionChances.insert({ condition::malleable, 11 });
-			conditionChances.insert({ condition::primed, 11 });
+			conditionChances.insert({ condition::good, 12 });
+			conditionChances.insert({ condition::sturdy, 15 });
+			conditionChances.insert({ condition::pliant, 12 });
+			conditionChances.insert({ condition::malleable, 12 });
+			conditionChances.insert({ condition::primed, 12 });
 		}
 		else
 		{
