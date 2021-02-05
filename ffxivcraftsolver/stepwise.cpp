@@ -573,6 +573,8 @@ int performStepwise(
 			while (craftHistory.size() > 1)
 				craftHistory.pop();
 			lastSuggested = actions::invalid;
+			if (!seed.empty())
+				currentSeed = seed;
 		}
 		else if (command[0] == "exit" || command[0] == "quit")
 		{
