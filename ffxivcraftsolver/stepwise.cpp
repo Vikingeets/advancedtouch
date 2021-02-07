@@ -572,6 +572,7 @@ int performStepwise(
 		{
 			while (craftHistory.size() > 1)
 				craftHistory.pop();
+			lastSolvedStep = 0;
 			lastSuggested = actions::invalid;
 			if (!seed.empty())
 				currentSeed = seed;
