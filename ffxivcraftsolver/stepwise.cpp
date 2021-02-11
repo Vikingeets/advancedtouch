@@ -548,6 +548,38 @@ int performStepwise(
 
 			lastSuggested = doSolve(vector<string>(), &solve, &lastSolvedStep, &currentSeed, craftHistory.top(), simsPerSequence, stepwiseGenerations, maxCacheSize);
 		}
+		else if (command[0] == "nextfailed" || command[0] == "nf")
+		{
+			if (lastSuggested == actions::invalid)
+			{
+				cout << "No action has been suggested for this step. Please execute the solver.\n";
+				printStatus = false;
+				continue;
+			}
+			craftHistory.push(craftHistory.top());
+			printStatus = doAction(lastSuggested, craft::rngOverride::failure, &craftHistory.top(), currentSeed);
+			if (!printStatus)
+			{
+				craftHistory.pop();
+				continue;
+			}
+
+
+			if (command.size() == 1)
+			{
+				if (craftHistory.top().getCondition() != craft::condition::poor)
+					craftHistory.top().setCondition(craft::condition::normal);
+			}
+			else if (!setCondition(command, recipe, &craftHistory.top()))
+			{
+				cout << "Using normal condition" << endl;
+			}
+
+			cout << "Step " << craftHistory.top().getStep() << '\n';
+			cout << craftHistory.top().getState() << endl;
+
+			lastSuggested = doSolve(vector<string>(), &solve, &lastSolvedStep, &currentSeed, craftHistory.top(), simsPerSequence, stepwiseGenerations, maxCacheSize);
+		}
 		else if (command[0] == "undo" || command[0] == "u")
 		{
 			int amount;

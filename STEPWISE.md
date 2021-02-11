@@ -68,6 +68,9 @@ n, next c
 
 	Equivalent to using `su s`, then optionally `c` for a condition, then `so`
 
+nf, nextfailed c
+	Equivalent to using `su f`, then optionally `c` for a condition, then `so`
+
 u, undo u
 
 	Undoes the last action. You may set a number of times to undo.
