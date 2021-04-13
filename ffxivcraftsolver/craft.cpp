@@ -152,7 +152,7 @@ void craft::setProbabilities()
 	conditionChances.clear();
 	if (recipe.expert)
 	{
-		if (recipe.rLevel >= 513)
+		if (recipe.rLevel == 513)
 		{
 			conditionChances.insert({ condition::good, 12 });
 			conditionChances.insert({ condition::sturdy, 15 });
