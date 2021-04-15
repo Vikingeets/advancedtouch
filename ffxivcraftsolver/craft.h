@@ -236,8 +236,7 @@ public:
 		normalLock(nLock),
 		rng(nullptr)
 	{
-		if(!recipe.expert)
-			setProbabilities();
+		setProbabilities();
 	}
 
 	std::string getState() const;
