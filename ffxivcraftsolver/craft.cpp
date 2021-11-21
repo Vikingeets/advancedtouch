@@ -458,11 +458,6 @@ actionResult craft::brandOfTheElements()
 TOUCH ACTIONS
 ***/
 
-void craft::basicTouchPost()
-{
-	basicTouchCombo = true;
-}
-
 actionResult craft::byregotsBlessing()
 {
 	if (innerQuietStacks <= 1) return actionResult::failHardUnavailable;
@@ -746,8 +741,7 @@ void craft::performOnePost(actions action)
 	case actions::greatStrides: return greatStridesPost();
 	case actions::veneration: return venerationPost();
 	case actions::innovation: return innovationPost();
-	case actions::nameOfTheElements:
-		return nameOfTheElementsPost();
+	case actions::nameOfTheElements: return nameOfTheElementsPost();
 	case actions::observe: return observePost();
 	default: return;
 	}

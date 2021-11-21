@@ -261,7 +261,7 @@ private:
 
 	// Touches
 	actionResult basicTouch() { return commonTouch(-18, 100, 100); }
-	void basicTouchPost();
+	void basicTouchPost() { basicTouchCombo = true; }
 	actionResult standardTouch() { return commonTouch(basicTouchCombo ? -18 : -32, 125, 100); }
 	actionResult hastyTouch() { return commonTouch(0, 100, 60); }
 	actionResult byregotsBlessing();

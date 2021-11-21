@@ -309,8 +309,7 @@ vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeSt
 
 		if (!useConditionals && isConditional(action)) continue;
 
-		if (!includeFirst && isFirstAction(action))
-			continue;
+		if (!includeFirst && isFirstAction(action)) continue;
 
 		if (
 			(action == actions::trainedEye) &&
@@ -377,7 +376,7 @@ solver::solver(const crafterStats & c, const recipeStats & r, const craft::seque
 	goal(g),
 	initialState(iQ, c, r, nLock),
 	numberOfThreads(tCnt),
-	strat(strategy::standard),	// here and gatherStatistics not used for multisynth,
+	strat(strategy::standard),	// this and gatherStatistics not used for multisynth,
 	gatherStatistics(false),	// but it makes the compiler happy
 	trials(1),
 	simResults(1),
@@ -467,7 +466,7 @@ solver::solver(const crafterStats& c,
 void solver::resetSeeds(const craft::sequenceType& seed)
 {
 	for_each(trials.begin(), trials.end(),
-		[&seed](trial& t) { t.sequence = seed;  });
+		[&seed](trial& t) { t.sequence = seed; });
 }
 
 void solver::incrementSeeds(int amount)
