@@ -14,21 +14,22 @@ enum class actions : char
 	focusedSynthesis,
 	groundwork,
 	delicateSynthesis,
+	prudentSynthesis,
 	intensiveSynthesis,
 	muscleMemory,
-	brandOfTheElements,
 
 	// Touch
 	basicTouch,
 	standardTouch,
+	advancedTouch,
 	hastyTouch,
 	byregotsBlessing,
 	preciseTouch,
 	focusedTouch,
-	patientTouch,
 	prudentTouch,
 	preparatoryTouch,
 	trainedEye,
+	trainedFinesse,
 
 	// CP
 	tricksOfTheTrade,
@@ -40,12 +41,10 @@ enum class actions : char
 	manipulation,
 
 	// Buffs
-	innerQuiet,
 	reflect,
 	greatStrides,
 	veneration,
 	innovation,
-	nameOfTheElements,
 	finalAppraisal,
 
 	observe,
@@ -60,21 +59,22 @@ const std::map<actions, std::string> simpleText = {
 	{actions::focusedSynthesis, "focusedSynthesis"},
 	{actions::delicateSynthesis, "delicateSynthesis"},
 	{actions::groundwork, "groundwork"},
+	{actions::prudentSynthesis, "prudentSynthesis"},
 	{actions::intensiveSynthesis, "intensiveSynthesis"},
 	{actions::muscleMemory, "muscleMemory"},
-	{actions::brandOfTheElements, "brandOfTheElements"},
 
 	{actions::basicTouch, "basicTouch"},
 	{actions::standardTouch, "standardTouch"},
+	{actions::advancedTouch, "advancedTouch"},
 	{actions::hastyTouch, "hastyTouch"},
 	{actions::byregotsBlessing, "byregotsBlessing"},
 	{actions::preciseTouch, "preciseTouch"},
 	{actions::focusedTouch, "focusedTouch"},
-	{actions::patientTouch, "patientTouch"},
 	{actions::prudentTouch, "prudentTouch"},
 	{actions::preparatoryTouch, "preparatoryTouch"},
 	{actions::trainedEye, "trainedEye"},
-
+	{actions::trainedFinesse, "trainedFinesse"},
+	
 	{actions::tricksOfTheTrade, "tricksOfTheTrade"},
 
 	{actions::mastersMend, "mastersMend"},
@@ -82,12 +82,10 @@ const std::map<actions, std::string> simpleText = {
 	{actions::wasteNot2, "wasteNot2"},
 	{actions::manipulation, "manipulation"},
 
-	{actions::innerQuiet, "innerQuiet"},
 	{actions::reflect, "reflect"},
 	{actions::greatStrides, "greatStrides"},
 	{actions::veneration, "veneration"},
 	{actions::innovation, "innovation"},
-	{actions::nameOfTheElements, "nameOfTheElements"},
 	{actions::finalAppraisal, "finalAppraisal"},
 
 	{actions::observe, "observe"},
@@ -168,13 +166,12 @@ private:
 	int wasteNot2Time = 0;
 	int manipulationTime = 0;
 	int venerationTime = 0;
-	int innerQuietStacks = 0;
+	int innerQuiet = 0;
 	int greatStridesTime = 0;
 	int innovationTime = 0;
-	int nameOfTheElementsTime = 0;
-	bool nameless = false;
 	int finalAppraisalTime = 0;
 	bool basicTouchCombo = false;	// For BT->ST combo
+	bool standardTouchCombo = false;	// for ST->AT combo
 	bool observeCombo = false;	// For Focused combo
 
 	bool normalLock;
@@ -185,7 +182,7 @@ private:
 	// chance == 70 means 70% success and so on
 	inline bool rollPercent(int chance) const;
 
-	void increaseProgress(int efficiency, bool isBrand = false);
+	void increaseProgress(int efficiency);
 	void increaseQuality(int efficiency);
 
 	// Negative amount to deduct, positive to add. Returns false if not enough CP (will not deduct if so)
@@ -249,28 +246,30 @@ private:
 
 	// Synthesis
 	actionResult basicSynth() { return commonSynth(0, crafter.level >= 31 ? 120 : 100, 100); }
-	actionResult carefulSynthesis() { return commonSynth(-7, 150, 100); }
+	actionResult carefulSynthesis() { return commonSynth(-7, crafter.level >= 82 ? 180 : 150, 100); }
 	actionResult rapidSynthesis() { return commonSynth(0, crafter.level >= 63 ? 500 : 250, 50); }
 	actionResult focusedSynthesis() { return commonSynth(-5, 200, observeCombo ? 100 : 50); }
 	actionResult delicateSynthesis();
-	actionResult groundwork() { return commonSynth(-18, durability < getDurabilityCost(20) ? 150 : 300, 100, 20); }
+	actionResult groundwork();
+	actionResult prudentSynthesis();
 	actionResult intensiveSynthesis();
 	actionResult muscleMemory();
 	void muscleMemoryPost();
-	actionResult brandOfTheElements();
 
 	// Touches
 	actionResult basicTouch() { return commonTouch(-18, 100, 100); }
 	void basicTouchPost() { basicTouchCombo = true; }
 	actionResult standardTouch() { return commonTouch(basicTouchCombo ? -18 : -32, 125, 100); }
+	void standardTouchPost() { standardTouchCombo = true; }
+	actionResult advancedTouch() { return commonTouch(standardTouchCombo ? -18 : -48, 150, 100); }
 	actionResult hastyTouch() { return commonTouch(0, 100, 60); }
 	actionResult byregotsBlessing();
 	actionResult preciseTouch();
 	actionResult focusedTouch() { return commonTouch(-18, 150, observeCombo ? 100 : 50); }
-	actionResult patientTouch();
 	actionResult prudentTouch();
 	actionResult preparatoryTouch();
 	actionResult trainedEye();
+	actionResult trainedFinesse();
 
 	// CP
 	actionResult tricksOfTheTrade();
@@ -285,7 +284,6 @@ private:
 	void manipulationPost();
 
 	// Buffs
-	actionResult innerQuiet();
 	actionResult reflect();
 	actionResult greatStrides();
 	void greatStridesPost();
@@ -293,8 +291,6 @@ private:
 	void venerationPost();
 	actionResult innovation();
 	void innovationPost();
-	actionResult nameOfTheElements();
-	void nameOfTheElementsPost();
 	actionResult finalAppraisal();
 
 
@@ -319,7 +315,7 @@ public:
 	void setCondition(condition c) { cond = c; }
 	condition getCondition() const { return cond; }
 	void setCP(int cp) { CP = std::min(cp, crafter.CP); }
-	void setBuff(actions buff, int timeOrStacks);
+	void setBuff(actions buff, int time);
 
 	// Won't contain invalid stats
 	endResult getResult(goalType goal) const;

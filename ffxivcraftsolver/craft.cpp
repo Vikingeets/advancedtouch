@@ -28,14 +28,9 @@ inline bool craft::rollPercent(int chance) const
 	}
 }
 
-void craft::increaseProgress(int efficiency, bool isBrand)
+void craft::increaseProgress(int efficiency)
 {
 	float bonus = 1.f;
-
-	if (isBrand && nameOfTheElementsTime > 0)
-	{
-		bonus += (2 * ceil((1.f - static_cast<float>(progress) / static_cast<float>(recipe.difficulty)) * 100.f)) / 100.f;
-	}
 
 	if (muscleMemoryTime > 0)
 	{
@@ -92,10 +87,10 @@ void craft::increaseQuality(int efficiency)
 		bonus += 0.5f;
 	}
 
-	int control = crafter.control + (max(0, innerQuietStacks - 1) * crafter.control) / 5;
+	bonus += innerQuiet * 0.1f;
 	
-	float baseQuality = (control * 35.f) / 100.f + 35.f;
-	float suggestionMod = (control + 10000.f) / (recipe.suggestedControl + 10000.f);
+	float baseQuality = (crafter.control * 35.f) / 100.f + 35.f;
+	float suggestionMod = (crafter.control + 10000.f) / (recipe.suggestedControl + 10000.f);
 	float differenceMod = qualityFactor / 100.f;
 	float conditionMod;
 
@@ -120,7 +115,7 @@ void craft::increaseQuality(int efficiency)
 
 	quality += (qualityIncrease * efficiency * bonus) / 100;
 
-	if (innerQuietStacks > 0 && innerQuietStacks < 11) innerQuietStacks++;
+	if (crafter.level >= 11 && innerQuiet < 10) innerQuiet++;
 
 	return;
 }
@@ -251,11 +246,10 @@ void craft::endStep()
 	greatStridesTime--;
 	venerationTime--;
 	innovationTime--;
-	nameOfTheElementsTime--;
-	if (nameOfTheElementsTime == 0) nameless = true;
 	finalAppraisalTime--;
 	observeCombo = false;
 	basicTouchCombo = false;
+	standardTouchCombo = false;
 	cond = getNextCondition(cond);
 
 	step++;
@@ -343,21 +337,20 @@ string craft::getState() const
 	output += stateBuffList("Waste Not: ", wasteNotTime, &anybuffs);
 	output += stateBuffList("Waste Not 2: ", wasteNot2Time, &anybuffs);
 	output += stateBuffList("Manipulation: ", manipulationTime, &anybuffs);
-	output += stateBuffList("Inner Quiet: ", innerQuietStacks, &anybuffs);
+	output += stateBuffList("Inner Quiet: ", innerQuiet, &anybuffs);
 	output += stateBuffList("Great Strides: ", greatStridesTime, &anybuffs);
 	output += stateBuffList("Veneration: ", venerationTime, &anybuffs);
 	output += stateBuffList("Innovation: ", innovationTime, &anybuffs);
 	output += stateBuffList("Final Appraisal: ", finalAppraisalTime, &anybuffs);
-	output += stateBuffList("Name of the Elements: ", nameOfTheElementsTime, &anybuffs);
-	if (nameless)
-	{
-		anybuffs = true;
-		output += "Nameless; ";
-	}
 	if (basicTouchCombo)
 	{
 		anybuffs = true;
 		output += "Basic Touch; ";
+	}
+	if (standardTouchCombo)
+	{
+		anybuffs = true;
+		output += "Standard Touch; ";
 	}
 	if (observeCombo)
 	{
@@ -423,6 +416,19 @@ actionResult craft::delicateSynthesis()
 	return actionResult::success;
 }
 
+actionResult craft::groundwork()
+{
+	int efficiency = crafter.level >= 86 ? 360 : 300;
+	if (durability < getDurabilityCost(20)) efficiency /= 2;
+	return commonSynth(-18, efficiency, 100, 20);
+}
+
+actionResult craft::prudentSynthesis()
+{
+	if (wasteNotTime > 0 || wasteNot2Time > 0) return actionResult::failHardUnavailable;
+	return commonSynth(-25, 180, 100, 5);
+}
+
 actionResult craft::intensiveSynthesis()
 {
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
@@ -443,26 +449,15 @@ void craft::muscleMemoryPost()
 		muscleMemoryTime += 2;
 }
 
-actionResult craft::brandOfTheElements()
-{
-	if (!changeCP(-6)) return actionResult::failNoCP;
-
-	increaseProgress(100, true);
-
-	lowerDurability();
-
-	return actionResult::success;
-}
-
 /***
 TOUCH ACTIONS
 ***/
 
 actionResult craft::byregotsBlessing()
 {
-	if (innerQuietStacks <= 1) return actionResult::failHardUnavailable;
-	actionResult output = commonTouch(-24, 100 + 20 * (innerQuietStacks - 1), 100);
-	if (output != actionResult::failNoCP) innerQuietStacks = 0;
+	if (innerQuiet < 1) return actionResult::failHardUnavailable;
+	actionResult output = commonTouch(-24, 100 + 20 * innerQuiet, 100);
+	if (output != actionResult::failNoCP) innerQuiet = 0;
 	return output;
 }
 
@@ -470,17 +465,7 @@ actionResult craft::preciseTouch()
 {
 	if (cond != condition::good && cond != condition::excellent) return actionResult::failSoftUnavailable;
 	actionResult output = commonTouch(-18, 150, 100);
-	if (output == actionResult::success && innerQuietStacks >= 1 && innerQuietStacks < 11) innerQuietStacks++;
-	return output;
-}
-
-actionResult craft::patientTouch()
-{
-	actionResult output = commonTouch(-6, 100, 50);
-	if(output == actionResult::success && innerQuietStacks > 0 && innerQuietStacks < 11)
-		innerQuietStacks = min((innerQuietStacks - 1) * 2, 11);
-	else if(output == actionResult::failRNG) innerQuietStacks -= innerQuietStacks / 2;
-
+	if (output == actionResult::success && innerQuiet < 10) innerQuiet++;
 	return output;
 }
 
@@ -493,16 +478,22 @@ actionResult craft::prudentTouch()
 actionResult craft::preparatoryTouch()
 {
 	actionResult output = commonTouch(-40, 200, 100, 20);
-	if (output == actionResult::success && innerQuietStacks > 0 && innerQuietStacks < 11) innerQuietStacks++;
+	if (output == actionResult::success && innerQuiet < 10) innerQuiet++;
 	return output;
 }
 
 actionResult craft::trainedEye()
 {
-	if (step != 1 || crafter.level < rlvlToMain(recipe.rLevel) + 10) return actionResult::failHardUnavailable;
+	if (step != 1 || recipe.expert || crafter.level < rlvlToMain(recipe.rLevel) + 10) return actionResult::failHardUnavailable;
 	if (!changeCP(-250)) return actionResult::failNoCP;
 	quality += recipe.nominalQuality;
 	return actionResult::success;
+}
+
+actionResult craft::trainedFinesse()
+{
+	if (innerQuiet < 10) return actionResult::failHardUnavailable;
+	return commonTouch(-24, 100, 100, 0);
 }
 
 /***
@@ -581,21 +572,12 @@ void craft::manipulationPost()
 BUFFS
 ***/
 
-actionResult craft::innerQuiet()
-{
-	if (innerQuietStacks > 0) return actionResult::failHardUnavailable;
-	if (!changeCP(-18)) return actionResult::failNoCP;
-
-	innerQuietStacks = 1;
-	return actionResult::success;
-}
-
 actionResult craft::reflect()
 {
 	if (step != 1) return actionResult::failHardUnavailable;
-	actionResult output = commonTouch(-24, 100, 100);
+	actionResult output = commonTouch(-6, 100, 100);
 
-	if(output == actionResult::success) innerQuietStacks = 3;
+	if(output == actionResult::success) innerQuiet++;
 
 	return output;
 }
@@ -642,25 +624,6 @@ void craft::innovationPost()
 		innovationTime += 2;
 }
 
-actionResult craft::nameOfTheElements()
-{
-	if (nameOfTheElementsTime > 0) return actionResult::failHardUnavailable;
-	// The game lets you use Name while the nameless debuff is active. It succeeds with no effect.
-	if (!changeCP(-30)) return actionResult::failNoCP;
-
-	return actionResult::success;
-}
-
-void craft::nameOfTheElementsPost()
-{
-	if (!nameless)
-	{
-		nameOfTheElementsTime = 3;
-		if (cond == condition::primed)
-			nameOfTheElementsTime += 2;
-	}
-}
-
 actionResult craft::finalAppraisal()
 {
 	if (!changeCP(-1)) return actionResult::failNoCP;
@@ -691,20 +654,21 @@ actionResult craft::performOne(actions action, rngOverride override)
 	case actions::focusedSynthesis: return focusedSynthesis();
 	case actions::delicateSynthesis: return delicateSynthesis();
 	case actions::groundwork: return groundwork();
+	case actions::prudentSynthesis: return prudentSynthesis();
 	case actions::intensiveSynthesis: return intensiveSynthesis();
 	case actions::muscleMemory: return muscleMemory();
-	case actions::brandOfTheElements: return brandOfTheElements();
 	
 	case actions::basicTouch: return basicTouch();
 	case actions::standardTouch: return standardTouch();
+	case actions::advancedTouch: return advancedTouch();
 	case actions::hastyTouch: return hastyTouch();
 	case actions::byregotsBlessing: return byregotsBlessing();
 	case actions::preciseTouch: return preciseTouch();
 	case actions::focusedTouch: return focusedTouch();
-	case actions::patientTouch: return patientTouch();
 	case actions::prudentTouch: return prudentTouch();
 	case actions::preparatoryTouch: return preparatoryTouch();
 	case actions::trainedEye: return trainedEye();
+	case actions::trainedFinesse: return trainedFinesse();
 
 	case actions::tricksOfTheTrade: return tricksOfTheTrade();
 
@@ -713,12 +677,10 @@ actionResult craft::performOne(actions action, rngOverride override)
 	case actions::wasteNot2: return wasteNot2();
 	case actions::manipulation: return manipulation();
 
-	case actions::innerQuiet: return innerQuiet();
 	case actions::reflect: return reflect();
 	case actions::greatStrides: return greatStrides();
 	case actions::veneration: return veneration();
 	case actions::innovation: return innovation();
-	case actions::nameOfTheElements: return nameOfTheElements();
 	case actions::finalAppraisal: return finalAppraisal();
 
 	case actions::observe: return observe();
@@ -734,6 +696,7 @@ void craft::performOnePost(actions action)
 	switch (action)
 	{
 	case actions::basicTouch: return basicTouchPost();
+	case actions::standardTouch: return standardTouchPost();
 	case actions::muscleMemory: return muscleMemoryPost();
 	case actions::wasteNot: return wasteNotPost();
 	case actions::wasteNot2: return wasteNot2Post();
@@ -741,7 +704,6 @@ void craft::performOnePost(actions action)
 	case actions::greatStrides: return greatStridesPost();
 	case actions::veneration: return venerationPost();
 	case actions::innovation: return innovationPost();
-	case actions::nameOfTheElements: return nameOfTheElementsPost();
 	case actions::observe: return observePost();
 	default: return;
 	}
@@ -860,51 +822,45 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 	return craftResult;
 }
 
-void craft::setBuff(actions buff, int timeOrStacks)
+void craft::setBuff(actions buff, int time)
 {
-	if (timeOrStacks < -1) timeOrStacks = -1;
+	if (time < 0) time = 0;
 	switch (buff)
 	{
 	case actions::muscleMemory:
-		muscleMemoryTime = timeOrStacks;
+		muscleMemoryTime = time;
 		return;
 	case actions::wasteNot:
-		wasteNotTime = timeOrStacks;
+		wasteNotTime = time;
 		wasteNot2Time = 0;
 		return;
 	case actions::wasteNot2:
-		wasteNot2Time = timeOrStacks;
+		wasteNot2Time = time;
 		wasteNotTime = 0;
 		return;
 	case actions::manipulation:
-		manipulationTime = timeOrStacks;
-		return;
-	case actions::innerQuiet:
-		if (timeOrStacks < 0) timeOrStacks = 0;
-		else if (timeOrStacks > 11) timeOrStacks = 11;
-		innerQuietStacks = timeOrStacks;
+		manipulationTime = time;
 		return;
 	case actions::greatStrides:
-		greatStridesTime = timeOrStacks;
+		greatStridesTime = time;
 		return;
 	case actions::veneration:
-		venerationTime = timeOrStacks;
+		venerationTime = time;
 		return;
 	case actions::innovation:
-		innovationTime = timeOrStacks;
-		return;
-	case actions::nameOfTheElements:
-		nameless = timeOrStacks == 0;
-		nameOfTheElementsTime = timeOrStacks;
+		innovationTime = time;
 		return;
 	case actions::finalAppraisal:
-		finalAppraisalTime = timeOrStacks;
+		finalAppraisalTime = time;
 		return;
 	case actions::basicTouch:
-		basicTouchCombo = timeOrStacks > 0;
+		basicTouchCombo = time > 0;
+		return;
+	case actions::standardTouch:
+		standardTouchCombo = time > 0;
 		return;
 	case actions::observe:
-		observeCombo = timeOrStacks > 0;
+		observeCombo = time > 0;
 		return;
 	default:
 		return;

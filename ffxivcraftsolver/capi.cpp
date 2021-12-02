@@ -12,20 +12,21 @@ const map<actions, int> atActionsToCActions = {
 	{actions::focusedSynthesis, AT_SYNTH_FOCUSEDSYNTH},
 	{actions::delicateSynthesis, AT_SYNTH_DELICATESYNTH},
 	{actions::groundwork, AT_SYNTH_GROUNDWORK},
+	{actions::prudentSynthesis, AT_SYNTH_PRUDENTSYNTH},
 	{actions::intensiveSynthesis, AT_SYNTH_INTENSIVESYNTH},
 	{actions::muscleMemory, AT_SYNTH_MUSCLEMEMORY},
-	{actions::brandOfTheElements, AT_SYNTH_BRANDOFELEMENTS},
 
 	{actions::basicTouch, AT_TOUCH_BASICTOUCH},
 	{actions::standardTouch, AT_TOUCH_STANDARDTOUCH},
+	{actions::advancedTouch, AT_TOUCH_ADVANCEDTOUCH},
 	{actions::hastyTouch, AT_TOUCH_HASTYTOUCH},
 	{actions::byregotsBlessing, AT_TOUCH_BYREGOTS},
 	{actions::preciseTouch, AT_TOUCH_PRECISETOUCH},
 	{actions::focusedTouch, AT_TOUCH_FOCUSEDTOUCH},
-	{actions::patientTouch, AT_TOUCH_PATIENTTOUCH},
 	{actions::prudentTouch, AT_TOUCH_PRUDENTTOUCH},
 	{actions::preparatoryTouch, AT_TOUCH_PREPARATORYTOUCH},
 	{actions::trainedEye, AT_TOUCH_TRAINEDEYE},
+	{actions::trainedFinesse, AT_TOUCH_TRAINEDFINESSE},
 
 	{actions::tricksOfTheTrade, AT_TRICKSOFTHETRADE},
 
@@ -34,12 +35,10 @@ const map<actions, int> atActionsToCActions = {
 	{actions::wasteNot2, AT_DURA_WASTENOT2},
 	{actions::manipulation, AT_DURA_MANIPULATION},
 
-	{actions::innerQuiet, AT_BUFF_INNERQUIET},
 	{actions::reflect, AT_BUFF_REFLECT},
 	{actions::greatStrides, AT_BUFF_GREATSTRIDES},
 	{actions::veneration, AT_BUFF_VENERATION},
 	{actions::innovation, AT_BUFF_INNOVATION},
-	{actions::nameOfTheElements, AT_BUFF_NAMEOFELEMENTS},
 	{actions::finalAppraisal, AT_BUFF_FINALAPPRAISAL},
 
 	{actions::observe, AT_OBSERVE}

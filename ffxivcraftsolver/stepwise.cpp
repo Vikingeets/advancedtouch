@@ -44,12 +44,10 @@ bool isBuff(actions action)
 	case actions::wasteNot:
 	case actions::wasteNot2:
 	case actions::manipulation:
-	case actions::innerQuiet:
 	case actions::reflect:
 	case actions::greatStrides:
 	case actions::veneration:
 	case actions::innovation:
-	case actions::nameOfTheElements:
 	case actions::finalAppraisal:
 	case actions::observe:
 		return true;
@@ -82,18 +80,16 @@ bool applyBuff(const vector<string>& command, craft* crafting)
 	}
 	if (command.size() == 2)
 	{
-		if (it->first == actions::innerQuiet)
-			cout << command[1] << " requires a stack amount\n";
-		else if (it->first == actions::observe || it->first == actions::basicTouch)
+		if (it->first == actions::observe || it->first == actions::basicTouch || it->first == actions::standardTouch)
 			cout << command[1] << " requires 0 to disable or 1 to enable\n";
 		else
 			cout << command[1] << " requires a duration\n";
 		return false;
 	}
-	int duration = stringToInt(command[2], it->first == actions::nameOfTheElements ? -1 : 0);
+	int duration = stringToInt(command[2], 0);
 	if (duration == invalidInt)
 	{
-		cout << command[1] << " must be set to at least " << (it->first == actions::nameOfTheElements? "-1" : "0");
+		cout << command[1] << " must be set to at least 0";
 		return false;
 	}
 	crafting->setBuff(it->first, duration);

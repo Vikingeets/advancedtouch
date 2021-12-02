@@ -201,21 +201,22 @@ const vector<actions> allActions = {
 	actions::rapidSynthesis,
 	actions::focusedSynthesis,
 	actions::delicateSynthesis,
+	actions::prudentSynthesis,
 	actions::groundwork,
 	actions::intensiveSynthesis,
 	actions::muscleMemory,
-	actions::brandOfTheElements,
 
 	actions::basicTouch,
 	actions::standardTouch,
+	actions::advancedTouch,
 	actions::hastyTouch,
 	actions::byregotsBlessing,
 	actions::preciseTouch,
 	actions::focusedTouch,
-	actions::patientTouch,
 	actions::prudentTouch,
 	actions::preparatoryTouch,
 	actions::trainedEye,
+	actions::trainedFinesse,
 
 	actions::tricksOfTheTrade,
 
@@ -224,11 +225,9 @@ const vector<actions> allActions = {
 	actions::wasteNot2,
 	actions::manipulation,
 
-	actions::innerQuiet,
 	actions::greatStrides,
 	actions::veneration,
 	actions::innovation,
-	actions::nameOfTheElements,
 	actions::finalAppraisal,
 
 	actions::reflect,
@@ -241,11 +240,9 @@ int actionTime(actions act)
 	switch (act)
 	{
 	case actions::greatStrides:
-	case actions::innerQuiet:
 	case actions::veneration:
 	case actions::innovation:
 	case actions::manipulation:
-	case actions::nameOfTheElements:
 	case actions::wasteNot:
 	case actions::wasteNot2:
 	case actions::finalAppraisal:
@@ -313,7 +310,7 @@ vector<actions> solver::getAvailable(const crafterStats& crafter, const recipeSt
 
 		if (
 			(action == actions::trainedEye) &&
-			crafter.level < rlvlToMain(recipe.rLevel) + 10
+			(crafter.level < rlvlToMain(recipe.rLevel) + 10 || recipe.expert)
 			)
 			continue;
 
@@ -332,7 +329,6 @@ int solver::actionLevel(actions action)
 	case actions::rapidSynthesis:
 	case actions::hastyTouch:
 		return 9;
-	case actions::innerQuiet: return 11;
 	case actions::tricksOfTheTrade:
 	case actions::observe:
 		return 13;
@@ -342,16 +338,12 @@ int solver::actionLevel(actions action)
 	case actions::standardTouch: return 18;
 	case actions::greatStrides: return 21;
 	case actions::innovation: return 26;
-	case actions::nameOfTheElements:
-	case actions::brandOfTheElements:
-		return 37;
 	case actions::finalAppraisal: return 42;
 	case actions::wasteNot2: return 47;
 	case actions::byregotsBlessing: return 50;
 	case actions::preciseTouch: return 53;
 	case actions::muscleMemory: return 54;
 	case actions::carefulSynthesis: return 62;
-	case actions::patientTouch: return 64;
 	case actions::manipulation: return 65;
 	case actions::prudentTouch: return 66;
 	case actions::focusedSynthesis: return 67;
@@ -362,6 +354,9 @@ int solver::actionLevel(actions action)
 	case actions::delicateSynthesis: return 76;
 	case actions::intensiveSynthesis: return 78;
 	case actions::trainedEye: return 80;
+	case actions::advancedTouch: return 84;
+	case actions::prudentSynthesis: return 88;
+	case actions::trainedFinesse: return 90;
 	default:
 		assert(false);
 		return (numeric_limits<int>::max)();
@@ -378,6 +373,7 @@ solver::solver(const crafterStats & c, const recipeStats & r, const craft::seque
 	numberOfThreads(tCnt),
 	strat(strategy::standard),	// this and gatherStatistics not used for multisynth,
 	gatherStatistics(false),	// but it makes the compiler happy
+	offspringOfFittest(0.5),
 	trials(1),
 	simResults(1),
 	cached(1, false),

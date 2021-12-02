@@ -40,10 +40,6 @@ buff action time
 
 	Enables a given buff, with its remaining duration as that time, or 0 to clear. The buff name must be in the shortened format that Advanced Touch inputs and outputs.
 
-	For Inner Quiet, set to the number of stacks.
-
-	For Name of the Elements, set to 0 to indicate that it has already been used this craft, or -1 to indicate that it has not.
-
 	Example: `buff wasteNot2 4`
 
 # Simulating
@@ -54,7 +50,7 @@ ac, action a s/f/?
 
 	With s or f, the stepwise will always proc a normal (or poor) condition in the following step. Actions that are guaranteed to succeed ingame are guaranteed in stepwise, even if f is specified.
 
-	Example: `ac patientTouch s`
+	Example: `ac rapidSynthesis s`
 
 so, solve g
 
