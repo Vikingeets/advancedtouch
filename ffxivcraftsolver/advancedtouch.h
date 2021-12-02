@@ -115,7 +115,8 @@ atSolver* atInitSolver(
 	int normalLock,				/* 0 to account for conditions. Non-0 to only consider normal (faster but less accurate) */
 	int strategy,
 	int population,				/* Number of rotations to consider at a time. Must be > 0 */
-	int useConditionals			/* 0 to disable using actions that need a condition. Non-0 to consider using them. */
+	int useConditionals,			/* 0 to disable using actions that need a condition. Non-0 to consider using them. */
+	double selectionPressure	/* 1.0 < selectionPressure <= 2.0 */
 );
 	
 /* You must provide both .csv files before you can begin solving! Returns 0 on success, 1 on failure */
