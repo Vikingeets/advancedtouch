@@ -267,7 +267,7 @@ void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFoo
 	crafter->CP = getIntIfExists(d, (prefix + "cp").c_str(), -1);
 
 	bitset<4> missingStats;
-	missingStats[0] = crafter->level <= 0 || crafter->level > 80;
+	missingStats[0] = crafter->level <= 0 || crafter->level > 90;
 	missingStats[1] = crafter->craftsmanship <= -1;
 	missingStats[2] = crafter->control <= -1;
 	missingStats[3] = crafter->CP <= -1;		// they want to try zero CP they're welcome to

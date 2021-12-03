@@ -87,16 +87,17 @@ bool populateDifferenceTable(const string& fileName)
 	return true;
 }
 
-const array<int, 30> cLevelToRLevel = {
+const array<int, 40> cLevelToRLevel = {
 	120, 125, 130, 133, 136, 139, 142, 145, 148, 150,	// 51-60
 	260, 265, 270, 273, 276, 279, 282, 285, 288, 290,	// 61-70
-	385, 395, 400, 403, 406, 409, 412, 415, 418, 420	// 71-80
+	385, 395, 400, 403, 406, 409, 412, 415, 418, 420,	// 71-80
+	530, 535, 540, 543, 546, 549, 552, 555, 558, 560	// 81-90
 };
 
 int mainToRlvl(int level)
 {
 	if (level <= 50) return level;
-	if (level > 80) level = 80;
+	if (level > 90) level = 90;
 	return cLevelToRLevel[static_cast<size_t>(level) - 51];
 }
 
@@ -106,7 +107,7 @@ int rlvlToMain(int rLvl)
 	
 	if (rLvl <= 50) return rLvl;
 	auto it = recipeDataTable.find(rLvl);
-	if (it == recipeDataTable.end()) return 80;
+	if (it == recipeDataTable.end()) return 90;
 
 	return it->second.classLevel;
 }

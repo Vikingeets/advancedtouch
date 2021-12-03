@@ -170,7 +170,8 @@ void craft::setProbabilities()
 		if (
 			inRange(recipe.rLevel, 160, 254) ||	// 60*+
 			inRange(recipe.rLevel, 300, 384) ||	// 70*+
-			recipe.rLevel >= 430				// 80*+
+			inRange(recipe.rLevel, 430, 529) ||	// 80*+
+			recipe.rLevel >= 570				// 90*+
 			)
 		{
 			conditionChances.insert({ condition::good, qualityAssurance ? 11 : 10 });
@@ -179,7 +180,8 @@ void craft::setProbabilities()
 		else if (
 			inRange(recipe.rLevel, 136, 159) ||	// 55+
 			inRange(recipe.rLevel, 276, 299) ||	// 65+
-			inRange(recipe.rLevel, 406, 429)	// 75+
+			inRange(recipe.rLevel, 406, 429) ||	// 75+
+			inRange(recipe.rLevel, 546, 569)	// 85+
 			)
 		{
 			conditionChances.insert({ condition::good, qualityAssurance ? 17 : 15 });
@@ -188,7 +190,8 @@ void craft::setProbabilities()
 		else if (
 			inRange(recipe.rLevel, 115, 135) ||	// 51+	
 			inRange(recipe.rLevel, 255, 275) ||	// 61+
-			inRange(recipe.rLevel, 385, 405)	// 71+
+			inRange(recipe.rLevel, 385, 405) ||	// 71+
+			inRange(recipe.rLevel, 530, 545)	// 81+
 			)
 		{
 			conditionChances.insert({ condition::good, qualityAssurance ? 22 : 20 });
