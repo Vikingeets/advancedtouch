@@ -181,7 +181,7 @@ void craft::setProbabilities()
 			inRange(recipe.rLevel, 136, 159) ||	// 55+
 			inRange(recipe.rLevel, 276, 299) ||	// 65+
 			inRange(recipe.rLevel, 406, 429) ||	// 75+
-			inRange(recipe.rLevel, 546, 569)	// 85+
+			inRange(recipe.rLevel, 535, 569)	// 85+
 			)
 		{
 			conditionChances.insert({ condition::good, qualityAssurance ? 17 : 15 });
@@ -191,7 +191,7 @@ void craft::setProbabilities()
 			inRange(recipe.rLevel, 115, 135) ||	// 51+	
 			inRange(recipe.rLevel, 255, 275) ||	// 61+
 			inRange(recipe.rLevel, 385, 405) ||	// 71+
-			inRange(recipe.rLevel, 530, 545)	// 81+
+			inRange(recipe.rLevel, 518, 534)	// 81+
 			)
 		{
 			conditionChances.insert({ condition::good, qualityAssurance ? 22 : 20 });
@@ -429,7 +429,7 @@ actionResult craft::groundwork()
 actionResult craft::prudentSynthesis()
 {
 	if (wasteNotTime > 0 || wasteNot2Time > 0) return actionResult::failHardUnavailable;
-	return commonSynth(-25, 180, 100, 5);
+	return commonSynth(-18, 180, 100, 5);
 }
 
 actionResult craft::intensiveSynthesis()
@@ -496,7 +496,7 @@ actionResult craft::trainedEye()
 actionResult craft::trainedFinesse()
 {
 	if (innerQuiet < 10) return actionResult::failHardUnavailable;
-	return commonTouch(-24, 100, 100, 0);
+	return commonTouch(-32, 100, 100, 0);
 }
 
 /***
