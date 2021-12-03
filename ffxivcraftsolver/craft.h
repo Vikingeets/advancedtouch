@@ -157,9 +157,6 @@ private:
 	std::map<condition, int> conditionChances;
 	condition cond;
 
-	int progressFactor;
-	int qualityFactor;
-
 	// Buffs
 	int muscleMemoryTime = 0;
 	int wasteNotTime = 0;
@@ -228,8 +225,6 @@ public:
 		quality(initialQuality),
 		progress(0),
 		cond(condition::normal),
-		progressFactor(getProgressFactor(crafter.cLevel - recipe.rLevel)),
-		qualityFactor(getQualityFactor(crafter.cLevel - recipe.rLevel)),
 		normalLock(nLock),
 		rng(nullptr)
 	{

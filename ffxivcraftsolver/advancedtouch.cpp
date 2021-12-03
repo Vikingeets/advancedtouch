@@ -329,23 +329,17 @@ void parseRecipe(const rapidjson::Document& d, recipeStats* recipe)
 	}
 
 	const char* recipeTableFilename = "RecipeLevelTable.csv";
-	const char* differenceTableFilename = "CraftLevelDifference.csv";
 
 	if (!populateRecipeTable(recipeTableFilename))
 	{
 		cerr << "Failed to open " << recipeTableFilename << endl;
 		exit(1);
 	}
-	if(!populateDifferenceTable(differenceTableFilename))
-	{
-		cerr << "Failed to open " << differenceTableFilename << endl;
-		exit(1);
-	}
 
-	recipe->suggestedCraftsmanship = getSuggestedCraftsmanship(recipe->rLevel);
-	recipe->suggestedControl = getSuggestedControl(recipe->rLevel);
+	recipe->progressFactor = getProgressFactor(recipe->rLevel);
+	recipe->qualityFactor = getQualityFactor(recipe->rLevel);
 
-	if (recipe->suggestedCraftsmanship == 0 || recipe->suggestedControl == 0)
+	if (recipe->progressFactor == 0 || recipe->qualityFactor == 0)
 	{
 		cerr << "Recipe statistics not found in " << recipeTableFilename << ". Please ensure it is up to date." << endl;
 		exit(1);

@@ -86,8 +86,8 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 	rec.quality = recipe.quality;
 	rec.nominalQuality = recipe.displayedQuality;
 	rec.durability = recipe.durability;
-	rec.suggestedCraftsmanship = recipe.suggestedCraftsmanship;
-	rec.suggestedControl = recipe.suggestedControl;
+	rec.progressFactor = recipe.progressFactor;
+	rec.qualityFactor = recipe.controlFactor;
 
 	for (unsigned int i = 0; i + 1 < recipe.pointsSize; i += 2)
 		rec.points.emplace_back(recipe.points[i], recipe.points[i + 1]);
@@ -137,11 +137,6 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 int atLoadRecipeTable(const char* filename)
 {
 	return populateRecipeTable(filename) ? 0 : 1;
-}
-
-int atLoadDifferenceTable(const char* filename)
-{
-	return populateDifferenceTable(filename) ? 0 : 1;
 }
 
 atSolverCallback cCallback;

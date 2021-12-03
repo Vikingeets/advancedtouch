@@ -451,10 +451,6 @@
     <None Include="..\LICENSE" />
     <None Include="..\README.md" />
     <None Include="..\STEPWISE.md" />
-    <None Include="CraftLevelDifference.csv">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug - Multi|x64'">true</DeploymentContent>
-    </None>
     <None Include="generated.json" />
     <None Include="options.json" />
     <None Include="RecipeLevelTable.csv">

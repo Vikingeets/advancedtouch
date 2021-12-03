@@ -20,8 +20,8 @@ struct recipeStats
 	int nominalQuality;	// always what is listed in the file
 	int durability;
 
-	int suggestedCraftsmanship;
-	int suggestedControl;
+	int progressFactor;
+	int qualityFactor;
 
 	std::vector<std::pair<int, int>> points;	// must be in order low to high
 	

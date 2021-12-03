@@ -43,9 +43,7 @@ void craft::increaseProgress(int efficiency)
 		bonus += 0.5f;
 	}
 
-	float baseProgress = (crafter.craftsmanship * 21.f) / 100.f + 2.f;
-	float suggestionMod = (crafter.craftsmanship + 10000.f) / (recipe.suggestedCraftsmanship + 10000.f);
-	float differenceMod = progressFactor / 100.f;
+	int progressIncrease = static_cast<int>((crafter.craftsmanship * 10.f) / recipe.progressFactor + 2.f);
 	float conditionMod;
 
 	switch (cond)
@@ -59,8 +57,6 @@ void craft::increaseProgress(int efficiency)
 		break;
 	}
 
-	int progressIncrease = static_cast<int>(baseProgress * suggestionMod * differenceMod);
-	
 	progress += (progressIncrease * conditionMod * efficiency * bonus) / 100;
 
 	if (finalAppraisalTime > 0 && progress >= recipe.difficulty)
@@ -89,9 +85,7 @@ void craft::increaseQuality(int efficiency)
 
 	bonus += innerQuiet * 0.1f;
 	
-	float baseQuality = (crafter.control * 35.f) / 100.f + 35.f;
-	float suggestionMod = (crafter.control + 10000.f) / (recipe.suggestedControl + 10000.f);
-	float differenceMod = qualityFactor / 100.f;
+	int qualityIncrease = static_cast<int>((crafter.control * 10.f) / recipe.qualityFactor + 35.f);
 	float conditionMod;
 
 	switch (cond)
@@ -111,9 +105,7 @@ void craft::increaseQuality(int efficiency)
 		break;
 	}
 
-	int qualityIncrease = static_cast<int>(baseQuality * suggestionMod * differenceMod * conditionMod);
-
-	quality += (qualityIncrease * efficiency * bonus) / 100;
+	quality += (qualityIncrease * conditionMod * efficiency * bonus) / 100;
 
 	if (crafter.level >= 11 && innerQuiet < 10) innerQuiet++;
 

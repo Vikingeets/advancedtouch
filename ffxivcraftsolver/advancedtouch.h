@@ -78,8 +78,8 @@ struct atRecipe
 	int displayedQuality;	/* The quality the ingame recipe displays. Should always be set. */ 
 	int durability;
 
-	int suggestedCraftsmanship;
-	int suggestedControl;
+	int progressFactor;
+	int controlFactor;
 
 	int* points;			/* An array of integers for the points structure, as pairs of collectability then value */
 	unsigned int pointsSize;	/* The number of integers in the array, e.g. 3 entries will be pointsSize == 6 */
@@ -120,7 +120,6 @@ atSolver* atInitSolver(
 	
 /* You must provide both .csv files before you can begin solving! Returns 0 on success, 1 on failure */
 int atLoadRecipeTable(const char* filename);		/* e.g. RecipeLevelTable.csv */
-int atLoadDifferenceTable(const char* filename);	/* CraftLevelDifference.csv */
 
 /* This function will be called after every generation. Return 0 to continue solving, non-0 to stop early. */
 typedef int (*atSolverCallback)(

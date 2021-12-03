@@ -77,9 +77,6 @@
     <None Include="RecipeLevelTable.csv">
       <Filter>Resources</Filter>
     </None>
-    <None Include="CraftLevelDifference.csv">
-      <Filter>Resources</Filter>
-    </None>
     <None Include="..\LICENSE">
       <Filter>Notes\Documentation</Filter>
     </None>
