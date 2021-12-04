@@ -22,6 +22,8 @@ struct recipeStats
 
 	int progressFactor;
 	int qualityFactor;
+	int progressPenalty;	// applied when clvl < rlvl
+	int qualityPenalty;
 
 	std::vector<std::pair<int, int>> points;	// must be in order low to high
 	

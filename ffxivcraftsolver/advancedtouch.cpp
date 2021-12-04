@@ -338,8 +338,10 @@ void parseRecipe(const rapidjson::Document& d, recipeStats* recipe)
 
 	recipe->progressFactor = getProgressFactor(recipe->rLevel);
 	recipe->qualityFactor = getQualityFactor(recipe->rLevel);
+	recipe->progressPenalty = getProgressPenalty(recipe->rLevel);
+	recipe->qualityPenalty = getQualityPenalty(recipe->rLevel);
 
-	if (recipe->progressFactor == 0 || recipe->qualityFactor == 0)
+	if (recipe->progressFactor == 0 || recipe->qualityFactor == 0 || recipe->progressPenalty == 0 || recipe->progressPenalty == 0)
 	{
 		cerr << "Recipe statistics not found in " << recipeTableFilename << ". Please ensure it is up to date." << endl;
 		exit(1);

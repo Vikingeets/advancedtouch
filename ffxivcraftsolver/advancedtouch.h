@@ -79,7 +79,7 @@ struct atRecipe
 	int durability;
 
 	int progressFactor;
-	int controlFactor;
+	int qualityFactor;
 
 	int* points;			/* An array of integers for the points structure, as pairs of collectability then value */
 	unsigned int pointsSize;	/* The number of integers in the array, e.g. 3 entries will be pointsSize == 6 */

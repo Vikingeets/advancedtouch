@@ -14,7 +14,9 @@ struct recipeData
 {
 	int8_t classLevel;
 	uint8_t progressFactor;
-	uint8_t controlFactor;
+	uint8_t qualityFactor;
+	uint8_t progressPenalty;
+	uint8_t qualityPenalty;
 };
 
 // Accessed by multiple threads, but only written before they are started
@@ -38,12 +40,14 @@ bool populateRecipeTable(const string& fileName)
 		recipeData recipe = {
 			static_cast<int8_t>(atoi(split[1].c_str())),	// classLevel
 			static_cast<uint8_t>(atoi(split[7].c_str())),	// progressFactor
-			static_cast<uint8_t>(atoi(split[8].c_str())),	// controlFactor
+			static_cast<uint8_t>(atoi(split[8].c_str())),	// qualityFactor
+			static_cast<uint8_t>(atoi(split[9].c_str())),	// progressPenalty
+			static_cast<uint8_t>(atoi(split[10].c_str()))	// qualityPenalty
 		};
 		if (rLvl == 0 ||
 			recipe.classLevel == 0 ||
 			recipe.progressFactor == 0 ||
-			recipe.controlFactor == 0)
+			recipe.qualityFactor == 0)
 			continue;
 
 		recipeDataTable.insert(recipeDataTable.end(), pair<int32_t, recipeData>(rLvl, recipe));
@@ -54,8 +58,8 @@ bool populateRecipeTable(const string& fileName)
 const array<int, 40> cLevelToRLevel = {
 	120, 125, 130, 133, 136, 139, 142, 145, 148, 150,	// 51-60
 	260, 265, 270, 273, 276, 279, 282, 285, 288, 290,	// 61-70
-	385, 395, 400, 403, 406, 409, 412, 415, 418, 420,	// 71-80
-	518, 520, 525, 530, 535, 540, 545, 550, 555, 560	// 81-90
+	390, 395, 400, 403, 406, 409, 412, 415, 418, 420,	// 71-80
+	517, 520, 525, 530, 535, 540, 545, 550, 555, 560	// 81-90
 };
 
 int mainToRlvl(int level)
@@ -95,5 +99,27 @@ int getQualityFactor(int rLvl)
 	auto it = recipeDataTable.find(rLvl);
 	if (it == recipeDataTable.end()) return 0;
 
-	return it->second.controlFactor;
+	return it->second.qualityFactor;
+}
+
+int getProgressPenalty(int rLvl)
+{
+	assert(!recipeDataTable.empty());
+
+	if (rLvl < 1) rLvl = 1;
+	auto it = recipeDataTable.find(rLvl);
+	if (it == recipeDataTable.end()) return 0;
+
+	return it->second.progressPenalty;
+}
+
+int getQualityPenalty(int rLvl)
+{
+	assert(!recipeDataTable.empty());
+
+	if (rLvl < 1) rLvl = 1;
+	auto it = recipeDataTable.find(rLvl);
+	if (it == recipeDataTable.end()) return 0;
+
+	return it->second.qualityPenalty;
 }

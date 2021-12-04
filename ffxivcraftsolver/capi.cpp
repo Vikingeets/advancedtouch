@@ -87,7 +87,7 @@ atSolver* atInitSolver(atCrafter crafter, atRecipe recipe, int* initialSequence,
 	rec.nominalQuality = recipe.displayedQuality;
 	rec.durability = recipe.durability;
 	rec.progressFactor = recipe.progressFactor;
-	rec.qualityFactor = recipe.controlFactor;
+	rec.qualityFactor = recipe.qualityFactor;
 
 	for (unsigned int i = 0; i + 1 < recipe.pointsSize; i += 2)
 		rec.points.emplace_back(recipe.points[i], recipe.points[i + 1]);
