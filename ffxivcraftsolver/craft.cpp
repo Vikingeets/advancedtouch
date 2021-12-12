@@ -85,7 +85,7 @@ void craft::increaseQuality(int efficiency)
 		bonus += 0.5f;
 	}
 
-	bonus += innerQuiet * 0.1f;
+	bonus *= 1 + innerQuiet * 0.1f;
 	
 	float baseQuality = (crafter.control * 10.f) / recipe.qualityFactor + 35.f;
 	float levelMod = crafter.cLevel <= recipe.rLevel ? recipe.qualityPenalty * 0.01f : 1.f;
