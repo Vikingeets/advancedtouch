@@ -44,7 +44,7 @@ void craft::increaseProgress(int efficiency)
 	}
 
 	float baseProgress = (crafter.craftsmanship * 10.f) / recipe.progressFactor + 2.f;
-	float levelMod = crafter.cLevel < recipe.rLevel ? recipe.progressPenalty * 0.01f : 1.f;
+	float levelMod = crafter.cLevel <= recipe.rLevel ? recipe.progressPenalty * 0.01f : 1.f;
 	float conditionMod;
 
 	switch (cond)
@@ -88,7 +88,7 @@ void craft::increaseQuality(int efficiency)
 	bonus += innerQuiet * 0.1f;
 	
 	float baseQuality = (crafter.control * 10.f) / recipe.qualityFactor + 35.f;
-	float levelMod = crafter.cLevel < recipe.rLevel ? recipe.qualityPenalty * 0.01f : 1.f;
+	float levelMod = crafter.cLevel <= recipe.rLevel ? recipe.qualityPenalty * 0.01f : 1.f;
 	float conditionMod;
 
 	switch (cond)

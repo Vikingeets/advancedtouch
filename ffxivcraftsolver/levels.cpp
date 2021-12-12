@@ -34,7 +34,7 @@ bool populateRecipeTable(const string& fileName)
 	while (tableFile.getline(out, buffsize))
 	{
 		vector<string> split = tokenSplit(string(out), ',');
-		if (split.size() < 9) continue;
+		if (split.size() < 11) continue;
 
 		int32_t rLvl = atoi(split[0].c_str());
 		recipeData recipe = {
