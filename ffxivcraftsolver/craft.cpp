@@ -58,8 +58,8 @@ void craft::increaseProgress(int efficiency)
 		break;
 	}
 
-	int progressIncrease = static_cast<int>(baseProgress * levelMod * conditionMod);
-	progress += static_cast<int>((progressIncrease * efficiency * bonus) / 100);
+	int progressIncrease = static_cast<int>(baseProgress * levelMod);
+	progress += static_cast<int>((progressIncrease * conditionMod * efficiency * bonus) / 100);
 
 	if (finalAppraisalTime > 0 && progress >= recipe.difficulty)
 	{
@@ -108,8 +108,8 @@ void craft::increaseQuality(int efficiency)
 		break;
 	}
 
-	int qualityIncrease = static_cast<int>(baseQuality * levelMod * conditionMod);
-	quality += static_cast<int>((qualityIncrease * efficiency * bonus) / 100);
+	int qualityIncrease = static_cast<int>(baseQuality * levelMod);
+	quality += static_cast<int>((qualityIncrease * conditionMod * efficiency * bonus) / 100);
 
 	if (crafter.level >= 11 && innerQuiet < 10) innerQuiet++;
 
