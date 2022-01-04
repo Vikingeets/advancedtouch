@@ -28,6 +28,8 @@ inline bool craft::rollPercent(int chance) const
 	}
 }
 
+//#pragma float_control(precise, on, push)
+
 void craft::increaseProgress(int efficiency)
 {
 	float bonus = 1.f;
@@ -59,7 +61,7 @@ void craft::increaseProgress(int efficiency)
 	}
 
 	int progressIncrease = static_cast<int>(baseProgress * levelMod);
-	progress += static_cast<int>((progressIncrease * conditionMod * efficiency * bonus) / 100);
+	progress += static_cast<int>((progressIncrease * conditionMod * bonus * efficiency) / 100);
 
 	if (finalAppraisalTime > 0 && progress >= recipe.difficulty)
 	{
@@ -109,12 +111,14 @@ void craft::increaseQuality(int efficiency)
 	}
 
 	int qualityIncrease = static_cast<int>(baseQuality * levelMod);
-	quality += static_cast<int>((qualityIncrease * conditionMod * efficiency * bonus) / 100);
+	quality += static_cast<int>((qualityIncrease * conditionMod * bonus * efficiency) / 100);
 
 	if (crafter.level >= 11 && innerQuiet < 10) innerQuiet++;
 
 	return;
 }
+
+//#pragma float_control(pop)
 
 // Negative amount to deduct, positive to add. Returns false if not enough CP
 bool craft::changeCP(int amount)
