@@ -28,8 +28,6 @@ inline bool craft::rollPercent(int chance) const
 	}
 }
 
-//#pragma float_control(precise, on, push)
-
 void craft::increaseProgress(int efficiency)
 {
 	float bonus = 1.f;
@@ -117,8 +115,6 @@ void craft::increaseQuality(int efficiency)
 
 	return;
 }
-
-//#pragma float_control(pop)
 
 // Negative amount to deduct, positive to add. Returns false if not enough CP
 bool craft::changeCP(int amount)
@@ -490,6 +486,7 @@ actionResult craft::trainedEye()
 	if (step != 1 || recipe.expert || crafter.level < rlvlToMain(recipe.rLevel) + 10) return actionResult::failHardUnavailable;
 	if (!changeCP(-250)) return actionResult::failNoCP;
 	quality += recipe.nominalQuality;
+	innerQuiet = 1;
 	return actionResult::success;
 }
 
