@@ -232,7 +232,7 @@ craft::condition craft::getNextCondition(condition current)
 	return condition::normal;
 }
 
-void craft::endStep()
+void craft::endStep(actions action, actionResult result)
 {
 	muscleMemoryTime--;
 	wasteNotTime--;
@@ -247,7 +247,9 @@ void craft::endStep()
 	innovationTime--;
 	finalAppraisalTime--;
 	observeCombo = false;
-	basicTouchCombo = false;
+	// Not the prettiest, but it'll do
+	if(action != actions::standardTouch || result != actionResult::success)
+		basicTouchCombo = false;
 	standardTouchCombo = false;
 	cond = getNextCondition(cond);
 
@@ -451,6 +453,19 @@ void craft::muscleMemoryPost()
 /***
 TOUCH ACTIONS
 ***/
+
+void craft::basicTouchPost()
+{
+	basicTouchCombo = true;
+}
+
+void craft::standardTouchPost() {
+	if (basicTouchCombo)
+	{
+		basicTouchCombo = false;
+		standardTouchCombo = true;
+	}
+}
 
 actionResult craft::byregotsBlessing()
 {
@@ -718,7 +733,7 @@ actionResult craft::performOneComplete(actions action, rngOverride override)
 
 	if (action == actions::finalAppraisal) return output;
 
-	endStep();
+	endStep(action, output);
 
 	if(output == actionResult::success) performOnePost(action);
 
@@ -782,7 +797,7 @@ craft::endResult craft::performAll(const craft::sequenceType& sequence, goalType
 
 		if (durability <= 0 || progress >= recipe.difficulty)
 			break;
-		endStep();
+		endStep(*it, result);
 		if (result == actionResult::success) performOnePost(*it);
 	}
 

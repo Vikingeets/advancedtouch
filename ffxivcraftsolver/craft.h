@@ -205,7 +205,7 @@ private:
 	void setProbabilities();
 
 	condition getNextCondition(condition current);
-	void endStep();
+	void endStep(actions action, actionResult result);
 
 	// both percentages from 0-100
 	static int hqPercentFromQuality(int qualityPercent);
@@ -253,9 +253,9 @@ private:
 
 	// Touches
 	actionResult basicTouch() { return commonTouch(-18, 100, 100); }
-	void basicTouchPost() { basicTouchCombo = true; }
+	void basicTouchPost();
 	actionResult standardTouch() { return commonTouch(basicTouchCombo ? -18 : -32, 125, 100); }
-	void standardTouchPost() { standardTouchCombo = true; }
+	void standardTouchPost();
 	actionResult advancedTouch() { return commonTouch(standardTouchCombo ? -18 : -46, 150, 100); }
 	actionResult hastyTouch() { return commonTouch(0, 100, 60); }
 	actionResult byregotsBlessing();
