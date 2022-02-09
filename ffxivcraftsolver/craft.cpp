@@ -439,7 +439,6 @@ actionResult craft::intensiveSynthesis()
 actionResult craft::muscleMemory()
 {
 	if (step != 1) return actionResult::failHardUnavailable;
-
 	return commonSynth(-6, 300, 100);
 }
 
@@ -459,7 +458,8 @@ void craft::basicTouchPost()
 	basicTouchCombo = true;
 }
 
-void craft::standardTouchPost() {
+void craft::standardTouchPost()
+{
 	if (basicTouchCombo)
 	{
 		basicTouchCombo = false;
@@ -842,6 +842,9 @@ void craft::setBuff(actions buff, int time)
 	if (time < 0) time = 0;
 	switch (buff)
 	{
+	case actions::innerQuiet:
+		innerQuiet = time;
+		return;
 	case actions::muscleMemory:
 		muscleMemoryTime = time;
 		return;

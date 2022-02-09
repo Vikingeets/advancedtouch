@@ -40,10 +40,12 @@ bool isBuff(actions action)
 	switch (action)
 	{
 	case actions::basicTouch:
+	case actions::standardTouch:
 	case actions::muscleMemory:
 	case actions::wasteNot:
 	case actions::wasteNot2:
 	case actions::manipulation:
+	case actions::innerQuiet:
 	case actions::reflect:
 	case actions::greatStrides:
 	case actions::veneration:

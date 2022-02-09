@@ -877,7 +877,7 @@ int main(int argc, char* argv[])
 	parseRecipe(recipeStatsDocument, &recipe);
 
 	if (goal == goalType::collectability)
-		recipe.quality = collectableGoal * 10;
+		recipe.quality = max(collectableGoal, 1) * 10;
 	else if (goal == goalType::points && recipe.points.empty())
 	{
 		cerr << "-p goal set, but no points specified in recipe file" << endl;

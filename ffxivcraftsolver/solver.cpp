@@ -230,6 +230,7 @@ const vector<actions> allActions = {
 	actions::innovation,
 	actions::finalAppraisal,
 
+	// Not actions::innerQuiet
 	actions::reflect,
 	actions::observe,
 };

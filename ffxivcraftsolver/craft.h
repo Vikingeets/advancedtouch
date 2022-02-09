@@ -41,6 +41,7 @@ enum class actions : char
 	manipulation,
 
 	// Buffs
+	innerQuiet,	// To allow the stepwise to apply the buff
 	reflect,
 	greatStrides,
 	veneration,
@@ -82,6 +83,7 @@ const std::map<actions, std::string> simpleText = {
 	{actions::wasteNot2, "wasteNot2"},
 	{actions::manipulation, "manipulation"},
 
+	{actions::innerQuiet, "innerQuiet"},
 	{actions::reflect, "reflect"},
 	{actions::greatStrides, "greatStrides"},
 	{actions::veneration, "veneration"},
@@ -287,7 +289,6 @@ private:
 	actionResult innovation();
 	void innovationPost();
 	actionResult finalAppraisal();
-
 
 	actionResult observe();
 	void observePost();
