@@ -100,7 +100,7 @@ void craft::increaseQuality(int efficiency)
 	default:
 		conditionMod = 1.0f;
 		break;
-	case condition::good:
+	case condition::good:		// Tool: 1.75f
 		conditionMod = 1.5f;
 		break;
 	case condition::excellent:
@@ -143,7 +143,15 @@ void craft::setProbabilities()
 	conditionChances.clear();
 	if (recipe.expert)
 	{
-		if (recipe.rLevel == 513)
+		if (recipe.rLevel == 611)
+		{
+			conditionChances.insert({ condition::good, 12 });
+			conditionChances.insert({ condition::centered, 15 });
+			conditionChances.insert({ condition::sturdy, 15 });
+			conditionChances.insert({ condition::malleable, 12 });
+			conditionChances.insert({ condition::primed, 12 });
+		}
+		else if (recipe.rLevel == 513)
 		{
 			conditionChances.insert({ condition::good, 12 });
 			conditionChances.insert({ condition::sturdy, 15 });

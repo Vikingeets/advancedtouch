@@ -693,14 +693,14 @@ solver::trial solver::executeSolver(int simulationsPerTrial, int generations, in
 
 		mutated.clear();
 		mutated.reserve(selected.size());
-		mutated.push_back(move(*elite));	// elite goes across unmodified
+		mutated.push_back(std::move(*elite));	// elite goes across unmodified
 		orders.trials = &selected;
 		orders.command = threadCommand::mutate;
 		setOrder(orders);
 		waitOnMutationsDone();
 		assert(mutated.size() == selected.size() + 1);
 
-		trials = move(mutated);
+		trials = std::move(mutated);
 	}
 
 	orders.command = threadCommand::terminate;
