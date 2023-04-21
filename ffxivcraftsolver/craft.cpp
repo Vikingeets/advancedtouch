@@ -100,8 +100,8 @@ void craft::increaseQuality(int efficiency)
 	default:
 		conditionMod = 1.0f;
 		break;
-	case condition::good:		// Tool: 1.75f
-		conditionMod = 1.5f;
+	case condition::good:
+		conditionMod = crafter.good75 ? 1.75f : 1.5f;
 		break;
 	case condition::excellent:
 		conditionMod = 4.f;

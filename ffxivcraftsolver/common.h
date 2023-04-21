@@ -10,6 +10,7 @@ struct crafterStats
 	int craftsmanship;
 	int control;
 	int CP;
+	bool good75;
 };
 
 struct recipeStats

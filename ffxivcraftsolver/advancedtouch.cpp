@@ -265,6 +265,7 @@ void parseStats(const rapidjson::Document& d, crafterStats* crafter, bool useFoo
 	crafter->craftsmanship = getIntIfExists(d, (prefix + "craftsmanship").c_str(), -1);
 	crafter->control = getIntIfExists(d, (prefix + "control").c_str(), -1);
 	crafter->CP = getIntIfExists(d, (prefix + "cp").c_str(), -1);
+	crafter->good75 = getBoolIfExists(d, (prefix + "good75").c_str(), false);
 
 	bitset<4> missingStats;
 	missingStats[0] = crafter->level <= 0 || crafter->level > 90;
