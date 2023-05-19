@@ -28,7 +28,7 @@ q, quality q
 
 	Sets the current quality.
 
-c, condition e/g/n/p (expert: g/n/c/s/pl/pr)
+c, condition e/g/n/p (expert: g/n/c/s/pl/pr/go)
 
 	Sets the current condition to excellent/good/normal/poor. e.g. `c g`
 

@@ -126,7 +126,8 @@ public:
 		sturdy,
 		pliant,
 		malleable,
-		primed
+		primed,
+		goodomen
 	};
 
 	enum class actionResult

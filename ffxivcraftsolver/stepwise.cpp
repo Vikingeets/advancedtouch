@@ -199,10 +199,12 @@ bool setCondition(const vector<string>& command, const recipeStats recipe, craft
 		crafting->setCondition(craft::condition::sturdy);
 	else if (command[1] == "m" && recipe.expert)
 		crafting->setCondition(craft::condition::malleable);
+	else if (command[1] == "go" && recipe.expert)
+		crafting->setCondition(craft::condition::goodomen);
 	else
 	{
 		if (recipe.expert)
-			cout << "Condition required: g, n, c, s, pl, pr, or m\n";
+			cout << "Condition required: g, n, c, s, pl, pr, m, or go\n";
 		else
 			cout << "Condition required: e, g, n, or p\n";
 		return false;

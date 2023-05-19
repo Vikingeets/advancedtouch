@@ -72,7 +72,7 @@ void craft::increaseProgress(int efficiency)
 
 void craft::increaseQuality(int efficiency)
 {
-	float bonus = 1.f;
+	double bonus = 1.f;
 
 	if (greatStridesTime > 0)
 	{
@@ -108,8 +108,14 @@ void craft::increaseQuality(int efficiency)
 		break;
 	}
 
-	int qualityIncrease = static_cast<int>(baseQuality * levelMod);
-	quality += static_cast<int>((qualityIncrease * conditionMod * bonus * efficiency) / 100);
+	float quI = baseQuality * levelMod;
+	//int qualityIncrease = static_cast<int>(baseQuality * levelMod);
+	int qualityIncrease = static_cast<int>(quI);
+	float q1 = qualityIncrease * conditionMod;
+	float q2 = q1 * bonus;
+	float q3 = q2 * efficiency;
+	//quality += static_cast<int>((qualityIncrease * conditionMod * bonus * efficiency) / 100);
+	quality += static_cast<int>((q3) / 100);
 
 	if (crafter.level >= 11 && innerQuiet < 10) innerQuiet++;
 
@@ -226,6 +232,8 @@ craft::condition craft::getNextCondition(condition current)
 			return condition::poor;
 		}
 	}
+
+	if (current == condition::goodomen) return condition::good;
 
 	if (normalLock || over != rngOverride::random) return condition::normal;
 
